@@ -7,7 +7,7 @@ const BlogPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/medium')
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/medium`)
       .then(res => res.json())
       .then(data => setPosts(data))
       .catch(err => console.error(err));
