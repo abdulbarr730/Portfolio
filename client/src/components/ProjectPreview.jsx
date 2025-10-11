@@ -61,21 +61,21 @@ const ProjectPreview = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {projectsData.map((project, index) => (
           <Link href={project.liveUrl || '#'} key={index} target="_blank" className="block group project-card-wrapper">
-            <div className="bg-white dark:bg-primary/80 rounded-lg shadow-md overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-2 h-full">
+            <div className="bg-white rounded-lg shadow-md overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-2 h-full">
               <div className="w-full h-48 relative overflow-hidden">
                 {/* Placeholder background */}
-                <div className="absolute inset-0 bg-muted dark:bg-secondary/20"></div>
+                <div className="absolute inset-0 bg-muted "></div>
                 {/* The image now has a class for GSAP to target */}
                 <Image src={project.snapshotUrl} alt={project.title} fill className="object-cover project-snapshot-image" />
                 <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <div className="w-16 h-16 bg-primary dark:bg-background text-background dark:text-primary rounded-full flex items-center justify-center">
+                  <div className="w-16 h-16 bg-primary text-background rounded-full flex items-center justify-center">
                     <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
                   </div>
                 </div>
               </div>
               <div className="p-6 text-left">
-                <h3 className="text-xl font-bold text-primary dark:text-background mb-2">{project.title}</h3>
-                <p className="text-secondary dark:text-gray-400 text-sm">{project.description}</p>
+                <h3 className="text-xl font-bold text-primary mb-2">{project.title}</h3>
+                <p className="text-secondary text-sm">{project.description}</p>
               </div>
             </div>
           </Link>

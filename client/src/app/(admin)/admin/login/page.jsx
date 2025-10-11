@@ -35,16 +35,16 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-background dark:bg-primary">
-      <div className="w-full max-w-md p-8 space-y-6 bg-white dark:bg-primary/80 rounded-lg shadow-md">
-        <h1 className="text-2xl font-bold text-center text-primary dark:text-background">
+    <div className="flex items-center justify-center min-h-screen bg-background ">
+      <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
+        <h1 className="text-2xl font-bold text-center text-primary ">
           Admin Login
         </h1>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label
               htmlFor="username"
-              className="text-sm font-medium text-secondary dark:text-gray-300"
+              className="text-sm font-medium text-secondary "
             >
               Username
             </label>
@@ -54,13 +54,13 @@ const LoginPage = () => {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
-              className="w-full px-3 py-2 mt-1 border rounded-md bg-background dark:bg-primary dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-primary/50"
+              className="w-full px-3 py-2 mt-1 border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-primary/50"
             />
           </div>
           <div>
             <label
               htmlFor="password"
-              className="text-sm font-medium text-secondary dark:text-gray-300"
+              className="text-sm font-medium text-secondary "
             >
               Password
             </label>
@@ -70,12 +70,12 @@ const LoginPage = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full px-3 py-2 mt-1 border rounded-md bg-background dark:bg-primary dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-primary/50"
+              className="w-full px-3 py-2 mt-1 border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-primary/50"
             />
           </div>
           <button
             type="submit"
-            className="w-full py-2 font-semibold text-white bg-primary dark:bg-background dark:text-primary rounded-md hover:bg-opacity-90 transition-colors"
+            className="w-full py-2 font-semibold text-white bg-primary rounded-md hover:bg-opacity-90 transition-colors"
           >
             Login
           </button>

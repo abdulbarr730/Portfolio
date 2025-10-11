@@ -8,13 +8,13 @@ gsap.registerPlugin(ScrollTrigger);
 
 const TimelineItem = ({ item }) => (
   <div className="timeline-item relative pl-8 sm:pl-12 py-6 group">
-    <div className="absolute top-8 left-[-5px] w-3 h-3 rounded-full bg-secondary dark:bg-gray-600 group-hover:bg-primary dark:group-hover:bg-background transition-colors duration-300"></div>
-    <p className="text-sm font-medium text-secondary dark:text-gray-400">{item.duration}</p>
-    <h3 className="mt-2 text-xl font-bold text-primary dark:text-background">{item.role}</h3>
-    <p className="mt-1 text-md text-secondary dark:text-gray-400">{item.company}</p>
+    <div className="absolute top-8 left-[-5px] w-3 h-3 rounded-full bg-secondary group-hover:bg-primary transition-colors duration-300"></div>
+    <p className="text-sm font-medium text-secondary ">{item.duration}</p>
+    <h3 className="mt-2 text-xl font-bold text-primary ">{item.role}</h3>
+    <p className="mt-1 text-md text-secondary ">{item.company}</p>
     <div className="mt-4 space-y-2">
       {item.description.map((desc, index) => (
-        <p key={index} className="text-secondary/80 dark:text-gray-500 list-item ml-4">{desc}</p>
+        <p key={index} className="text-secondary/80 list-item ml-4">{desc}</p>
       ))}
     </div>
   </div>
@@ -52,16 +52,16 @@ const ExperienceTimeline = ({ experience }) => {
   return (
     <section ref={component} id="experience" className="container mx-auto py-32 px-4 sm:px-6 lg:px-8">
       <div>
-        <h2 className="text-4xl font-bold tracking-tight text-primary dark:text-background mb-12">Work Experience</h2>
-        <div className="relative border-l border-secondary/20 dark:border-secondary/40">
+        <h2 className="text-4xl font-bold tracking-tight text-primary mb-12">Work Experience</h2>
+        <div className="relative border-l border-secondary/20 ">
           {professionalExperience.map((item, index) => (
             <TimelineItem key={index} item={item} />
           ))}
         </div>
       </div>
       <div className="mt-20">
-        <h2 className="text-4xl font-bold tracking-tight text-primary dark:text-background mb-12">Education</h2>
-        <div className="relative border-l border-secondary/20 dark:border-secondary/40">
+        <h2 className="text-4xl font-bold tracking-tight text-primary mb-12">Education</h2>
+        <div className="relative border-l border-secondary/20 ">
           {education.map((item, index) => (
             <TimelineItem key={index} item={item} />
           ))}

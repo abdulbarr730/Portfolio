@@ -6,14 +6,13 @@ import RightSidebar from "@/components/RightSidebar"; // Changed from LeftSideba
 export default function SiteLayout({ children }) {
   return (
     <>
-      <RightSidebar /> {/* Updated component name */}
+      
       <Navbar />
       {/* Changed left padding to right padding to make space for the right sidebar */}
-      <main className="md:pr-28"> {/* Changed md:pl-28 to md:pr-28 */}
+      <main className=""> {/* Changed md:pl-28 to md:pr-28 */}
         {children}
       </main>
       <Footer />
-      
     </>
   );
 }

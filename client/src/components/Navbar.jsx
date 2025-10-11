@@ -4,19 +4,19 @@ import { useLayoutEffect, useRef, useState, useEffect } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Link from 'next/link';
-import { Link as ScrollLink, animateScroll as scroll } from 'react-scroll';
+import { animateScroll as scroll } from 'react-scroll';
 import { usePathname, useRouter } from 'next/navigation';
 
 gsap.registerPlugin(ScrollTrigger);
 
 const HAMBURGER_LINKS = [
   { id: 'hero', text: 'Home', type: 'scroll' },
+  { id: '/blog', text: 'Blog', type: 'link' },
   { id: 'about', text: 'About Me', type: 'scroll' },
   { id: '/projects', text: 'Projects', type: 'link' },
   { id: '/codecraft', text: 'Code Craft', type: 'link' },
   { id: '/experience', text: 'Experience', type: 'link' },
   { id: 'contact', text: 'Contact', type: 'scroll' },
-  { id: '/blog', text: 'Blog', type: 'link' },
   { id: 'reviews', text: 'Review', type: 'scroll', cta: "Drop a review if you liked anything about me or my projects" },
 ];
 
@@ -106,24 +106,24 @@ const Navbar = () => {
 
   return (
     <>
-      <header ref={component} className="fixed top-0 left-0 w-full z-50 bg-background/80 dark:bg-primary/90 backdrop-blur-sm">
+      <header ref={component} className="fixed top-0 left-0 w-full z-50 bg-background/80 backdrop-blur-sm">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 md:px-32">
           <div className="flex items-center justify-between h-16">
             <div className="flex-shrink-0 relative h-10 w-48 flex items-center">
               <div className="full-name-container absolute top-0 left-0 flex items-center whitespace-nowrap">
-                <span className="name-part-abdul text-xl font-bold text-primary dark:text-background">Abdul</span>
-                <span className="name-part-barr text-xl font-bold text-primary dark:text-background ml-1.5">Barr</span>
+                <span className="name-part-abdul text-xl font-bold text-primary">Abdul</span>
+                <span className="name-part-barr text-xl font-bold text-primary ml-1.5">Barr</span>
               </div>
-              <Link href="/" className="initial-logo absolute top-0 left-0 flex items-center justify-center w-10 h-10 bg-primary dark:bg-background rounded-md opacity-0">
-                <span className="font-bold text-lg text-background dark:text-primary">AB</span>
+              <Link href="/" className="initial-logo absolute top-0 left-0 flex items-center justify-center w-10 h-10 bg-primary rounded-md opacity-0">
+                <span className="font-bold text-lg text-background">AB</span>
               </Link>
             </div>
 
-            <div className="flex items-center space-x-4 md:space-x-6 text-primary dark:text-background">
+            <div className="flex items-center space-x-4 md:space-x-6 text-primary">
               <Link
                 href="/services"
                 ref={bookRef}
-                className="font-semibold underline text-primary dark:text-background cursor-pointer transform transition-all duration-200 hover:scale-105 hover:underline-offset-4"
+                className="font-semibold underline text-primary cursor-pointer transform transition-all duration-200 hover:scale-105 hover:underline-offset-4"
               >
                 Book An Appointment
               </Link>
@@ -133,9 +133,9 @@ const Navbar = () => {
                 aria-label="Toggle Menu"
                 onClick={() => setMenuOpen(!menuOpen)}
               >
-                <span className={`block w-7 h-0.5 bg-primary dark:bg-background rounded-full transition-transform duration-300 ${menuOpen ? 'rotate-45 translate-y-[5px]' : ''}`}></span>
-                <span className={`block w-7 h-0.5 bg-primary dark:bg-background rounded-full transition-opacity duration-300 ${menuOpen ? 'opacity-0' : 'my-1.5'}`}></span>
-                <span className={`block w-7 h-0.5 bg-primary dark:bg-background rounded-full transition-transform duration-300 ${menuOpen ? '-rotate-45 -translate-y-[5px]' : ''}`}></span>
+                <span className={`block w-7 h-0.5 bg-primary rounded-full transition-transform duration-300 ${menuOpen ? 'rotate-45 translate-y-[5px]' : ''}`}></span>
+                <span className={`block w-7 h-0.5 bg-primary rounded-full transition-opacity duration-300 ${menuOpen ? 'opacity-0' : 'my-1.5'}`}></span>
+                <span className={`block w-7 h-0.5 bg-primary rounded-full transition-transform duration-300 ${menuOpen ? '-rotate-45 -translate-y-[5px]' : ''}`}></span>
               </button>
             </div>
           </div>
@@ -149,54 +149,54 @@ const Navbar = () => {
 
       <aside
         ref={mobileMenuRef}
-        className={`fixed top-0 right-0 h-full w-64 bg-white dark:bg-primary shadow-xl z-[90] flex flex-col`}
+        className={`fixed top-0 right-0 h-full w-64 bg-white shadow-xl z-[90] flex flex-col`}
       >
-        <div className="flex justify-between items-center p-5 border-b border-primary/10 dark:border-background/10">
-          <Link href="/" className="flex items-center justify-center w-10 h-10 bg-primary dark:bg-background rounded-md">
-            <span className="font-bold text-lg text-background dark:text-primary">AB</span>
+        <div className="flex justify-between items-center p-5 border-b border-primary/10">
+          <Link href="/" className="flex items-center justify-center w-10 h-10 bg-primary rounded-md">
+            <span className="font-bold text-lg text-background">AB</span>
           </Link>
           <button
             onClick={() => setMenuOpen(false)}
-            className="text-4xl text-secondary dark:text-gray-400 hover:text-primary dark:hover:text-white transition-colors"
+            className="text-4xl text-secondary hover:text-primary transition-colors"
             aria-label="Close menu"
           >
             &times;
           </button>
         </div>
 
-        <nav className="flex flex-col px-4 py-6 space-y-2 flex-grow">
+        <nav className="flex flex-col px-4 py-6 space-y-2 flex-grow overflow-y-auto">
           {HAMBURGER_LINKS.map((item) =>
             item.type === 'scroll' ? (
               <div
                 key={item.id}
-                className="menu-link block text-lg font-medium cursor-pointer text-primary dark:text-background py-3 px-2 rounded-lg transition-transform duration-200 hover:scale-105 relative group"
+                className="menu-link block text-lg font-medium cursor-pointer text-primary py-3 px-2 rounded-lg transition-transform duration-200 hover:scale-105 relative group"
                 onClick={() => handleScrollLink(item.id)}
               >
                 {item.text}
-                <span className="absolute bottom-1 left-0 w-0 h-[2px] bg-primary dark:bg-background transition-all duration-300 group-hover:w-full" />
-                {item.cta && <p className="text-xs text-secondary dark:text-gray-400 mt-1">{item.cta}</p>}
+                <span className="absolute bottom-1 left-0 w-0 h-[2px] bg-primary transition-all duration-300 group-hover:w-full" />
+                {item.cta && <p className="text-xs text-secondary mt-1">{item.cta}</p>}
               </div>
             ) : (
               <Link
                 key={item.id}
                 href={item.id}
-                className="menu-link block text-lg font-medium cursor-pointer text-primary dark:text-background py-3 px-2 rounded-lg transition-transform duration-200 hover:scale-105 relative group"
+                className="menu-link block text-lg font-medium cursor-pointer text-primary py-3 px-2 rounded-lg transition-transform duration-200 hover:scale-105 relative group"
                 onClick={() => setMenuOpen(false)}
               >
                 {item.text}
-                <span className="absolute bottom-1 left-0 w-0 h-[2px] bg-primary dark:bg-background transition-all duration-300 group-hover:w-full" />
+                <span className="absolute bottom-1 left-0 w-0 h-[2px] bg-primary transition-all duration-300 group-hover:w-full" />
               </Link>
             )
           )}
         </nav>
 
-        <div className="menu-link flex justify-center items-center space-x-6 p-6 border-t border-primary/10 dark:border-background/10">
-          <Link href="https://github.com/abdulbarr730" target="_blank" className="text-secondary dark:text-gray-400 hover:text-primary dark:hover:text-white transition-colors">
+        <div className="menu-link flex justify-center items-center space-x-6 p-6 border-t border-primary/10">
+          <Link href="https://github.com/abdulbarr730" target="_blank" className="text-secondary hover:text-primary transition-colors">
             <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/>
             </svg>
           </Link>
-          <Link href="https://www.linkedin.com/in/abdul-barr-9092a4251" target="_blank" className="text-secondary dark:text-gray-400 hover:text-primary dark:hover:text-white transition-colors">
+          <Link href="https://www.linkedin.com/in/abdul-barr-9092a4251" target="_blank" className="text-secondary hover:text-primary transition-colors">
             <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/>
               <rect width="4" height="12" x="2" y="9"/>

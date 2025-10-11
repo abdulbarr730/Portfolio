@@ -2,25 +2,16 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { useTheme } from 'next-themes';
-import { animateScroll as scroll, scroller } from "react-scroll";
+import { scroller } from "react-scroll";
 import { usePathname, useRouter } from "next/navigation";
 
 const Footer = () => {
-  const { theme } = useTheme();
   const pathname = usePathname();
   const router = useRouter();
   const year = new Date().getFullYear();
   const email = "abdulbarr730@gmail.com";
 
-  // Button colors based on theme
-  const btnBg = theme === 'dark' ? 'bg-white' : 'bg-black';
-  const btnText = theme === 'dark' ? 'text-black' : 'text-white';
-  const btnHoverBg = theme === 'dark' ? 'hover:bg-gray-200' : 'hover:bg-gray-800';
-  const bgColor = theme === 'dark' ? 'bg-gray-900' : 'bg-gray-50';
-  const textColor = theme === 'dark' ? 'text-gray-300' : 'text-gray-800';
-  const linkHoverColor = theme === 'dark' ? 'hover:text-white' : 'hover:text-gray-900';
-
+  // This function remains the same, it handles scrolling to sections
   const scrollToSection = (id) => {
     if (pathname !== '/') {
       router.push('/');
@@ -42,7 +33,7 @@ const Footer = () => {
 
   return (
     <motion.footer
-      className={`${bgColor} ${textColor} py-12 border-t ${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'} relative z-40`}
+      className="bg-background text-secondary py-12 border-t border-muted relative z-40"
       initial={{ opacity: 0, y: 50 }}
       whileInView={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.8 }}
@@ -51,8 +42,8 @@ const Footer = () => {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6">
         {/* Name & Role */}
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Abdul Barr</h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+          <h1 className="text-3xl font-bold text-primary">Abdul Barr</h1>
+          <p className="text-sm text-secondary mt-1">
             Full Stack Developer & ML Enthusiast
           </p>
         </div>
@@ -61,14 +52,16 @@ const Footer = () => {
         <div className="flex justify-center space-x-8">
           <button
             onClick={() => scrollToSection("about")}
-            className={`relative cursor-pointer transition-colors ${linkHoverColor}`}
+            className="relative cursor-pointer transition-colors hover:text-primary"
           >
             About
           </button>
-          <Link href="/projects" className={`relative cursor-pointer transition-colors ${linkHoverColor}`}>Projects</Link>
+          <Link href="/projects" className="relative cursor-pointer transition-colors hover:text-primary">
+            Projects
+          </Link>
           <button
             onClick={() => scrollToSection("contact")}
-            className={`relative cursor-pointer transition-colors ${linkHoverColor}`}
+            className="relative cursor-pointer transition-colors hover:text-primary"
           >
             Contact
           </button>
@@ -83,7 +76,7 @@ const Footer = () => {
           >
             <Link
               href="/services"
-              className={`inline-block ${btnBg} ${btnText} font-bold py-3 px-8 rounded-lg text-lg transition-transform hover:scale-105 ${btnHoverBg}`}
+              className="inline-block bg-primary text-white font-bold py-3 px-8 rounded-lg text-lg transition-transform hover:scale-105 hover:opacity-90"
             >
               Book a Service
             </Link>
@@ -91,7 +84,7 @@ const Footer = () => {
 
           <motion.a
             href={`mailto:${email}`}
-            className="inline-block font-semibold underline hover:opacity-80 transition-transform hover:scale-105"
+            className="inline-block font-semibold text-primary underline hover:opacity-80 transition-transform hover:scale-105"
             whileHover={{ scale: 1.05 }}
           >
             {email}
@@ -104,7 +97,7 @@ const Footer = () => {
             href="https://github.com/abdulbarr730"
             target="_blank"
             whileHover={{ scale: 1.2, y: -4 }}
-            className={`transition-transform ${textColor} ${linkHoverColor}`}
+            className="transition-transform text-secondary hover:text-primary"
             aria-label="GitHub"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -116,7 +109,7 @@ const Footer = () => {
             href="https://www.linkedin.com/in/abdul-barr-9092a4251"
             target="_blank"
             whileHover={{ scale: 1.2, y: -4 }}
-            className={`transition-transform ${textColor} ${linkHoverColor}`}
+            className="transition-transform text-secondary hover:text-primary"
             aria-label="LinkedIn"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

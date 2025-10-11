@@ -59,7 +59,7 @@ const experienceData = [
 // This is now a simple component, not an async one
 export default function ExperiencePage() {
   return (
-    <div className="bg-background dark:bg-primary">
+    <div className="bg-background ">
       <ExperienceTimeline experience={experienceData} />
     </div>
   );

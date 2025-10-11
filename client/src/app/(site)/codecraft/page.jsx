@@ -202,7 +202,7 @@ const CodeCraftPage = () => {
       {/* Header Section */}
       <div className="text-center mb-12">
         <motion.h1
-          className="text-4xl md:text-5xl font-bold text-primary dark:text-background"
+          className="text-4xl md:text-5xl font-bold text-primary "
           initial={{ y: -20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.8 }}
@@ -210,7 +210,7 @@ const CodeCraftPage = () => {
           Code Craft
         </motion.h1>
         <motion.p
-          className="mt-3 text-lg text-secondary dark:text-gray-400 max-w-2xl mx-auto"
+          className="mt-3 text-lg text-secondary max-w-2xl mx-auto"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2, duration: 0.8 }}
@@ -221,7 +221,7 @@ const CodeCraftPage = () => {
         {/* Book a Service Button */}
         <motion.a
           href="#contact"
-          className="inline-block mt-6 px-6 py-3 rounded-lg font-bold text-lg bg-black text-white dark:bg-white dark:text-black hover:brightness-110 transition-colors shadow-lg"
+          className="inline-block mt-6 px-6 py-3 rounded-lg font-bold text-lg bg-black text-white hover:brightness-110 transition-colors shadow-lg"
           animate={{ scale: [1, 1.05, 1] }}
           transition={{ duration: 1.5, repeat: Infinity }}
           whileHover={{ scale: 1.08 }}
@@ -237,15 +237,15 @@ const CodeCraftPage = () => {
           <motion.article
             key={idx}
             ref={(el) => setCardRef(el, idx)}
-            className="bg-white/60 dark:bg-primary/70 backdrop-blur-md rounded-xl border border-white/20 dark:border-gray-700 shadow-md overflow-hidden transition-transform hover:-translate-y-2 hover:scale-[1.02]"
+            className="bg-white/60 backdrop-blur-md rounded-xl border border-white/20 shadow-md overflow-hidden transition-transform hover:-translate-y-2 hover:scale-[1.02]"
             whileHover={{ scale: 1.02 }}
           >
             <div className="p-5">
-              <h3 className="text-lg font-semibold text-primary dark:text-background">{snippet.title}</h3>
-              <p className="mt-2 text-sm text-secondary dark:text-gray-400">
+              <h3 className="text-lg font-semibold text-primary ">{snippet.title}</h3>
+              <p className="mt-2 text-sm text-secondary ">
                 {snippet.description.substring(0, 100)}...
               </p>
-              <div className="mt-4 h-20 overflow-hidden rounded-md bg-white/10 dark:bg-black/10">
+              <div className="mt-4 h-20 overflow-hidden rounded-md bg-white/10 ">
                 <SyntaxHighlighter
                   language={snippet.language}
                   style={atomDark}
@@ -283,20 +283,20 @@ const CodeCraftPage = () => {
               exit={{ y: 50, opacity: 0 }}
               transition={{ type: 'spring', stiffness: 200, damping: 20 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-white dark:bg-primary/90 rounded-xl shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col overflow-hidden"
+              className="bg-white rounded-xl shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col overflow-hidden"
             >
-              <div className="flex justify-between items-start p-6 border-b border-gray-200 dark:border-gray-700">
-                <h2 className="text-2xl font-bold text-primary dark:text-background">{selectedSnippet.title}</h2>
+              <div className="flex justify-between items-start p-6 border-b border-gray-200 ">
+                <h2 className="text-2xl font-bold text-primary ">{selectedSnippet.title}</h2>
                 <button
                   onClick={() => setSelectedSnippet(null)}
-                  className="text-2xl text-gray-400 hover:text-primary dark:hover:text-white"
+                  className="text-2xl text-gray-400 hover:text-primary "
                 >
                   &times;
                 </button>
               </div>
 
               <div className="p-6 flex-1 overflow-y-auto">
-                <p className="text-secondary dark:text-gray-700 mb-4">{selectedSnippet.description}</p>
+                <p className="text-secondary mb-4">{selectedSnippet.description}</p>
                 <SyntaxHighlighter
                   language={selectedSnippet.language}
                   style={atomDark}

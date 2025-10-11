@@ -122,17 +122,17 @@ const AboutSection = () => {
     <section
       ref={component}
       id="about"
-      className="container mx-auto py-28 px-4 sm:px-6 lg:px-8 bg-background dark:bg-primary overflow-hidden"
+      className="container mx-auto py-28 px-4 sm:px-6 lg:px-8 bg-background overflow-hidden"
     >
       {/* Grid Layout */}
       <div className="relative grid grid-cols-1 lg:grid-cols-3 gap-12 items-start justify-center">
 
         {/* Column 1: About Me */}
         <div className="about-item order-1 text-center lg:text-left">
-          <h2 className="text-4xl font-bold tracking-tight text-primary dark:text-background mb-5">
+          <h2 className="text-4xl font-bold tracking-tight text-primary mb-5">
             About Me
           </h2>
-          <p className="max-w-xl mx-auto lg:mx-0 text-lg text-secondary dark:text-gray-400 leading-relaxed">
+          <p className="max-w-xl mx-auto lg:mx-0 text-lg text-secondary leading-relaxed">
             A Computer Science Engineering student specializing in Full Stack (MERN) Development and Machine Learning. My expertise is strengthened by achievements like a <b>Google certification in Generative AI</b> and advanced training in <b>Low-Level Design (LLD) from Scaler</b>.
           </p>
         </div>
@@ -140,22 +140,22 @@ const AboutSection = () => {
 
         {/* Journey */}
         <div className="about-item order-2 lg:order-3 text-center lg:text-left">
-          <h3 className="text-2xl font-semibold text-primary dark:text-background mb-6">
+          <h3 className="text-2xl font-semibold text-primary mb-6">
             My Journey
           </h3>
-          <div className="relative border-l-2 border-primary/20 dark:border-background/20 mx-auto lg:mx-0 w-fit text-left">
+          <div className="relative border-l-2 border-primary/20 mx-auto lg:mx-0 w-fit text-left">
             {milestones.map((item, index) => (
               <div key={index} className="relative mb-10 ml-10">
-                <div className="absolute -left-[49px] top-1 w-4 h-4 rounded-full bg-primary dark:bg-background border-4 border-background dark:border-primary"></div>
-                <p className="font-bold text-lg text-primary dark:text-background">{item.year}</p>
-                <p className="text-secondary dark:text-gray-400">{item.text}</p>
+                <div className="absolute -left-[49px] top-1 w-4 h-4 rounded-full bg-primary border-4 border-background "></div>
+                <p className="font-bold text-lg text-primary ">{item.year}</p>
+                <p className="text-secondary ">{item.text}</p>
               </div>
             ))}
           </div>
         </div>
 
         {/* Photo Card */}
-        <div className="about-item order-3 lg:order-2 md:max-w-sm mx-auto flex flex-col items-center bg-white dark:bg-primary/80 rounded-lg shadow-xl overflow-hidden">
+        <div className="about-item order-3 lg:order-2 md:max-w-sm mx-auto flex flex-col items-center bg-white rounded-lg shadow-xl overflow-hidden">
           <div ref={photoCardImageRef} className="w-full h-96 relative overflow-hidden">
             <Image
               src="/profile2.png"
@@ -166,11 +166,11 @@ const AboutSection = () => {
             />
           </div>
           <div className="w-full p-6 text-center">
-            <h3 className="text-5xl font-bold text-primary dark:text-background mb-2">6+</h3>
-            <p className="text-lg text-secondary dark:text-gray-400 mb-4">Projects Completed</p>
+            <h3 className="text-5xl font-bold text-primary mb-2">6+</h3>
+            <p className="text-lg text-secondary mb-4">Projects Completed</p>
             <Link
               href="/projects"
-              className="inline-flex items-center text-primary dark:text-background font-bold hover:underline"
+              className="inline-flex items-center text-primary font-bold hover:underline"
             >
               View Projects
               <svg className="ml-1 w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
@@ -192,7 +192,7 @@ const AboutSection = () => {
 
       {/* Featured Projects */}
       <div className="about-item text-center mt-24">
-        <h3 className="text-3xl font-bold text-primary dark:text-background mb-12">Featured Projects</h3>
+        <h3 className="text-3xl font-bold text-primary mb-12">Featured Projects</h3>
         <ProjectPreview />
 
         {/* NEW CTA: Book a Service */}
@@ -224,11 +224,11 @@ const AboutSection = () => {
 
       {/* NEW: Connecting Arrow and Text added as requested */}
       <div className="about-item flex flex-col items-center my-16 text-center">
-        <p className="italic text-lg text-secondary dark:text-gray-400 mb-4 max-w-md">
+        <p className="italic text-lg text-secondary mb-4 max-w-md">
           The tech behind the work
         </p>
         <svg
-          className="w-8 h-16 text-secondary/50 dark:text-secondary/80 animate-bounce"
+          className="w-8 h-16 text-secondary/50 animate-bounce"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -239,22 +239,22 @@ const AboutSection = () => {
 
       {/* Toolkit */}
       <div className="about-item mt-12">
-        <h3 className="text-3xl font-bold text-primary dark:text-background mb-12 text-center">My Toolkit</h3>
+        <h3 className="text-3xl font-bold text-primary mb-12 text-center">My Toolkit</h3>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-10 justify-items-center">
           {toolkit.map((tool, index) => (
             <div key={index} className="flex flex-col items-center gap-3 hover:scale-105 transition-transform duration-300">
               <div className="w-14 h-14 relative">
                 <Image src={tool.logo} alt={tool.name} fill className="object-contain" />
               </div>
-              <p className="text-sm font-semibold text-secondary dark:text-gray-300">{tool.name}</p>
+              <p className="text-sm font-semibold text-secondary ">{tool.name}</p>
             </div>
           ))}
         </div>
       </div>
 
       {/* Certifications */}
-      <div className="relative py-20 px-6 bg-gradient-to-b from-zinc-50 via-zinc-100 to-zinc-50 dark:from-[#0b0b0d] dark:via-[#111113] dark:to-[#0b0b0d] rounded-3xl">
-      <h3 className="text-4xl font-bold text-primary dark:text-background text-center mb-14 tracking-tight">
+      <div className="relative py-20 px-6 bg-gradient-to-b from-zinc-50 via-zinc-100 to-zinc-50 rounded-3xl">
+      <h3 className="text-4xl font-bold text-primary text-center mb-14 tracking-tight">
         Certifications & Achievements
       </h3>
 
@@ -262,7 +262,7 @@ const AboutSection = () => {
         {certifications.map((cert, index) => (
           <div
             key={index}
-            className="relative group bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 transition-all duration-300 
+            className="relative group bg-zinc-100 border border-zinc-200 rounded-2xl p-6 transition-all duration-300 
                        hover:shadow-[0_0_25px_-5px_rgba(99,102,241,0.25)] hover:-translate-y-1 overflow-hidden"
           >
             {/* ✨ Ripple pulse effect */}
@@ -272,7 +272,7 @@ const AboutSection = () => {
 
             {/* Card Content */}
             <div className="relative z-10 flex items-center space-x-4">
-              <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-full bg-indigo-600/10 dark:bg-indigo-400/10 text-indigo-600 dark:text-indigo-300">
+              <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-full bg-indigo-600/10 text-indigo-600 ">
                 <svg
                   className="w-5 h-5"
                   fill="none"
@@ -290,16 +290,16 @@ const AboutSection = () => {
                     href={cert.link}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="font-semibold text-lg text-primary dark:text-background group-hover:text-indigo-500 dark:group-hover:text-indigo-300 transition-colors duration-200"
+                    className="font-semibold text-lg text-primary group-hover:text-indigo-500 transition-colors duration-200"
                   >
                     {cert.name}
                   </a>
                 ) : (
-                  <p className="font-semibold text-lg text-primary dark:text-background">
+                  <p className="font-semibold text-lg text-primary ">
                     {cert.name}
                   </p>
                 )}
-                <p className="text-sm text-muted-foreground dark:text-gray-400 mt-1">
+                <p className="text-sm text-muted-foreground mt-1">
                   Issued by {cert.issuer}
                 </p>
               </div>

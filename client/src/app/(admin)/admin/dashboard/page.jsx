@@ -139,7 +139,7 @@ const DashboardPage = () => {
 
   return (
     <PrivateRoute>
-      <div className="min-h-screen bg-background dark:bg-primary text-primary dark:text-background">
+      <div className="min-h-screen bg-background text-primary ">
         <div className="container mx-auto p-4 md:p-8">
           <div className="flex justify-between items-center mb-8">
             <h1 className="text-3xl font-bold">Admin Dashboard</h1>
@@ -148,14 +148,14 @@ const DashboardPage = () => {
           {message && <p className="mb-4 text-center">{message}</p>}
 
           {/* PROJECTS MANAGEMENT */}
-          <div className="bg-white dark:bg-primary/80 p-6 rounded-lg shadow-md mb-8">
+          <div className="bg-white p-6 rounded-lg shadow-md mb-8">
             <h2 className="text-2xl font-bold mb-4">Manage Projects</h2>
             <form onSubmit={handleAddProjectSubmit} className="space-y-4">
-              <input name="title" value={addProjectForm.title} onChange={handleAddProjectChange} placeholder="Title" required className="w-full p-2 bg-background dark:bg-primary border rounded"/>
-              <textarea name="description" value={addProjectForm.description} onChange={handleAddProjectChange} placeholder="Description" required className="w-full p-2 bg-background dark:bg-primary border rounded"/>
-              <input name="technologies" value={addProjectForm.technologies} onChange={handleAddProjectChange} placeholder="Technologies (comma-separated)" required className="w-full p-2 bg-background dark:bg-primary border rounded"/>
-              <input name="liveUrl" value={addProjectForm.liveUrl} onChange={handleAddProjectChange} placeholder="Live URL" className="w-full p-2 bg-background dark:bg-primary border rounded"/>
-              <input name="githubUrl" value={addProjectForm.githubUrl} onChange={handleAddProjectChange} placeholder="GitHub URL" className="w-full p-2 bg-background dark:bg-primary border rounded"/>
+              <input name="title" value={addProjectForm.title} onChange={handleAddProjectChange} placeholder="Title" required className="w-full p-2 bg-background border rounded"/>
+              <textarea name="description" value={addProjectForm.description} onChange={handleAddProjectChange} placeholder="Description" required className="w-full p-2 bg-background border rounded"/>
+              <input name="technologies" value={addProjectForm.technologies} onChange={handleAddProjectChange} placeholder="Technologies (comma-separated)" required className="w-full p-2 bg-background border rounded"/>
+              <input name="liveUrl" value={addProjectForm.liveUrl} onChange={handleAddProjectChange} placeholder="Live URL" className="w-full p-2 bg-background border rounded"/>
+              <input name="githubUrl" value={addProjectForm.githubUrl} onChange={handleAddProjectChange} placeholder="GitHub URL" className="w-full p-2 bg-background border rounded"/>
               
               <div>
                 <label className="block text-sm font-medium mb-1">Snapshot Image</label>
@@ -171,7 +171,7 @@ const DashboardPage = () => {
             </form>
             <div className="space-y-4 mt-8">
               {projects.map(project => (
-                <div key={project._id} className="p-4 border rounded dark:border-gray-600 flex justify-between items-center">
+                <div key={project._id} className="p-4 border rounded flex justify-between items-center">
                   <p className="font-semibold">{project.title}</p>
                   <div className="space-x-2">
                     <button onClick={() => setEditingProject(project)} className="px-3 py-1 text-sm font-semibold text-white bg-blue-600 rounded-md hover:bg-blue-700">Edit</button>
@@ -183,14 +183,14 @@ const DashboardPage = () => {
           </div>
 
           {/* EXPERIENCE MANAGEMENT */}
-          <div className="bg-white dark:bg-primary/80 p-6 rounded-lg shadow-md">
+          <div className="bg-white p-6 rounded-lg shadow-md">
             <h2 className="text-2xl font-bold mb-4">Manage Experience & Education</h2>
             <form onSubmit={handleAddExperienceSubmit} className="space-y-4 mb-8">
-              <input name="role" value={addExperienceForm.role} onChange={handleAddExperienceChange} placeholder="Role / Degree" required className="w-full p-2 bg-background dark:bg-primary border rounded"/>
-              <input name="company" value={addExperienceForm.company} onChange={handleAddExperienceChange} placeholder="Company / Institution" required className="w-full p-2 bg-background dark:bg-primary border rounded"/>
-              <input name="duration" value={addExperienceForm.duration} onChange={handleAddExperienceChange} placeholder="Duration (e.g., Jan 2020 - Present)" required className="w-full p-2 bg-background dark:bg-primary border rounded"/>
-              <input name="description" value={addExperienceForm.description} onChange={handleAddExperienceChange} placeholder="Description (comma-separated)" className="w-full p-2 bg-background dark:bg-primary border rounded"/>
-              <select name="type" value={addExperienceForm.type} onChange={handleAddExperienceChange} className="w-full p-2 bg-background dark:bg-primary border rounded">
+              <input name="role" value={addExperienceForm.role} onChange={handleAddExperienceChange} placeholder="Role / Degree" required className="w-full p-2 bg-background border rounded"/>
+              <input name="company" value={addExperienceForm.company} onChange={handleAddExperienceChange} placeholder="Company / Institution" required className="w-full p-2 bg-background border rounded"/>
+              <input name="duration" value={addExperienceForm.duration} onChange={handleAddExperienceChange} placeholder="Duration (e.g., Jan 2020 - Present)" required className="w-full p-2 bg-background border rounded"/>
+              <input name="description" value={addExperienceForm.description} onChange={handleAddExperienceChange} placeholder="Description (comma-separated)" className="w-full p-2 bg-background border rounded"/>
+              <select name="type" value={addExperienceForm.type} onChange={handleAddExperienceChange} className="w-full p-2 bg-background border rounded">
                 <option value="professional">Professional</option>
                 <option value="education">Education</option>
               </select>
@@ -198,10 +198,10 @@ const DashboardPage = () => {
             </form>
             <div className="space-y-4">
               {experience.map(item => (
-                <div key={item._id} className="p-4 border rounded dark:border-gray-600 flex justify-between items-center">
+                <div key={item._id} className="p-4 border rounded flex justify-between items-center">
                   <div>
                     <p className="font-semibold">{item.role}</p>
-                    <p className="text-sm text-secondary dark:text-gray-400">{item.company}</p>
+                    <p className="text-sm text-secondary ">{item.company}</p>
                   </div>
                   <div className="space-x-2">
                     <button onClick={() => setEditingExperience(item)} className="px-3 py-1 text-sm font-semibold text-white bg-blue-600 rounded-md hover:bg-blue-700">Edit</button>
@@ -217,14 +217,14 @@ const DashboardPage = () => {
       {/* MODALS */}
       {editingProject && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-2xl w-full max-w-lg">
+          <div className="bg-white p-8 rounded-lg shadow-2xl w-full max-w-lg">
             <h2 className="text-2xl font-bold mb-4">Edit Project</h2>
             <form onSubmit={handleUpdateProjectSubmit} className="space-y-4">
-              <input name="title" value={editingProject.title} onChange={handleEditProjectChange} placeholder="Title" required className="w-full p-2 bg-background dark:bg-gray-700 border rounded"/>
-              <textarea name="description" value={editingProject.description} onChange={handleEditProjectChange} placeholder="Description" required className="w-full p-2 bg-background dark:bg-gray-700 border rounded"/>
-              <input name="technologies" value={Array.isArray(editingProject.technologies) ? editingProject.technologies.join(', ') : editingProject.technologies} onChange={handleEditProjectChange} placeholder="Technologies (comma-separated)" required className="w-full p-2 bg-background dark:bg-gray-700 border rounded"/>
-              <input name="liveUrl" value={editingProject.liveUrl} onChange={handleEditProjectChange} placeholder="Live URL" className="w-full p-2 bg-background dark:bg-gray-700 border rounded"/>
-              <input name="githubUrl" value={editingProject.githubUrl} onChange={handleEditProjectChange} placeholder="GitHub URL" className="w-full p-2 bg-background dark:bg-gray-700 border rounded"/>
+              <input name="title" value={editingProject.title} onChange={handleEditProjectChange} placeholder="Title" required className="w-full p-2 bg-background border rounded"/>
+              <textarea name="description" value={editingProject.description} onChange={handleEditProjectChange} placeholder="Description" required className="w-full p-2 bg-background border rounded"/>
+              <input name="technologies" value={Array.isArray(editingProject.technologies) ? editingProject.technologies.join(', ') : editingProject.technologies} onChange={handleEditProjectChange} placeholder="Technologies (comma-separated)" required className="w-full p-2 bg-background border rounded"/>
+              <input name="liveUrl" value={editingProject.liveUrl} onChange={handleEditProjectChange} placeholder="Live URL" className="w-full p-2 bg-background border rounded"/>
+              <input name="githubUrl" value={editingProject.githubUrl} onChange={handleEditProjectChange} placeholder="GitHub URL" className="w-full p-2 bg-background border rounded"/>
               
               <div>
                 <label className="block text-sm font-medium mb-1">New Snapshot (optional)</label>
@@ -237,7 +237,7 @@ const DashboardPage = () => {
               </div>
               
               <div className="flex justify-end space-x-4">
-                <button type="button" onClick={() => setEditingProject(null)} className="px-4 py-2 font-semibold bg-gray-200 dark:bg-gray-600 rounded-md hover:bg-gray-300">Cancel</button>
+                <button type="button" onClick={() => setEditingProject(null)} className="px-4 py-2 font-semibold bg-gray-200 rounded-md hover:bg-gray-300">Cancel</button>
                 <button type="submit" className="px-4 py-2 font-semibold text-white bg-green-600 rounded-md hover:bg-green-700">Save Changes</button>
               </div>
             </form>
@@ -248,19 +248,19 @@ const DashboardPage = () => {
       {/* This is the Edit Experience Modal */}
       {editingExperience && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-2xl w-full max-w-lg">
+          <div className="bg-white p-8 rounded-lg shadow-2xl w-full max-w-lg">
             <h2 className="text-2xl font-bold mb-4">Edit Experience</h2>
             <form onSubmit={handleUpdateExperienceSubmit} className="space-y-4">
-              <input name="role" value={editingExperience.role} onChange={handleEditExperienceChange} placeholder="Role / Degree" required className="w-full p-2 bg-background dark:bg-gray-700 border rounded"/>
-              <input name="company" value={editingExperience.company} onChange={handleEditExperienceChange} placeholder="Company / Institution" required className="w-full p-2 bg-background dark:bg-gray-700 border rounded"/>
-              <input name="duration" value={editingExperience.duration} onChange={handleEditExperienceChange} placeholder="Duration" required className="w-full p-2 bg-background dark:bg-gray-700 border rounded"/>
-              <input name="description" value={Array.isArray(editingExperience.description) ? editingExperience.description.join(', ') : editingExperience.description} onChange={handleEditExperienceChange} placeholder="Description (comma-separated)" className="w-full p-2 bg-background dark:bg-gray-700 border rounded"/>
-              <select name="type" value={editingExperience.type} onChange={handleEditExperienceChange} className="w-full p-2 bg-background dark:bg-gray-700 border rounded">
+              <input name="role" value={editingExperience.role} onChange={handleEditExperienceChange} placeholder="Role / Degree" required className="w-full p-2 bg-background border rounded"/>
+              <input name="company" value={editingExperience.company} onChange={handleEditExperienceChange} placeholder="Company / Institution" required className="w-full p-2 bg-background border rounded"/>
+              <input name="duration" value={editingExperience.duration} onChange={handleEditExperienceChange} placeholder="Duration" required className="w-full p-2 bg-background border rounded"/>
+              <input name="description" value={Array.isArray(editingExperience.description) ? editingExperience.description.join(', ') : editingExperience.description} onChange={handleEditExperienceChange} placeholder="Description (comma-separated)" className="w-full p-2 bg-background border rounded"/>
+              <select name="type" value={editingExperience.type} onChange={handleEditExperienceChange} className="w-full p-2 bg-background border rounded">
                 <option value="professional">Professional</option>
                 <option value="education">Education</option>
               </select>
               <div className="flex justify-end space-x-4">
-                <button type="button" onClick={() => setEditingExperience(null)} className="px-4 py-2 font-semibold bg-gray-200 dark:bg-gray-600 rounded-md hover:bg-gray-300">Cancel</button>
+                <button type="button" onClick={() => setEditingExperience(null)} className="px-4 py-2 font-semibold bg-gray-200 rounded-md hover:bg-gray-300">Cancel</button>
                 <button type="submit" className="px-4 py-2 font-semibold text-white bg-green-600 rounded-md hover:bg-green-700">Save Changes</button>
               </div>
             </form>

@@ -64,7 +64,7 @@ const allProjectsData = [
 
 const ProjectCard = ({ project, onClick }) => (
   <div
-    className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden h-full flex flex-col group cursor-pointer"
+    className="bg-white rounded-lg shadow-lg overflow-hidden h-full flex flex-col group cursor-pointer"
     onClick={onClick}
   >
     <div className="w-full h-48 relative overflow-hidden">
@@ -82,13 +82,13 @@ const ProjectCard = ({ project, onClick }) => (
       )}
     </div>
     <div className="p-6 flex-grow flex flex-col">
-      <h3 className="text-2xl font-bold text-primary dark:text-background mb-2">{project.title}</h3>
-      <p className="text-secondary dark:text-gray-400 mb-4 flex-grow text-sm">{project.description}</p>
+      <h3 className="text-2xl font-bold text-primary mb-2">{project.title}</h3>
+      <p className="text-secondary mb-4 flex-grow text-sm">{project.description}</p>
       <div className="flex flex-wrap gap-2">
         {project.technologies.map((tech, i) => (
           <span
             key={i}
-            className="bg-background dark:bg-primary/80 dark:text-gray-300 text-secondary text-xs font-semibold px-2.5 py-1 rounded-full"
+            className="bg-background text-secondary text-xs font-semibold px-2.5 py-1 rounded-full"
           >
             {tech}
           </span>
@@ -119,7 +119,7 @@ const ProjectModal = ({ project, onClose }) => {
     <div className="fixed inset-0 backdrop-blur-lg bg-black/70 flex items-center justify-center z-50 p-4 overflow-y-auto">
       <div
         ref={modalRef}
-        className="relative bg-white dark:bg-gray-900 rounded-2xl shadow-2xl max-w-2xl w-full my-10 overflow-hidden flex flex-col"
+        className="relative bg-white rounded-2xl shadow-2xl max-w-2xl w-full my-10 overflow-hidden flex flex-col"
       >
         <button
           onClick={onClose}
@@ -128,8 +128,8 @@ const ProjectModal = ({ project, onClose }) => {
           ✕
         </button>
 
-        <div className="overflow-y-auto max-h-[85vh] p-8 space-y-6 scrollbar-thin scrollbar-thumb-gray-400 dark:scrollbar-thumb-gray-600">
-          <h3 className="text-3xl font-bold text-primary dark:text-white">{project.title}</h3>
+        <div className="overflow-y-auto max-h-[85vh] p-8 space-y-6 scrollbar-thin scrollbar-thumb-gray-400 ">
+          <h3 className="text-3xl font-bold text-primary ">{project.title}</h3>
 
           <Image
             src={project.snapshotUrl}
@@ -139,13 +139,13 @@ const ProjectModal = ({ project, onClose }) => {
             className="rounded-xl object-cover transition-transform duration-700 hover:scale-105"
           />
 
-          <p className="text-gray-700 dark:text-gray-300 leading-relaxed text-sm sm:text-base">{project.detailedDescription}</p>
+          <p className="text-gray-700 leading-relaxed text-sm sm:text-base">{project.detailedDescription}</p>
 
           <div className="flex flex-wrap gap-2 mb-4">
             {project.technologies.map((tech, i) => (
               <span
                 key={i}
-                className="bg-gray-200 dark:bg-primary/70 dark:text-white text-secondary text-xs font-semibold px-3 py-1 rounded-full"
+                className="bg-gray-200 text-secondary text-xs font-semibold px-3 py-1 rounded-full"
               >
                 {tech}
               </span>
@@ -157,7 +157,7 @@ const ProjectModal = ({ project, onClose }) => {
               Live Demo
               <span className="absolute left-0 bottom-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
             </Link>
-            <Link href={project.githubUrl} target="_blank" className="relative text-secondary dark:text-gray-300 group">
+            <Link href={project.githubUrl} target="_blank" className="relative text-secondary group">
               GitHub
               <span className="absolute left-0 bottom-0 w-0 h-0.5 bg-gray-500 transition-all duration-300 group-hover:w-full"></span>
             </Link>
@@ -216,10 +216,10 @@ const ProjectsSection = () => {
 
   return (
     <section ref={component} id="portfolio" className="container mx-auto py-32 px-4 sm:px-6 lg:px-8 relative">
-      <h2 className="text-4xl font-bold tracking-tight text-primary dark:text-background mb-4 text-center">
+      <h2 className="text-4xl font-bold tracking-tight text-primary mb-4 text-center">
         All Projects
       </h2>
-      <p className="text-secondary dark:text-gray-400 max-w-2xl mx-auto text-center mb-12">
+      <p className="text-secondary max-w-2xl mx-auto text-center mb-12">
         Over the years, each project has been built with immense focus, attention to detail, and dedication. Click on any project to view its full description, technologies used, and live links.
       </p>
 
@@ -227,12 +227,12 @@ const ProjectsSection = () => {
       <div className="service-cta-card mb-12">
         <Link
           href="/services"
-          className="block bg-primary/10 dark:bg-background/20 border border-primary dark:border-background rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 text-center"
+          className="block bg-primary/10 border border-primary rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 text-center"
         >
-          <h3 className="text-2xl font-bold text-primary dark:text-background mb-2">
+          <h3 className="text-2xl font-bold text-primary mb-2">
             Book a Service / Learn More
           </h3>
-          <p className="text-secondary dark:text-gray-300 text-sm sm:text-base">
+          <p className="text-secondary text-sm sm:text-base">
             Explore the services I offer — website development, software issue fixing, and consultancy. First consultancy is free!
           </p>
         </Link>

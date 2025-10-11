@@ -88,10 +88,10 @@ export default function ServicesSection() {
     <section ref={sectionRef} className="container mx-auto py-32 px-4 sm:px-6 lg:px-8">
       {/* Heading */}
       <div className="text-center mb-12">
-        <h2 className="text-4xl font-bold text-primary dark:text-background mb-4">
+        <h2 className="text-4xl font-bold text-primary mb-4">
           My Services
         </h2>
-        <p className="text-secondary dark:text-gray-200 max-w-2xl mx-auto text-base">
+        <p className="text-secondary max-w-2xl mx-auto text-base">
           Over the years, I’ve worked with immense focus, passion, and dedication
           to create digital solutions that truly help people — whether it’s a
           website, technical fix, or professional advice. Your first consultancy
@@ -106,15 +106,15 @@ export default function ServicesSection() {
           return (
             <div
               key={index}
-              className="service-card group bg-white dark:bg-gray-700 rounded-2xl p-8 shadow-lg transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl hover:bg-primary/10 dark:hover:bg-background/20 flex flex-col items-center text-center"
+              className="service-card group bg-white rounded-2xl p-8 shadow-lg transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl hover:bg-primary/10 flex flex-col items-center text-center"
             >
               <div className="mb-4 transition-transform duration-500 service-icon">
-                <Icon className="w-12 h-12 text-primary dark:text-background" />
+                <Icon className="w-12 h-12 text-primary " />
               </div>
-              <h3 className="text-xl font-bold text-primary dark:text-background mb-3">
+              <h3 className="text-xl font-bold text-primary mb-3">
                 {service.title}
               </h3>
-              <p className="text-secondary dark:text-gray-200 text-sm leading-relaxed">
+              <p className="text-secondary text-sm leading-relaxed">
                 {service.description}
               </p>
             </div>
@@ -124,10 +124,10 @@ export default function ServicesSection() {
 
       {/* CTA Section */}
       <div ref={ctaRef} className="mt-20 text-center">
-        <h3 className="text-2xl font-semibold text-primary dark:text-background mb-4">
+        <h3 className="text-2xl font-semibold text-primary mb-4">
           Ready to book your free consultancy?
         </h3>
-        <p className="text-secondary dark:text-gray-200 mb-8">
+        <p className="text-secondary mb-8">
           I’m available on weekends (Saturday & Sunday). You can email me directly
           or book through the form below.
         </p>
@@ -142,7 +142,7 @@ export default function ServicesSection() {
           </Link>
           <Link
             href="mailto:abdulbarr@gmail.com?subject=Consultancy%20Booking%20Request&body=Hi%20Abdul%2C%0AI%20am%20interested%20in%20your%20services.%20Here%20are%20my%20details%3A%0A-%20Name%3A%20%0A-%20Service%3A%20%0A-%20Preferred%20Date%3A%20%0A-%20Message%3A%20%0A"
-            className="px-6 py-3 border border-primary text-primary dark:text-background dark:border-background rounded-lg font-semibold hover:bg-primary hover:text-white transition-colors"
+            className="px-6 py-3 border border-primary text-primary rounded-lg font-semibold hover:bg-primary hover:text-white transition-colors"
           >
             Email Me
           </Link>

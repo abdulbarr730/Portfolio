@@ -14,7 +14,7 @@ const fetcher = url => fetch(url).then(r => r.json());
 // ⭐ Star Component
 const Star = memo(({ filled, isRatingStar }) => (
   <svg
-    className={`w-5 h-5 ${isRatingStar ? 'text-yellow-400' : 'text-gray-300 dark:text-gray-600'}`}
+    className={`w-5 h-5 ${isRatingStar ? 'text-yellow-400' : 'text-gray-300'}`}
     fill={filled ? 'currentColor' : 'none'}
     viewBox="0 0 24 24"
     stroke="currentColor"
@@ -67,7 +67,7 @@ const TimeAgo = ({ date }) => {
     if (typeof window !== 'undefined')
       setText(formatDistanceToNow(new Date(date), { addSuffix: true }));
   }, [date]);
-  return <p className="text-xs text-secondary/70 dark:text-gray-500">{text}</p>;
+  return <p className="text-xs text-gray-500">{text}</p>;
 };
 
 // 🏆 Reviews Section
@@ -117,8 +117,8 @@ export default function ReviewsSection() {
   return (
     <section id="reviews" className="container mx-auto pt-22 pb-16 px-4 sm:px-6 lg:px-8">
       <header className="text-center mb-16">
-        <h2 className="text-4xl font-bold tracking-tight text-primary dark:text-background">Testimonials</h2>
-        <p className="mt-4 text-lg text-secondary dark:text-gray-400">
+        <h2 className="text-4xl font-bold tracking-tight text-primary">Testimonials</h2>
+        <p className="mt-4 text-lg text-secondary">
           What others are saying about my work.
         </p>
       </header>
@@ -131,7 +131,7 @@ export default function ReviewsSection() {
                 const { text, long } = truncate(r.review);
                 return (
                   <div key={r._id} className="flex-shrink-0 w-full md:w-1/2 lg:w-1/3 pl-4">
-                    <div className="bg-white dark:bg-primary/80 p-6 rounded-lg shadow-md flex flex-col h-full relative">
+                    <div className="bg-white p-6 rounded-lg shadow-md flex flex-col h-full relative">
                       {i === 0 && (
                         <div className="absolute top-0 right-0 bg-blue-500 text-white text-xs font-bold px-2 py-1 rounded-bl-lg rounded-tr-lg">
                           Latest
@@ -141,7 +141,7 @@ export default function ReviewsSection() {
                         <FlowingStars rating={r.rating} />
                         <TimeAgo date={r.createdAt} />
                       </div>
-                      <p className="text-secondary dark:text-gray-300 my-4 flex-grow italic">
+                      <p className="text-secondary my-4 flex-grow italic">
                         "{text}"
                       </p>
                       {long && (
@@ -152,7 +152,7 @@ export default function ReviewsSection() {
                           Read More
                         </button>
                       )}
-                      <p className="font-bold text-primary dark:text-background mt-auto self-end">
+                      <p className="font-bold text-primary mt-auto self-end">
                         - {r.name}
                       </p>
                     </div>
@@ -163,37 +163,37 @@ export default function ReviewsSection() {
           </div>
           <button
             onClick={scrollPrev}
-            className="absolute top-1/2 -left-4 transform -translate-y-1/2 bg-white dark:bg-primary/80 p-2 rounded-full shadow-md text-primary dark:text-background hover:scale-110 transition-transform"
+            className="absolute top-1/2 -left-4 transform -translate-y-1/2 bg-white p-2 rounded-full shadow-md text-primary hover:scale-110 transition-transform"
           >
             ←
           </button>
           <button
             onClick={scrollNext}
-            className="absolute top-1/2 -right-4 transform -translate-y-1/2 bg-white dark:bg-primary/80 p-2 rounded-full shadow-md text-primary dark:text-background hover:scale-110 transition-transform"
+            className="absolute top-1/2 -right-4 transform -translate-y-1/2 bg-white p-2 rounded-full shadow-md text-primary hover:scale-110 transition-transform"
           >
             →
           </button>
         </div>
       ) : (
-        <p className="text-center text-secondary dark:text-gray-400">Be the first to leave a review!</p>
+        <p className="text-center text-secondary">Be the first to leave a review!</p>
       )}
 
       <div className="text-center mt-16 flex flex-col items-center gap-4">
         {reviews.length > 0 && (
           <button
             onClick={() => setIsAllReviewsModalOpen(true)}
-            className="text-primary dark:text-background font-semibold hover:underline"
+            className="text-primary font-semibold hover:underline"
           >
             View All {reviews.length} Reviews
           </button>
         )}
         <button
           onClick={() => setIsAddModalOpen(true)}
-          className="bg-primary text-white dark:bg-background dark:text-primary font-bold py-3 px-8 rounded-lg text-lg hover:bg-opacity-90 transition-colors"
+          className="bg-primary text-white font-bold py-3 px-8 rounded-lg text-lg hover:bg-opacity-90 transition-colors"
         >
           Leave a Review
         </button>
-        {message && <p className="mt-4 text-secondary dark:text-gray-400">{message}</p>}
+        {message && <p className="mt-4 text-secondary">{message}</p>}
       </div>
 
       {/* Modals */}
@@ -210,11 +210,11 @@ export default function ReviewsSection() {
               initial={{ y: 50, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: 50, opacity: 0 }}
-              className="bg-white dark:bg-primary rounded-lg shadow-2xl w-full max-w-lg"
+              className="bg-white rounded-lg shadow-2xl w-full max-w-lg"
               onClick={e => e.stopPropagation()}
             >
               <form onSubmit={handleSubmit} className="p-8 space-y-4">
-                <h3 className="text-2xl font-bold text-primary dark:text-background mb-4">
+                <h3 className="text-2xl font-bold text-primary mb-4">
                   Write a Review
                 </h3>
                 <input
@@ -223,7 +223,7 @@ export default function ReviewsSection() {
                   value={formState.name}
                   onChange={e => setFormState({ ...formState, name: e.target.value })}
                   required
-                  className="w-full p-2 bg-background dark:bg-gray-800 border rounded"
+                  className="w-full p-2 bg-background border rounded"
                 />
                 <textarea
                   placeholder="Your review..."
@@ -231,7 +231,7 @@ export default function ReviewsSection() {
                   value={formState.review}
                   onChange={e => setFormState({ ...formState, review: e.target.value })}
                   required
-                  className="w-full p-2 bg-background dark:bg-gray-800 border rounded"
+                  className="w-full p-2 bg-background border rounded"
                 />
                 <div className="flex items-center space-x-2 cursor-pointer">
                   {[...Array(5)].map((_, i) => (
@@ -268,27 +268,27 @@ export default function ReviewsSection() {
               initial={{ y: 50, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: 50, opacity: 0 }}
-              className="bg-white dark:bg-primary rounded-lg shadow-2xl w-full max-w-4xl h-[80vh] flex flex-col"
+              className="bg-white rounded-lg shadow-2xl w-full max-w-4xl h-[80vh] flex flex-col"
               onClick={e => e.stopPropagation()}
             >
-              <div className="flex justify-between items-center p-4 border-b border-gray-200 dark:border-gray-700">
-                <h3 className="text-2xl font-bold text-primary dark:text-background">All Reviews</h3>
+              <div className="flex justify-between items-center p-4 border-b border-gray-200">
+                <h3 className="text-2xl font-bold text-primary">All Reviews</h3>
                 <button
                   onClick={() => setIsAllReviewsModalOpen(false)}
-                  className="text-2xl text-gray-400 hover:text-primary dark:hover:text-white"
+                  className="text-2xl text-gray-400 hover:text-primary"
                 >
                   &times;
                 </button>
               </div>
               <div className="p-8 overflow-y-auto grid grid-cols-1 md:grid-cols-2 gap-6">
                 {reviews.map(r => (
-                  <div key={r._id} className="bg-background dark:bg-primary/80 p-6 rounded-lg">
+                  <div key={r._id} className="bg-white p-6 rounded-lg">
                     <div className="flex justify-between items-center mb-2">
                       <FlowingStars rating={r.rating} />
                       <TimeAgo date={r.createdAt} />
                     </div>
-                    <p className="text-secondary dark:text-gray-300 my-2 italic">"{r.review}"</p>
-                    <p className="font-bold text-primary dark:text-background mt-2 self-end">- {r.name}</p>
+                    <p className="text-gray-700 my-2 italic">"{r.review}"</p>
+                    <p className="font-bold text-primary mt-2 self-end">- {r.name}</p>
                   </div>
                 ))}
               </div>
@@ -308,7 +308,7 @@ export default function ReviewsSection() {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white dark:bg-primary rounded-lg shadow-2xl w-full max-w-2xl"
+              className="bg-white rounded-lg shadow-2xl w-full max-w-2xl"
               onClick={e => e.stopPropagation()}
             >
               <div className="p-8">
@@ -316,10 +316,10 @@ export default function ReviewsSection() {
                   <FlowingStars rating={selectedReview.rating} />
                   <TimeAgo date={selectedReview.createdAt} />
                 </div>
-                <p className="text-lg text-secondary dark:text-gray-300 my-4 italic">
+                <p className="text-lg text-gray-700 my-4 italic">
                   "{selectedReview.review}"
                 </p>
-                <p className="font-bold text-primary dark:text-background mt-4 text-right">
+                <p className="font-bold text-primary mt-4 text-right">
                   - {selectedReview.name}
                 </p>
               </div>
