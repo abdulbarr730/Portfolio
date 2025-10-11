@@ -11,15 +11,23 @@
   "dependencies": {
     "@react-three/drei": "^10.7.6",
     "@react-three/fiber": "^9.3.0",
+    "date-fns": "^4.1.0",
+    "embla-carousel-react": "^8.6.0",
     "framer-motion": "^12.23.22",
     "gsap": "^3.13.0",
+    "gsap-trial": "^3.12.7",
+    "lucide-react": "^0.545.0",
     "maath": "^0.10.8",
     "next": "15.5.4",
     "next-themes": "^0.4.6",
     "react": "19.1.0",
     "react-dom": "19.1.0",
+    "react-parallax-tilt": "^1.7.310",
     "react-scroll": "^1.9.3",
+    "react-syntax-highlighter": "^15.6.6",
+    "react-tsparticles": "^2.12.2",
     "react-type-animation": "^3.2.0",
+    "swr": "^2.3.6",
     "three": "^0.180.0"
   },
   "devDependencies": {

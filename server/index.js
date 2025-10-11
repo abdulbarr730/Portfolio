@@ -4,6 +4,7 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 require('dotenv').config();
 
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -16,9 +17,11 @@ app.use(express.json());
 const projectsRouter = require('./routes/ProjectRoutes');
 const experienceRouter = require('./routes/ExperienceRoutes');
 const userRouter = require('./routes/UserRoutes'); // Add this
+const reviewRouter = require('./routes/ReviewRoutes');
+const mediumRouter = require('./routes/MediumRoutes');
 
 
-app.use('/api/users', userRouter);
+
 
 
 
@@ -37,6 +40,9 @@ app.get('/', (req, res) => {
 
 app.use('/api/projects', projectsRouter);
 app.use('/api/experience', experienceRouter);
+app.use('/api/users', userRouter);
+app.use('/api/reviews', reviewRouter);
+app.use('/api/medium', mediumRouter);
 
 
 app.listen(PORT, () => {

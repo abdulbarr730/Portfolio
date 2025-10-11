@@ -1,126 +1,211 @@
 'use client';
 
-import { useLayoutEffect, useRef } from 'react';
+import { useLayoutEffect, useRef, useState, useEffect } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Link from 'next/link';
-import { Link as ScrollLink } from 'react-scroll';
-import ThemeToggle from './ThemeToggle';
+import { Link as ScrollLink, animateScroll as scroll } from 'react-scroll';
+import { usePathname, useRouter } from 'next/navigation';
 
 gsap.registerPlugin(ScrollTrigger);
 
+const HAMBURGER_LINKS = [
+  { id: 'hero', text: 'Home', type: 'scroll' },
+  { id: 'about', text: 'About Me', type: 'scroll' },
+  { id: '/projects', text: 'Projects', type: 'link' },
+  { id: '/codecraft', text: 'Code Craft', type: 'link' },
+  { id: '/experience', text: 'Experience', type: 'link' },
+  { id: 'contact', text: 'Contact', type: 'scroll' },
+  { id: '/blog', text: 'Blog', type: 'link' },
+  { id: 'reviews', text: 'Review', type: 'scroll', cta: "Drop a review if you liked anything about me or my projects" },
+];
+
 const Navbar = () => {
   const component = useRef(null);
+  const mobileMenuRef = useRef(null);
+  const bookRef = useRef(null);
+  const pathname = usePathname();
+  const router = useRouter();
+  const [menuOpen, setMenuOpen] = useState(false);
 
+  // Logo animation
   useLayoutEffect(() => {
-    let ctx = gsap.context(() => {
-      const fullName = component.current.querySelector(".full-name");
-      const logo = component.current.querySelector(".initial-logo");
-      const abdul = component.current.querySelector(".name-abdul");
-      const barr = component.current.querySelector(".name-barr");
-
-      const heroSection = document.querySelector("#hero"); // hero section
-      if (!heroSection) return;
-
+    const ctx = gsap.context(() => {
       const tl = gsap.timeline({
         scrollTrigger: {
-          trigger: heroSection,
-          start: "bottom center", // halfway through hero
-          end: "bottom top", // when hero exits view
-          scrub: true,
-          toggleActions: "play reverse play reverse",
+          trigger: 'body',
+          start: '20px top',
+          end: '+=150',
+          scrub: 1,
         },
-        defaults: { duration: 1.2, ease: "power2.inOut" },
       });
-
-      // 1. Shrink the spacing between Abdul and Barr, slide Barr left toward Abdul
-      tl.to(barr, {
-        x: () => -(barr.offsetLeft - abdul.offsetLeft - abdul.firstChild.offsetWidth),
-      });
-
-      // 2. Shrink both to merge visually into the logo position
-      tl.to([abdul, barr], {
-        scale: 0.55,
-        xPercent: -20,
-        yPercent: -10,
-      }, "<");
-
-      // 3. Bring in the logo AB at the same position
-      tl.to(logo, { opacity: 1, scale: 1, duration: 0.5 }, "<");
-
-      // 4. Hide the full name (opacity 0 just at the end)
-      tl.to(fullName, { opacity: 0, duration: 0.3 }, ">-0.3");
+      tl.to('.name-part-barr', { x: '-100%', opacity: 0, duration: 1 });
+      tl.to('.name-part-abdul', { scale: 0.8, opacity: 0, duration: 1 }, '<');
+      tl.fromTo('.initial-logo', { opacity: 0, scale: 0.8 }, { opacity: 1, scale: 1, duration: 1 }, '<');
     }, component);
-
     return () => ctx.revert();
   }, []);
 
-  return (
-    <header
-      ref={component}
-      className="fixed top-0 left-0 w-full z-50 bg-background/80 dark:bg-primary/90 backdrop-blur-sm"
-    >
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 md:pl-32">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo / Name */}
-          <div className="flex-shrink-0 relative h-10 w-48 flex items-center">
-            {/* AB Logo */}
-            <Link
-              href="/"
-              className="initial-logo absolute top-0 left-0 flex items-center justify-center w-10 h-10 bg-primary dark:bg-background rounded-md opacity-0 scale-0"
-            >
-              <span className="logo-a font-bold text-lg text-background dark:text-primary">A</span>
-              <span className="logo-b font-bold text-lg text-background dark:text-primary">B</span>
-            </Link>
+  // Hamburger animation
+  useEffect(() => {
+    if (menuOpen) {
+      const tl = gsap.timeline();
+      tl.fromTo(
+        mobileMenuRef.current,
+        { x: '100%', scale: 0.95 },
+        { x: '0%', scale: 1, duration: 0.5, ease: 'power3.out' }
+      );
+      tl.fromTo(
+        '.menu-link',
+        { opacity: 0, y: 20, scale: 0.95 },
+        { opacity: 1, y: 0, scale: 1, duration: 0.4, stagger: 0.08, ease: 'power3.out' },
+        '<0.1'
+      );
+    } else {
+      gsap.to(mobileMenuRef.current, { x: '100%', scale: 0.95, duration: 0.4, ease: 'power3.in' });
+    }
+  }, [menuOpen]);
 
-            {/* Full Name */}
-            <div className="full-name absolute top-0 left-0 h-10 flex items-center whitespace-nowrap text-xl font-bold text-primary dark:text-background">
-              <span className="name-abdul inline-flex">
-                <span>A</span>
-                <span className="overflow-hidden">bdul</span>
-              </span>
-              <span className="name-barr inline-flex ml-1.5">
-                <span>B</span>
-                <span className="overflow-hidden">arr</span>
-              </span>
+  // Animate Book An Appointment
+  useLayoutEffect(() => {
+    gsap.from(bookRef.current, {
+      y: -10,
+      scale: 0.95,
+      opacity: 0,
+      duration: 0.6,
+      ease: 'back.out(1.7)',
+    });
+  }, []);
+
+  // Close on outside click or Escape
+  useLayoutEffect(() => {
+    if (!menuOpen) return;
+    function handleClick(event) {
+      if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target)) setMenuOpen(false);
+    }
+    function handleEscape(event) {
+      if (event.key === 'Escape') setMenuOpen(false);
+    }
+    document.addEventListener('mousedown', handleClick);
+    document.addEventListener('keydown', handleEscape);
+    return () => {
+      document.removeEventListener('mousedown', handleClick);
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [menuOpen]);
+
+  const handleScrollLink = (id) => {
+    if (pathname !== '/') {
+      router.push('/');
+      setTimeout(() => scroll.scrollTo(document.getElementById(id)?.offsetTop - 50 || 0), 200);
+    } else {
+      scroll.scrollTo(document.getElementById(id)?.offsetTop - 50 || 0);
+    }
+    setMenuOpen(false);
+  };
+
+  return (
+    <>
+      <header ref={component} className="fixed top-0 left-0 w-full z-50 bg-background/80 dark:bg-primary/90 backdrop-blur-sm">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 md:px-32">
+          <div className="flex items-center justify-between h-16">
+            <div className="flex-shrink-0 relative h-10 w-48 flex items-center">
+              <div className="full-name-container absolute top-0 left-0 flex items-center whitespace-nowrap">
+                <span className="name-part-abdul text-xl font-bold text-primary dark:text-background">Abdul</span>
+                <span className="name-part-barr text-xl font-bold text-primary dark:text-background ml-1.5">Barr</span>
+              </div>
+              <Link href="/" className="initial-logo absolute top-0 left-0 flex items-center justify-center w-10 h-10 bg-primary dark:bg-background rounded-md opacity-0">
+                <span className="font-bold text-lg text-background dark:text-primary">AB</span>
+              </Link>
+            </div>
+
+            <div className="flex items-center space-x-4 md:space-x-6 text-primary dark:text-background">
+              <Link
+                href="/services"
+                ref={bookRef}
+                className="font-semibold underline text-primary dark:text-background cursor-pointer transform transition-all duration-200 hover:scale-105 hover:underline-offset-4"
+              >
+                Book An Appointment
+              </Link>
+
+              <button
+                className="inline-flex flex-col justify-center items-center ml-2 z-[100] relative h-8 w-8"
+                aria-label="Toggle Menu"
+                onClick={() => setMenuOpen(!menuOpen)}
+              >
+                <span className={`block w-7 h-0.5 bg-primary dark:bg-background rounded-full transition-transform duration-300 ${menuOpen ? 'rotate-45 translate-y-[5px]' : ''}`}></span>
+                <span className={`block w-7 h-0.5 bg-primary dark:bg-background rounded-full transition-opacity duration-300 ${menuOpen ? 'opacity-0' : 'my-1.5'}`}></span>
+                <span className={`block w-7 h-0.5 bg-primary dark:bg-background rounded-full transition-transform duration-300 ${menuOpen ? '-rotate-45 -translate-y-[5px]' : ''}`}></span>
+              </button>
             </div>
           </div>
-
-          {/* Nav Links */}
-          <div className="flex items-center space-x-4 md:space-x-8 text-primary dark:text-background">
-            <nav className="hidden md:flex items-center space-x-8">
-              <ScrollLink
-                to="about"
-                smooth={true}
-                duration={500}
-                offset={-50}
-                className="cursor-pointer text-secondary dark:text-gray-300 hover:text-primary dark:hover:text-white transition-colors"
-              >
-                About Me
-              </ScrollLink>
-              <ScrollLink
-                to="portfolio"
-                smooth={true}
-                duration={500}
-                offset={-50}
-                className="cursor-pointer text-secondary dark:text-gray-300 hover:text-primary dark:hover:text-white transition-colors"
-              >
-                Portfolio
-              </ScrollLink>
-              <ScrollLink
-                to="contact"
-                smooth={true}
-                duration={500}
-                className="cursor-pointer font-semibold text-primary dark:text-background border border-primary/20 dark:border-background/20 px-4 py-2 rounded-md hover:bg-primary/5 dark:hover:bg-background/10 transition-colors"
-              >
-                Book A Call
-              </ScrollLink>
-            </nav>
-            <ThemeToggle />
-          </div>
         </div>
-      </div>
-    </header>
+      </header>
+
+      <div
+        className={`fixed inset-0 bg-black/40 z-40 transition-opacity duration-300 ${menuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+        onClick={() => setMenuOpen(false)}
+      />
+
+      <aside
+        ref={mobileMenuRef}
+        className={`fixed top-0 right-0 h-full w-64 bg-white dark:bg-primary shadow-xl z-[90] flex flex-col`}
+      >
+        <div className="flex justify-between items-center p-5 border-b border-primary/10 dark:border-background/10">
+          <Link href="/" className="flex items-center justify-center w-10 h-10 bg-primary dark:bg-background rounded-md">
+            <span className="font-bold text-lg text-background dark:text-primary">AB</span>
+          </Link>
+          <button
+            onClick={() => setMenuOpen(false)}
+            className="text-4xl text-secondary dark:text-gray-400 hover:text-primary dark:hover:text-white transition-colors"
+            aria-label="Close menu"
+          >
+            &times;
+          </button>
+        </div>
+
+        <nav className="flex flex-col px-4 py-6 space-y-2 flex-grow">
+          {HAMBURGER_LINKS.map((item) =>
+            item.type === 'scroll' ? (
+              <div
+                key={item.id}
+                className="menu-link block text-lg font-medium cursor-pointer text-primary dark:text-background py-3 px-2 rounded-lg transition-transform duration-200 hover:scale-105 relative group"
+                onClick={() => handleScrollLink(item.id)}
+              >
+                {item.text}
+                <span className="absolute bottom-1 left-0 w-0 h-[2px] bg-primary dark:bg-background transition-all duration-300 group-hover:w-full" />
+                {item.cta && <p className="text-xs text-secondary dark:text-gray-400 mt-1">{item.cta}</p>}
+              </div>
+            ) : (
+              <Link
+                key={item.id}
+                href={item.id}
+                className="menu-link block text-lg font-medium cursor-pointer text-primary dark:text-background py-3 px-2 rounded-lg transition-transform duration-200 hover:scale-105 relative group"
+                onClick={() => setMenuOpen(false)}
+              >
+                {item.text}
+                <span className="absolute bottom-1 left-0 w-0 h-[2px] bg-primary dark:bg-background transition-all duration-300 group-hover:w-full" />
+              </Link>
+            )
+          )}
+        </nav>
+
+        <div className="menu-link flex justify-center items-center space-x-6 p-6 border-t border-primary/10 dark:border-background/10">
+          <Link href="https://github.com/abdulbarr730" target="_blank" className="text-secondary dark:text-gray-400 hover:text-primary dark:hover:text-white transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/>
+            </svg>
+          </Link>
+          <Link href="https://www.linkedin.com/in/abdul-barr-9092a4251" target="_blank" className="text-secondary dark:text-gray-400 hover:text-primary dark:hover:text-white transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/>
+              <rect width="4" height="12" x="2" y="9"/>
+              <circle cx="4" cy="4" r="2"/>
+            </svg>
+          </Link>
+        </div>
+      </aside>
+    </>
   );
 };
 
