@@ -149,7 +149,7 @@ const Navbar = () => {
 
       <aside
         ref={mobileMenuRef}
-        className={`fixed top-0 right-0 h-full w-64 bg-white shadow-xl z-[90] flex flex-col`}
+        className={`fixed top-0 right-0 h-full w-64 bg-white shadow-xl z-[90] flex flex-col translate-x-full`}
       >
         <div className="flex justify-between items-center p-5 border-b border-primary/10">
           <Link href="/" className="flex items-center justify-center w-10 h-10 bg-primary rounded-md">
