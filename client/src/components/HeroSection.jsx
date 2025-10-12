@@ -98,7 +98,7 @@ const HeroSection = () => {
               More than an ordinary developer; I don't just build features, I engineer solutions that last.
             </p>
             <div className="hero-animate bio-line mt-6">
-              <Link href="/projects" className="font-semibold text-primary border-b-2 border-primary/50 ">
+              <Link href="/codecraft" className="font-semibold text-primary border-b-2 border-primary/50 ">
                 Wanna know how?? Tap tap &rarr;
               </Link>
             </div>
