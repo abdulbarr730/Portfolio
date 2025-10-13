@@ -6,6 +6,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { atomDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { motion, AnimatePresence } from 'framer-motion';
+import Link from "next/link";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -218,18 +219,22 @@ const CodeCraftPage = () => {
           This is how I implement features, handle edge cases, and write scalable code — focusing on clarity, security, and maintainability.
         </motion.p>
 
-        {/* Book a Service Button */}
-        <motion.a
-          href="#contact"
-          className="inline-block mt-6 px-6 py-3 rounded-lg font-bold text-lg bg-black text-white hover:brightness-110 transition-colors shadow-lg"
-          animate={{ scale: [1, 1.05, 1] }}
-          transition={{ duration: 1.5, repeat: Infinity }}
-          whileHover={{ scale: 1.08 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          Book a Service
-        </motion.a>
+        
       </div>
+      {/* CTA Card below heading */}
+        <div className="service-cta-card mb-12">
+          <Link
+            href="/services"
+            className="block bg-primary/10 border border-primary rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 text-center"
+          >
+            <h3 className="text-2xl font-bold text-primary mb-2">
+              Book a Service / Learn More
+            </h3>
+            <p className="text-secondary text-sm sm:text-base">
+              Explore the services I offer — website development, software issue fixing, and consultancy. First consultancy is free!
+            </p>
+          </Link>
+        </div>
 
       {/* Code Snippets Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">

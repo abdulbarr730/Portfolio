@@ -251,7 +251,7 @@ const ProjectsSection = () => {
       <Link
         href="/services"
         ref={buttonRef}
-        className="fixed bottom-8 right-20 bg-primary text-white px-6 py-3 rounded-full shadow-lg hover:bg-primary/90 transition-colors z-50"
+        className="fixed bottom-8 right-8 bg-primary text-white px-6 py-3 rounded-full shadow-lg hover:bg-primary/90 transition-colors z-50"
       >
         Book a Service
       </Link>

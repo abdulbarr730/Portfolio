@@ -48,8 +48,8 @@ const certifications = [
   },
   { 
     name: 'Node.js Development', 
-    issuer: 'Self-certified / Project-based', 
-    link: 'https://github.com/abdulbarrdev/nodejs-cert' 
+    issuer: 'Lets Upgrade', 
+    link: 'https://verify.letsupgrade.in/certificate/LUENJSAPR125467' 
   },
   { 
     name: 'Low-Level Design (LLD) of Payment Apps', 
