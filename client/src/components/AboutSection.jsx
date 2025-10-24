@@ -195,14 +195,16 @@ const AboutSection = () => {
         <h3 className="text-3xl font-bold text-primary mb-12">Featured Projects</h3>
         <ProjectPreview />
 
-        {/* UPDATED: "View All Projects" link text changed as requested */}
+        {/* UPDATED: Added span with whitespace-nowrap and responsive text */}
         <div className="mt-8">
           <Link
             href="/projects" // Assuming '/projects' is your dedicated projects page
-            className="inline-flex items-center text-primary font-bold hover:underline group"
+            className="inline-flex items-center text-primary font-bold hover:underline group text-sm sm:text-base"
           >
-            To view details and to see all projects, click here
-            <svg className="ml-2 w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <span className="whitespace-nowrap">
+              To view details and to see all projects, click here
+            </span>
+            <svg className="ml-2 w-5 h-5 transition-transform duration-300 group-hover:translate-x-1 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
             </svg>
           </Link>

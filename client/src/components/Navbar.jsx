@@ -10,7 +10,9 @@ import { usePathname, useRouter } from 'next/navigation';
 
 gsap.registerPlugin(ScrollTrigger);
 
+// UPDATED: Added "View Resume" link at the top
 const HAMBURGER_LINKS = [
+  { id: 'https://drive.google.com/file/d/1vnZADDPLb2hbOnx8Fi3W0m8LEesof_z6/view?usp=drive_link', text: 'View Resume', type: 'link', target: '_blank' },
   { id: 'hero', text: 'Home', type: 'scroll' },
   { id: '/blog', text: 'Blog', type: 'link' },
   { id: 'about', text: 'About Me', type: 'scroll' },
@@ -117,13 +119,13 @@ const Navbar = () => {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-full">
             {/* Logo */}
-            <div className="flex-shrink-0 relative h-12 w-52 flex items-center">
+            <div className="relative h-12 w-52 flex items-center">
               <Link
                 href="/"
                 className="full-name-container absolute top-[6px] left-0 flex items-center whitespace-nowrap"
               >
-                <span className="name-part-abdul text-xl font-bold text-primary leading-none">Abdul</span>
-                <span className="name-part-barr text-xl font-bold text-primary ml-1.5 leading-none ">Barr</span>
+                <span className="name-part-abdul text-xl font-bold text-primary leading-none pt-2">Abdul</span>
+                <span className="name-part-barr text-xl font-bold text-primary ml-1.5 leading-none pt-2">Barr</span>
               </Link>
               <Link
                 href="/"
@@ -134,18 +136,18 @@ const Navbar = () => {
             </div>
 
             {/* Right section: Book + Hamburger */}
-            <div className="flex items-center space-x-4 md:space-x-6 text-primary">
+            <div className="flex items-center flex-shrink-0 space-x-3 sm:space-x-4 text-primary">
               <Link
                 href="/services"
                 ref={bookRef}
-                className="font-semibold underline text-primary cursor-pointer transform transition-all duration-200 hover:scale-105 hover:underline-offset-4"
+                className="font-semibold underline text-primary cursor-pointer transform transition-all duration-200 hover:scale-105 hover:underline-offset-4 text-sm sm:text-base whitespace-nowrap"
               >
                 Book An Appointment
               </Link>
 
               {/* Hamburger */}
               <button
-                className="relative inline-flex flex-col justify-center items-center ml-2 z-[999] h-8 w-8"
+                className="relative inline-flex flex-col justify-center items-center z-[999] h-8 w-8"
                 aria-label="Toggle Menu"
                 onClick={() => setMenuOpen(!menuOpen)}
               >
@@ -216,9 +218,12 @@ const Navbar = () => {
                 {item.cta && <p className="text-xs text-secondary mt-1">{item.cta}</p>}
               </div>
             ) : (
+              // UPDATED: Added target and rel props for external links
               <Link
                 key={item.id}
                 href={item.id}
+                target={item.target || '_self'}
+                rel={item.target === '_blank' ? 'noopener noreferrer' : undefined}
                 className="menu-link block text-lg font-medium cursor-pointer text-primary py-3 px-2 rounded-lg transition-transform duration-200 hover:scale-105 relative group"
                 onClick={() => setMenuOpen(false)}
               >
