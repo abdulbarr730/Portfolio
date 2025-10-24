@@ -63,7 +63,13 @@ const HeroSection = () => {
   return (
     <section id="hero" ref={component} className="relative w-full min-h-screen overflow-hidden">
       <RightSidebar ref={sidebarRef} />
-      <div className="relative z-10 w-full h-screen">
+
+      {/* FIX: Added `overflow-hidden` here.
+        The absolute-positioned parallax layers were escaping this `relative` parent
+        during the mousemove animation, causing the page stretch.
+        This clips them and solves the overflow.
+      */}
+      <div className="relative z-10 w-full h-screen overflow-hidden">
         
         {/* MOBILE LAYOUT */}
         <div className="md:hidden flex flex-col items-center justify-center h-full px-4">

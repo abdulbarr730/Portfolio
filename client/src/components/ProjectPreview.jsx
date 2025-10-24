@@ -23,7 +23,7 @@ const projectsData = [
   },
   {
     title: "GTA-VI Re-imagined Website",
-    description: "Engineered a responsive, single-page concept website inspired by GTA-VI, leveraging React's component-based architecture and the GSAP library.",
+    description: "A visually bold React concept inspired by GTA-VI with advanced GSAP-driven animations.",
     technologies: ["ReactJs", "GSAP"],
     liveUrl: "https://gta-vi-imagine.vercel.app",
     snapshotUrl: "/snapshots/gta-vi.png"

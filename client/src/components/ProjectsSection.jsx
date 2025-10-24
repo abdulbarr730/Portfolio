@@ -8,12 +8,20 @@ import Image from "next/image";
 
 gsap.registerPlugin(ScrollTrigger);
 
+// --- UPDATED allProjectsData with new detailed fields ---
+
 const allProjectsData = [
   {
     title: "SIH College Portal",
-    description: "A comprehensive full-stack application to manage college hackathons with authentication, access control, and team formation.",
+    description: "A full-stack app to manage college hackathons.",
     detailedDescription:
       "The SIH College Portal was built with immense focus and passion as a full-fledged system to streamline Smart India Hackathon processes at the college level. Every feature — from secure JWT authentication to mentor assignment and team management — was crafted through careful planning and testing. It wasn’t just about writing code, but understanding how different user roles interact within an academic ecosystem. Building this project taught me the importance of scalability, clean architecture, and attention to user experience. This project truly represents my ability to take an abstract problem and translate it into a working, real-world digital platform.",
+    problemSolved:
+      "On the official SIH portal, only the college SPOC can view registered teams, leaving students completely in the dark. I got the idea after the hack2skill geni hackathon—my platform solves this by creating an internal, authenticated portal where students can finally see, join, and manage their own teams. For students trying to form teams, it's a massive visibility boost... like a godsend.",
+    challengesFaced:
+      "Several hurdles emerged. First, the email verification service I built with SMTP failed because free-tier hosting (Vercel, Render) blocks SMTP ports to prevent spam. This forced a pivot to a third-party API like Resend. Second, I had to devise a system to automatically scrape new notifications from the official SIH portal to keep our users updated. Finally, I had to add a feature for students who didn't have an ID card, allowing them to submit alternative documents for verification.",
+    futureScope:
+      "The architecture is ready to be scaled into a full-fledged multitenant SaaS, allowing any college to sign up and manage their own internal hackathons (not just SIH) under one platform.",
     technologies: ["Next.js", "React", "Tailwind CSS", "Node.js", "MongoDB", "Supabase"],
     liveUrl: "https://hackathon-college-portal.vercel.app",
     githubUrl: "https://github.com/abdulbarr730",
@@ -21,20 +29,31 @@ const allProjectsData = [
   },
   {
     title: "AI Meeting Notes Summarizer",
-    description: "An intelligent app using Groq API and Llama 3 to summarize meeting transcripts and extract insights.",
+    description: "An intelligent app using Groq API and Llama 3 to summarize meeting transcripts.",
     detailedDescription:
       "This project was born out of curiosity and discipline — a desire to explore how AI can simplify daily workflows. I built the AI Meeting Notes Summarizer with patience, testing prompt variations and optimizing Llama 3’s summarization output to achieve clarity and consistency. The app allows users to upload transcripts and instantly get tailored summaries, saving hours of manual note-taking. It reflects my deep interest in combining frontend elegance with backend intelligence. Every line of code here was written after multiple iterations, proving that persistence and precision go hand in hand when creating something truly useful.",
+    problemSolved:
+      "Professionals and students spend hours manually re-listening to meetings and summarizing notes. This tool automates that process, using the high-speed Groq API to provide instant, accurate summaries from uploaded transcript files.",
+    challengesFaced:
+      "The primary challenge was prompt engineering. Getting Llama 3 to consistently produce summaries that were not just accurate but also concise, well-structured, and capable of extracting key action items required significant testing and iteration of the system prompts.",
+    futureScope:
+      "Future plans include adding real-time audio input (transcription via AssemblyAI) and the ability to upload various file formats (like .mp3 or .m4a), making it an all-in-one meeting solution.",
     technologies: ["React", "Node.js (Serverless)", "Groq API", "Llama 3", "Vercel"],
     liveUrl: "https://meeting-summarizer-black.vercel.app",
     githubUrl: "https://github.com/abdulbarr730",
     snapshotUrl: "/snapshots/ai-summarizer.png"
   },
-  
   {
     title: "E-commerce Website - Two Good Co.",
-    description: "An interactive, motion-rich e-commerce frontend with seamless GSAP and Locomotive animations.",
+    description: "An interactive, motion-rich e-commerce frontend with GSAP and Locomotive animations.",
     detailedDescription:
       "Two Good Co. was crafted pixel by pixel, with a clear goal — to make every scroll, hover, and transition feel alive. I spent days fine-tuning GSAP animations and Locomotive Scroll effects until the site moved as smoothly as a story unfolding. This project required immense patience and precision — aligning performance with creativity. The end result was a visual experience that captures the essence of premium digital storytelling. It’s not just an e-commerce frontend; it’s a showcase of how motion and minimalism can coexist beautifully when approached with focus and persistence.",
+    problemSolved:
+      "Many e-commerce sites are static and fail to create an engaging brand experience. This project aimed to solve that by creating a 'story-driven' shopping interface where the product and the brand's narrative are woven together through motion.",
+    challengesFaced:
+      "Performance was the biggest challenge. Synchronizing complex GSAP timelines with Locomotive Scroll for a 'buttery smooth' experience on all devices, without layout jank or high CPU usage, required meticulous optimization and testing.",
+    futureScope:
+      "The next step is to integrate a headless e-commerce backend (like Shopify's Storefront API or Medusa.js) to turn this from a 'lookbook' into a fully functional, high-performance online store.",
     technologies: ["HTML5", "CSS3", "JavaScript", "GSAP", "Locomotive Scroll"],
     liveUrl: "https://twogood-e-commerce.vercel.app",
     githubUrl: "https://github.com/abdulbarr730",
@@ -45,6 +64,12 @@ const allProjectsData = [
     description: "A visually bold React concept inspired by GTA-VI with advanced GSAP-driven animations.",
     detailedDescription:
       "The GTA-VI Reimagined website is one of my most passionate creative experiments — a fusion of gaming aesthetics and interactive web motion. I spent long hours experimenting with different animation timings and scroll triggers to recreate a cinematic feel on the web. It’s a love letter to creativity, built with deep focus and commitment to detail. Every section was animated, restructured, and refined until it truly reflected the intensity of the GTA universe. This project represents how technical mastery and artistic vision can blend seamlessly when approached with patience and dedication.",
+    problemSolved:
+      "This was a personal challenge to push the boundaries of web animation. Official game websites are often informational. I wanted to create a concept that *feels* like the game—an immersive, cinematic web experience that builds hype through interaction.",
+    challengesFaced:
+      "Managing complex, overlapping GSAP animations on scroll. Creating a 'video-like' scrubbing effect that feels responsive and not 'laggy' was technically demanding and required deep knowledge of GSAP's ScrollTrigger.",
+    futureScope:
+      "I plan to add more interactive 'easter eggs' and WebGL-powered 3D elements (using Three.js) to make the environment even more immersive and reactive to user input.",
     technologies: ["ReactJs", "GSAP"],
     liveUrl: "https://gta-vi-imagine.vercel.app",
     githubUrl: "https://github.com/abdulbarr730",
@@ -55,6 +80,12 @@ const allProjectsData = [
     description: "A simple yet elegant weather forecasting app powered by the OpenWeather API.",
     detailedDescription:
       "The Weather Project was my way of combining design, data, and detail. I poured a lot of attention into making it intuitive — fetching real-time weather data, handling API responses, and presenting it in a clear, friendly interface. It’s more than just a utility; it’s a reflection of how careful structuring and thoughtful UI can make even raw data feel alive. Every animation, every color gradient, and every refresh function was refined with focus until it felt just right. It’s a project that taught me patience and precision, especially in aligning technical accuracy with aesthetic appeal.",
+    problemSolved:
+      "While many weather apps exist, they are often cluttered. The goal was to build a simple, clean, and fast-loading weather app that does one thing perfectly: provide the essential forecast at a glance, powered by a reliable API.",
+    challengesFaced:
+      "The main technical challenge was handling the asynchronous nature of the OpenWeather API gracefully. This included managing loading states, error handling (e.g., city not found, API key limits), and ensuring the UI updated seamlessly.",
+    futureScope:
+      "Future improvements include adding geolocation to automatically fetch the user's local weather and a 5-day forecast view with animated weather icons.",
     technologies: ["HTML", "CSS", "JavaScript", "OpenWeather API"],
     liveUrl: "https://weather-project-chi-two.vercel.app/",
     githubUrl: "https://github.com/abdulbarr730/Weather-Project",
@@ -98,6 +129,8 @@ const ProjectCard = ({ project, onClick }) => (
   </div>
 );
 
+// --- UPDATED ProjectModal to display the new fields ---
+
 const ProjectModal = ({ project, onClose }) => {
   const modalRef = useRef(null);
 
@@ -116,7 +149,8 @@ const ProjectModal = ({ project, onClose }) => {
   }, []);
 
   return (
-    <div className="fixed inset-0 backdrop-blur-lg bg-black/70 flex items-center justify-center z-50 p-4 overflow-y-auto">
+    // FIX: Changed z-50 to z-[1000] to ensure modal appears on top of the navbar (which is z-[999])
+    <div className="fixed inset-0 backdrop-blur-lg bg-black/70 flex items-center justify-center z-[1000] p-4 overflow-y-auto">
       <div
         ref={modalRef}
         className="relative bg-white rounded-2xl shadow-2xl max-w-2xl w-full my-10 overflow-hidden flex flex-col"
@@ -139,6 +173,17 @@ const ProjectModal = ({ project, onClose }) => {
             className="rounded-xl object-cover transition-transform duration-700 hover:scale-105"
           />
 
+          {/* New Sections Added Here */}
+          <h4 className="text-xl font-semibold text-primary mt-4">Problem Solved</h4>
+          <p className="text-gray-700 leading-relaxed text-sm sm:text-base">{project.problemSolved}</p>
+
+          <h4 className="text-xl font-semibold text-primary mt-4">Challenges Faced</h4>
+          <p className="text-gray-700 leading-relaxed text-sm sm:text-base">{project.challengesFaced}</p>
+
+          <h4 className="text-xl font-semibold text-primary mt-4">Future Scope</h4>
+          <p className="text-gray-700 leading-relaxed text-sm sm:text-base">{project.futureScope}</p>
+
+          <h4 className="text-xl font-semibold text-primary mt-4">My Process</h4>
           <p className="text-gray-700 leading-relaxed text-sm sm:text-base">{project.detailedDescription}</p>
 
           <div className="flex flex-wrap gap-2 mb-4">

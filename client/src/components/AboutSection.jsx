@@ -31,38 +31,38 @@ const milestones = [
 ];
 
 const certifications = [
-  { 
-    name: 'Prompt Design in Vertex AI', 
-    issuer: 'Google', 
-    link: 'https://www.cloudskillsboost.google/public_profiles/709def08-7018-4ba2-ada5-c38085efba66/badges/17305399' 
+  {
+    name: 'Prompt Design in Vertex AI',
+    issuer: 'Google',
+    link: 'https://www.cloudskillsboost.google/public_profiles/709def08-7018-4ba2-ada5-c38085efba66/badges/17305399'
   },
-  { 
-    name: 'Inspect Rich Documents with Gemini Multimodality and Multimodal RAG', 
-    issuer: 'Google', 
-    link: 'https://www.cloudskillsboost.google/public_profiles/709def08-7018-4ba2-ada5-c38085efba66/badges/17410538' 
+  {
+    name: 'Inspect Rich Documents with Gemini Multimodality and Multimodal RAG',
+    issuer: 'Google',
+    link: 'https://www.cloudskillsboost.google/public_profiles/709def08-7018-4ba2-ada5-c38085efba66/badges/17410538'
   },
-  { 
-    name: 'Build Real World AI Applications with Gemini and Imagen', 
-    issuer: 'Google', 
-    link: 'https://www.cloudskillsboost.google/public_profiles/709def08-7018-4ba2-ada5-c38085efba66/badges/17343087' 
+  {
+    name: 'Build Real World AI Applications with Gemini and Imagen',
+    issuer: 'Google',
+    link: 'https://www.cloudskillsboost.google/public_profiles/709def08-7018-4ba2-ada5-c38085efba66/badges/17343087'
   },
-  { 
-    name: 'Node.js Development', 
-    issuer: 'Lets Upgrade', 
-    link: 'https://verify.letsupgrade.in/certificate/LUENJSAPR125467' 
+  {
+    name: 'Node.js Development',
+    issuer: 'Lets Upgrade',
+    link: 'https://verify.letsupgrade.in/certificate/LUENJSAPR125467'
   },
-  { 
-    name: 'Low-Level Design (LLD) of Payment Apps', 
+  {
+    name: 'Low-Level Design (LLD) of Payment Apps',
     issuer: 'Scaler',
     link: 'https://moonshot.scaler.com/s/sl/duGPtR04Jv'
   },
-  { 
-    name: 'Campus Ambassador', 
+  {
+    name: 'Campus Ambassador',
     issuer: 'IIT Delhi Rendezvous \'23',
     link: 'https://drive.google.com/file/d/1u-ILxv45g8aRHnOBVPjTyMqKhrMHkywB/view?usp=drive_link'
   },
-  { 
-    name: 'Event Anchor & Host', 
+  {
+    name: 'Event Anchor & Host',
     issuer: 'College Fresher\'s Party',
     link: '' // no link available
   }
@@ -97,8 +97,8 @@ const AboutSection = () => {
       // NEW: Image Stretch Animation for the main photo card
       if (photoCardImageRef.current) {
         const image = photoCardImageRef.current.querySelector('img');
-        gsap.fromTo(image, 
-          { scale: 1, y: '0%' }, 
+        gsap.fromTo(image,
+          { scale: 1, y: '0%' },
           {
             scale: 1.4,
             y: '-10%',
@@ -136,7 +136,7 @@ const AboutSection = () => {
             A Computer Science Engineering student specializing in Full Stack (MERN) Development and Machine Learning. My expertise is strengthened by achievements like a <b>Google certification in Generative AI</b> and advanced training in <b>Low-Level Design (LLD) from Scaler</b>.
           </p>
         </div>
-        
+
 
         {/* Journey */}
         <div className="about-item order-2 lg:order-3 text-center lg:text-left">
@@ -191,9 +191,23 @@ const AboutSection = () => {
       </div>
 
       {/* Featured Projects */}
-      <div className="about-item text-center mt-24">
+      <div className="about-item text-center mt-24 overflow-hidden">
         <h3 className="text-3xl font-bold text-primary mb-12">Featured Projects</h3>
         <ProjectPreview />
+
+        {/* UPDATED: "View All Projects" link text changed as requested */}
+        <div className="mt-8">
+          <Link
+            href="/projects" // Assuming '/projects' is your dedicated projects page
+            className="inline-flex items-center text-primary font-bold hover:underline group"
+          >
+            To view details and to see all projects, click here
+            <svg className="ml-2 w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+            </svg>
+          </Link>
+        </div>
+
 
         {/* NEW CTA: Book a Service */}
         <div className="mt-12">
@@ -262,8 +276,8 @@ const AboutSection = () => {
         {certifications.map((cert, index) => (
           <div
             key={index}
-            className="relative group bg-zinc-100 border border-zinc-200 rounded-2xl p-6 transition-all duration-300 
-                       hover:shadow-[0_0_25px_-5px_rgba(99,102,241,0.25)] hover:-translate-y-1 overflow-hidden"
+            className="relative group bg-zinc-100 border border-zinc-200 rounded-2xl p-6 transition-all duration-300
+                         hover:shadow-[0_0_25px_-5px_rgba(99,102,241,0.25)] hover:-translate-y-1 overflow-hidden"
           >
             {/* ✨ Ripple pulse effect */}
             <div className="absolute inset-0 opacity-0 group-hover:opacity-100">

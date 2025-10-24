@@ -115,7 +115,9 @@ export default function ReviewsSection() {
     text.length <= max ? { text, long: false } : { text: text.slice(0, max) + '...', long: true };
 
   return (
-    <section id="reviews" className="container mx-auto pt-22 pb-16 px-4 sm:px-6 lg:px-8">
+    // FIX: Added `overflow-hidden` here to clip the absolute-positioned
+    // carousel buttons that were pushing outside the container.
+    <section id="reviews" className="container mx-auto pt-22 pb-16 px-4 sm:px-6 lg:px-8 overflow-hidden">
       <header className="text-center mb-16">
         <h2 className="text-4xl font-bold tracking-tight text-primary">Testimonials</h2>
         <p className="mt-4 text-lg text-secondary">

@@ -1,15 +1,17 @@
 // src/app/(site)/layout.js
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import RightSidebar from "@/components/RightSidebar"; // Changed from LeftSidebar to RightSidebar
 
 export default function SiteLayout({ children }) {
   return (
     <>
-      
       <Navbar />
-      {/* Changed left padding to right padding to make space for the right sidebar */}
-      <main className=""> {/* Changed md:pl-28 to md:pr-28 */}
+      {/* FIX: Added `overflow-x-hidden` here. 
+        This is the key. It tells the main content wrapper 
+        to clip anything that tries to stretch past the screen width. 
+        This stops the horizontal scrollbar.
+      */}
+      <main className="overflow-x-hidden">
         {children}
       </main>
       <Footer />
