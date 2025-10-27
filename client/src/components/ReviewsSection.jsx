@@ -28,13 +28,23 @@ const Star = memo(({ filled, isRatingStar }) => (
   </svg>
 ));
 
-// ⭐ FlowingStars Component
+// ⭐ FlowingStars Component (Enhanced)
 const FlowingStars = ({ rating }) => {
   const fillRef = useRef(null);
   const componentRef = useRef(null);
 
   useLayoutEffect(() => {
+    const scrollerEl = componentRef.current?.closest('.reviews-scroll-container');
+
     const ctx = gsap.context(() => {
+      // Fade-in + slide
+      gsap.fromTo(
+        componentRef.current,
+        { opacity: 0, y: 10 },
+        { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out' }
+      );
+
+      // Gold fill animation
       gsap.to(fillRef.current, {
         width: `${rating * 20}%`,
         ease: 'power2.out',
@@ -42,20 +52,28 @@ const FlowingStars = ({ rating }) => {
         scrollTrigger: {
           trigger: componentRef.current,
           start: 'top 85%',
+          scroller: scrollerEl || window,
+          invalidateOnRefresh: true,
         },
       });
     }, componentRef);
+
     return () => ctx.revert();
   }, [rating]);
 
   return (
-    <div ref={componentRef} className="relative flex">
+    <div ref={componentRef} className="relative flex items-center">
+      {/* Empty stars */}
       <div className="flex">{[...Array(5)].map((_, i) => <Star key={i} />)}</div>
+
+      {/* Shimmer gold fill */}
       <div ref={fillRef} className="absolute top-0 left-0 h-full overflow-hidden w-0">
-        <div className="flex w-max">
+        <div className="flex w-max star-fill">
           {[...Array(5)].map((_, i) => <Star key={i} filled isRatingStar />)}
         </div>
       </div>
+
+      <span className="sr-only">Rated {rating.toFixed(1)} out of 5 stars</span>
     </div>
   );
 };
@@ -104,7 +122,7 @@ export default function ReviewsSection() {
         setMessage('Thank you! Your review has been posted.');
         setIsAddModalOpen(false);
         setFormState({ name: '', review: '', rating: 0 });
-        mutate(); // refresh data automatically
+        mutate();
       } else throw new Error();
     } catch {
       setMessage('Sorry, there was an error. Please try again.');
@@ -115,8 +133,6 @@ export default function ReviewsSection() {
     text.length <= max ? { text, long: false } : { text: text.slice(0, max) + '...', long: true };
 
   return (
-    // FIX: Added `overflow-hidden` here to clip the absolute-positioned
-    // carousel buttons that were pushing outside the container.
     <section id="reviews" className="container mx-auto pt-22 pb-16 px-4 sm:px-6 lg:px-8 overflow-hidden">
       <header className="text-center mb-16">
         <h2 className="text-4xl font-bold tracking-tight text-primary">Testimonials</h2>
@@ -200,6 +216,7 @@ export default function ReviewsSection() {
 
       {/* Modals */}
       <AnimatePresence>
+        {/* ➕ Add Review Modal */}
         {isAddModalOpen && (
           <motion.div
             initial={{ opacity: 0 }}
@@ -258,6 +275,7 @@ export default function ReviewsSection() {
           </motion.div>
         )}
 
+        {/* 👁️ View All Reviews Modal */}
         {isAllReviewsModalOpen && (
           <motion.div
             initial={{ opacity: 0 }}
@@ -282,7 +300,8 @@ export default function ReviewsSection() {
                   &times;
                 </button>
               </div>
-              <div className="p-8 overflow-y-auto grid grid-cols-1 md:grid-cols-2 gap-6">
+
+              <div className="p-8 overflow-y-auto grid grid-cols-1 md:grid-cols-2 gap-6 reviews-scroll-container">
                 {reviews.map(r => (
                   <div key={r._id} className="bg-white p-6 rounded-lg">
                     <div className="flex justify-between items-center mb-2">
@@ -298,6 +317,7 @@ export default function ReviewsSection() {
           </motion.div>
         )}
 
+        {/* 📖 Selected Review Modal */}
         {selectedReview && (
           <motion.div
             initial={{ opacity: 0 }}
