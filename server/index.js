@@ -20,6 +20,14 @@ const userRouter = require('./routes/UserRoutes'); // Add this
 const reviewRouter = require('./routes/ReviewRoutes');
 const mediumRouter = require('./routes/MediumRoutes');
 
+const StudentRoutes = require('./routes/StudentRoutes');
+app.use('/api/student', StudentRoutes);
+
+
+const JobRoutes = require("./routes/JobRoutes");
+app.use("/api/jobs", JobRoutes);
+
+
 
 
 
