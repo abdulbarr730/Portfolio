@@ -325,7 +325,7 @@ export default function JobsPage() {
                         className="mt-4 w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-4 focus:ring-green-300 transition-colors duration-200"
                         aria-label={`Mark ${job.name} as applied`}
                       >
-                        Apply
+                        I Applied
                       </button>
                     )}
                   </div>
