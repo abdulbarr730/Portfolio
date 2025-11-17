@@ -1,32 +1,34 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Head from 'next/head'; // For page title
+import Head from 'next/head'; // Added for the page title
 
 // --- Use the Environment Variable ---
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
-// --- Custom Hook for Centralized Data Fetching ---
-const useJobsDashboardData = () => {
-  const [dataState, setDataState] = useState({
-    loading: true,
-    student: null,
-    jobs: [],
-    appliedCount: 0,
-    appliedJobIds: new Set(),
-    error: null,
-  });
+export default function JobsPage() {
+  
+  // --- FIX: Define ALL State Variables Locally ---
+  const [loading, setLoading] = useState(true);
+  const [student, setStudent] = useState(null);
+  const [jobs, setJobs] = useState([]);
+  const [appliedCount, setAppliedCount] = useState(0);
+  const [appliedJobIds, setAppliedJobIds] = useState(new Set()); // Used for button state
+  const [message, setMessage] = useState(""); // Used for Apply/Withdraw specific messages
+  const [error, setError] = useState(null); // Used for critical fetch errors
 
+  // Fetch student details and job list
   useEffect(() => {
     async function fetchData() {
       if (!API_BASE_URL) {
-        setDataState(s => ({ ...s, loading: false, error: "Configuration error: API_BASE_URL is not set." }));
-        // Delay redirect slightly to show error message
+        setError("Configuration error: API_BASE_URL is not set.");
+        setLoading(false);
         setTimeout(() => window.location.href = "/jobs/login", 1000);
         return;
       }
 
       try {
+        // Fetch all data in parallel
         const [meRes, jobsRes, appliedRes, myAppsRes] = await Promise.all([
           fetch(`${API_BASE_URL}/api/student/me`, { credentials: "include" }),
           fetch(`${API_BASE_URL}/api/jobs/all`),
@@ -34,17 +36,16 @@ const useJobsDashboardData = () => {
           fetch(`${API_BASE_URL}/api/jobs/my-applications`, { credentials: "include" })
         ]);
 
-        // Check for 401s (Unauthenticated) first
+        // Check auth status
         if (meRes.status === 401 || appliedRes.status === 401 || myAppsRes.status === 401) {
           window.location.href = "/jobs/login";
           return;
         }
 
-        // Check for general API errors
         if (!meRes.ok || !jobsRes.ok || !appliedRes.ok || !myAppsRes.ok) {
             throw new Error("One or more required API calls failed.");
         }
-
+        
         // Parse and process data
         const [meData, jobsData, appliedData, myAppsData] = await Promise.all([
             meRes.json(),
@@ -57,39 +58,22 @@ const useJobsDashboardData = () => {
           ? new Set(myAppsData.applications.map(app => app.jobId?._id).filter(Boolean))
           : new Set();
 
-        setDataState({
-          loading: false,
-          student: meData,
-          jobs: jobsData.jobs || [],
-          appliedCount: appliedData.count || 0,
-          appliedJobIds: appliedIds,
-          error: null,
-        });
-
+        // --- Set all state here ---
+        setStudent(meData);
+        setJobs(jobsData.jobs || []);
+        setAppliedCount(appliedData.count || 0);
+        setAppliedJobIds(appliedIds);
+        
       } catch (err) {
         console.error("Dashboard Load Error:", err);
-        setDataState(s => ({ ...s, loading: false, error: err.message || "Failed to load dashboard data." }));
+        setError(err.message || "Failed to load dashboard data.");
         setTimeout(() => window.location.href = "/jobs/login", 2000); // Redirect after showing error
+      } finally {
+        setLoading(false);
       }
     }
     fetchData();
-  }, []);
-
-  return dataState;
-};
-// --- End Custom Hook ---
-
-
-export default function JobsPage() {
-  const { loading, student, jobs, appliedCount, appliedJobIds, error } = useJobsDashboardData();
-  const [message, setMessage] = useState(""); // For Apply/Withdraw specific messages
-
-  // Effect to clear general fetch error once local message is set (e.g., after redirect)
-  useEffect(() => {
-    if (error && !message) {
-      setMessage(error);
-    }
-  }, [error, message]);
+  }, [appliedJobIds]); // Added appliedJobIds to dependencies
 
   // Apply handler
   const handleApply = async (jobId) => {
@@ -104,10 +88,7 @@ export default function JobsPage() {
       const data = await res.json();
       if (res.ok) {
         setMessage("Job marked as applied ✔️");
-        // Use state update pattern for count and IDs
-        // eslint-disable-next-line @next/next/no-un-element-handler-props
         setAppliedCount(prevCount => prevCount + 1);
-        // eslint-disable-next-line @next/next/no-un-element-handler-props
         setAppliedJobIds(prevIds => new Set(prevIds).add(jobId)); 
       } else {
         throw new Error(data.error || "Failed to apply.");
@@ -134,10 +115,7 @@ export default function JobsPage() {
       }
 
       setMessage("Application withdrawn.");
-      // Use state update pattern for count and IDs
-      // eslint-disable-next-line @next/next/no-un-element-handler-props
       setAppliedCount(prevCount => prevCount - 1);
-      // eslint-disable-next-line @next/next/no-un-element-handler-props
       setAppliedJobIds(prevIds => {
         const newIds = new Set(prevIds);
         newIds.delete(jobId);
@@ -162,10 +140,9 @@ export default function JobsPage() {
     );
   
   if (!student) {
-    // This case should ideally not happen if the fetch is correct, but handles initial null state
     return (
       <div className="min-h-screen flex justify-center items-center text-xl font-semibold bg-gradient-to-br from-blue-100 to-indigo-100 text-blue-800">
-        Preparing your dashboard...
+        Preparing dashboard...
       </div>
     );
   }
@@ -181,7 +158,7 @@ export default function JobsPage() {
         Skip to main content
       </a>
 
-      <div className="min-h-screen bg-gray-50 text-gray-800 font-sans relative pb-20"> {/* Increased padding-bottom for FAB */}
+      <div className="min-h-screen bg-gray-50 text-gray-800 font-sans relative pb-20"> 
 
         {/* --- Top Gradient Background (Visual Enhancement) --- */}
         <div className="absolute top-0 left-0 w-full h-60 bg-gradient-to-r from-blue-600 to-purple-600 -z-10"></div>
@@ -325,7 +302,7 @@ export default function JobsPage() {
                         className="mt-4 w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-4 focus:ring-green-300 transition-colors duration-200"
                         aria-label={`Mark ${job.name} as applied`}
                       >
-                        I Applied
+                        I Applied 
                       </button>
                     )}
                   </div>
@@ -338,7 +315,7 @@ export default function JobsPage() {
         {/* --- FLOATING ACTION BUTTON (FAB) --- */}
         <a 
           href="/" 
-          className="fixed bottom-6 right-6 bg-gray-800 text-white px-5 py-3 rounded-full shadow-xl hover:bg-gray-700 transition transform hover:scale-105 text-base font-medium focus:outline-none focus:ring-4 focus:ring-gray-300 z-40"
+          className="fixed bottom-6 right-6 bg-black text-white px-4 py-2 rounded-lg shadow-lg hover:bg-gray-800 transition transform hover:scale-105 text-sm font-medium"
           title="Visit Abdul Barr's Portfolio"
           aria-label="Visit Abdul Barr's Portfolio"
         >
