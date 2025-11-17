@@ -530,7 +530,7 @@ export default function JobsPage() {
               >
                 <h3 className="text-2xl font-bold mb-2">Confirm Application</h3>
                 <p className="text-gray-700 mb-4">
-                  You are about to apply for{" "}
+                  You are about to confirm for{" "}
                   <strong>{jobToApply.name}</strong>. This will mark the job as
                   applied in your dashboard.
                 </p>
