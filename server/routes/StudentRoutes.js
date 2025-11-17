@@ -56,9 +56,11 @@ router.post('/login', async (req, res) => {
     // Set http-only cookie
     res.cookie(COOKIE_NAME, token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      // CRITICAL FIX: Must be Secure: true and SameSite: None for cross-site login
+      secure: process.env.NODE_ENV === 'production', 
+      sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
+      path: '/', // Ensure the path is root
+      maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
     return res.status(200).json({ message: 'Login successful' });

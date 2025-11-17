@@ -34,11 +34,13 @@ router.post('/login', async (req, res) => {
 
     // Set http-only cookie
     res.cookie(ADMIN_COOKIE_NAME, token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 24 * 60 * 60 * 1000, // 1 day
-    });
+        httpOnly: true,
+        // CRITICAL FIX: Must be Secure: true and SameSite: None for cross-site login
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
+        path: '/',
+        maxAge: 24 * 60 * 60 * 1000,
+        });
 
     res.status(200).json({ message: 'Admin login successful' });
 
