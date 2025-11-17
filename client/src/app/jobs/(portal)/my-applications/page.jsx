@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 
-// --- Use the Environment Variable ---
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function MyApplicationsPage() {
@@ -10,9 +9,12 @@ export default function MyApplicationsPage() {
   const [applications, setApplications] = useState([]);
   const [message, setMessage] = useState("");
 
+  // Search + Filter
+  const [search, setSearch] = useState("");
+  const [filterType, setFilterType] = useState("all");
+
   useEffect(() => {
     async function fetchApplications() {
-      // ... (existing fetchApplications logic is correct) ...
       if (!API_BASE_URL) {
         setMessage("Configuration error: API_BASE_URL is not set.");
         setLoading(false);
@@ -22,13 +24,14 @@ export default function MyApplicationsPage() {
         const res = await fetch(`${API_BASE_URL}/api/jobs/my-applications`, {
           credentials: "include",
         });
+
         if (res.status === 401) {
           window.location.href = "/jobs/login";
           return;
         }
-        if (!res.ok) {
-          throw new Error("Failed to fetch applications");
-        }
+
+        if (!res.ok) throw new Error("Failed to fetch applications");
+
         const data = await res.json();
         setApplications(data.applications || []);
       } catch (err) {
@@ -38,16 +41,16 @@ export default function MyApplicationsPage() {
         setLoading(false);
       }
     }
+
     fetchApplications();
   }, []);
 
-  // --- NEW: Handle Withdraw ---
+  // Withdraw
   const handleWithdraw = async (jobId, jobName) => {
-    if (!confirm(`Are you sure you want to withdraw your application for "${jobName}"?`)) {
-      return;
-    }
-    
-    setMessage(""); // Clear old messages
+    if (!confirm(`Withdraw your application for "${jobName}"?`)) return;
+
+    setMessage("");
+
     try {
       const res = await fetch(`${API_BASE_URL}/api/jobs/withdraw`, {
         method: "DELETE",
@@ -57,14 +60,13 @@ export default function MyApplicationsPage() {
       });
 
       const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || "Failed to withdraw");
-      }
+      if (!res.ok) throw new Error(data.error || "Failed to withdraw");
 
       setMessage("Application withdrawn successfully.");
-      // Instantly remove it from the list
-      setApplications(applications.filter(app => app.jobId?._id !== jobId));
 
+      setApplications((prev) =>
+        prev.filter((a) => a.jobId?._id !== jobId)
+      );
     } catch (err) {
       setMessage(err.message);
     }
@@ -78,6 +80,22 @@ export default function MyApplicationsPage() {
     });
   };
 
+  // Filtering + Search Logic
+  const filteredApps = applications.filter((app) => {
+    const job = app.jobId;
+    if (!job) return false;
+
+    const matchesSearch =
+      job.name.toLowerCase().includes(search.toLowerCase());
+
+    const type = job.type || "not-specified";
+
+    const matchesType =
+      filterType === "all" || filterType === type;
+
+    return matchesSearch && matchesType;
+  });
+
   if (loading)
     return (
       <div className="min-h-screen flex justify-center items-center text-xl font-semibold">
@@ -87,30 +105,55 @@ export default function MyApplicationsPage() {
 
   return (
     <div className="min-h-screen bg-gray-100 px-6 py-10">
-      {/* HEADER */}
+      {/* Header */}
       <div className="max-w-5xl mx-auto bg-white rounded-2xl shadow-lg p-8 mb-10">
         <h1 className="text-4xl font-bold mb-2">My Applications</h1>
         <p className="text-gray-600 text-lg">
-          Here is a history of all the jobs you have applied to.
+          View and manage all the jobs you've applied for.
         </p>
       </div>
 
-      {/* ERROR/SUCCESS MESSAGE */}
+      {/* Message */}
       {message && (
         <div className="max-w-5xl mx-auto mb-6 p-4 bg-black text-white rounded-lg text-center">
           {message}
         </div>
       )}
 
-      {/* APPLICATIONS LIST */}
+      {/* Search + Filter */}
+      <div className="max-w-5xl mx-auto bg-white p-5 rounded-2xl shadow mb-8 flex flex-col md:flex-row gap-4 justify-between items-center border border-gray-200">
+        <input
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search job titles..."
+          className="w-full md:w-2/3 p-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-400"
+        />
+
+        <select
+          value={filterType}
+          onChange={(e) => setFilterType(e.target.value)}
+          className="p-3 rounded-xl border border-gray-300"
+        >
+          <option value="all">All Types</option>
+          <option value="full-time">Full-Time</option>
+          <option value="part-time">Part-Time</option>
+          <option value="internship">Internship</option>
+          <option value="remote">Remote</option>
+          <option value="workshop">Workshop</option>
+          <option value="seminar">Seminar</option>
+          <option value="not-specified">Not Specified</option>
+        </select>
+      </div>
+
+      {/* Applications List */}
       <div className="max-w-5xl mx-auto">
-        {applications.length === 0 ? (
+        {filteredApps.length === 0 ? (
           <div className="text-center bg-white p-10 rounded-xl shadow">
             <p className="text-gray-700 text-lg">
-              You have not applied to any jobs yet.
+              No applications match your filters.
             </p>
-            <a 
-              href="/jobs" 
+            <a
+              href="/jobs"
               className="mt-4 inline-block bg-blue-600 text-white px-5 py-2 rounded-md font-medium hover:bg-blue-700"
             >
               Browse Jobs
@@ -118,51 +161,62 @@ export default function MyApplicationsPage() {
           </div>
         ) : (
           <div className="space-y-6">
-            {applications.map((app) => (
-              <div
-                key={app._id}
-                className="bg-white rounded-xl shadow-lg p-6 transition"
-              >
-                {app.jobId ? (
-                  <>
-                    <div className="flex flex-col sm:flex-row justify-between sm:items-start gap-4">
-                      <div>
-                        <h3 className="text-2xl font-bold">{app.jobId.name}</h3>
-                        <p className="text-gray-500 text-sm mt-1">
-                          Applied on: {formatDate(app.appliedAt)}
-                        </p>
+            {filteredApps.map((app, index) => {
+              const job = app.jobId;
+              const type = job.type || "Not Specified";
+
+              return (
+                <div
+                  key={app._id}
+                  className="bg-white rounded-xl shadow-lg p-6 transition border border-gray-100"
+                >
+                  <div className="flex flex-col sm:flex-row justify-between sm:items-start gap-4">
+                    <div>
+                      {/* Numbering */}
+                      <div className="text-gray-400 text-sm font-semibold mb-1">
+                        #{index + 1}
                       </div>
-                      <div className="flex-shrink-0 flex sm:flex-col gap-2 w-full sm:w-auto">
-                        <a
-                          href={app.jobId.link}
-                          className="text-blue-600 underline font-medium text-center sm:text-right"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          View Job →
-                        </a>
-                        {/* --- NEW WITHDRAW BUTTON --- */}
-                        <button
-                          onClick={() => handleWithdraw(app.jobId._id, app.jobId.name)}
-                          className="text-red-600 text-center sm:text-right text-sm font-medium hover:underline"
-                        >
-                          Withdraw Application
-                        </button>
-                      </div>
-                    </div>
-                    {app.jobId.description && (
-                      <p className="text-gray-600 mt-3 pt-3 border-t">
-                        {app.jobId.description}
+
+                      <h3 className="text-2xl font-bold">{job.name}</h3>
+
+                      <p className="text-gray-500 text-sm mt-1">
+                        Applied on: {formatDate(app.appliedAt)}
                       </p>
-                    )}
-                  </>
-                ) : (
-                  <p className="text-gray-500">
-                    This job is no longer listed. (Applied on: {formatDate(app.appliedAt)})
-                  </p>
-                )}
-              </div>
-            ))}
+
+                      <span className="inline-block mt-3 px-3 py-1 bg-blue-50 text-blue-700 text-xs rounded-full">
+                        {type}
+                      </span>
+                    </div>
+
+                    <div className="flex-shrink-0 flex sm:flex-col gap-2 w-full sm:w-auto">
+                      <a
+                        href={job.link}
+                        className="text-blue-600 underline font-medium text-center sm:text-right"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        View Job →
+                      </a>
+
+                      <button
+                        onClick={() =>
+                          handleWithdraw(job._id, job.name)
+                        }
+                        className="text-red-600 text-center sm:text-right text-sm font-medium hover:underline"
+                      >
+                        Withdraw Application
+                      </button>
+                    </div>
+                  </div>
+
+                  {job.description && (
+                    <p className="text-gray-600 mt-3 pt-3 border-t">
+                      {job.description}
+                    </p>
+                  )}
+                </div>
+              );
+            })}
           </div>
         )}
       </div>

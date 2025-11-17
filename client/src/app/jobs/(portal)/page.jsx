@@ -1,331 +1,380 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import Head from 'next/head'; // Added for the page title
+import { useEffect, useMemo, useRef, useState } from "react";
+import Head from "next/head";
+import { motion, AnimatePresence } from "framer-motion";
 
-// --- Use the Environment Variable ---
+// FINAL : Modern Professional + Premium Soft UI
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+
+function CountUp({ end = 0, duration = 800, className = "text-4xl font-bold" }) {
+  const [value, setValue] = useState(0);
+  useEffect(() => {
+    let start = 0;
+    const steps = Math.max(8, Math.floor(duration / 16));
+    const increment = (end - start) / steps;
+    let cur = start;
+    const id = setInterval(() => {
+      cur += increment;
+      if ((increment > 0 && cur >= end) || (increment < 0 && cur <= end)) {
+        setValue(end);
+        clearInterval(id);
+      } else {
+        setValue(Math.round(cur));
+      }
+    }, duration / steps);
+    return () => clearInterval(id);
+  }, [end, duration]);
+  return <div className={className}>{value}</div>;
+}
+
+function SkeletonCard() {
+  return (
+    <div className="animate-pulse p-6 bg-white rounded-2xl shadow-md border border-gray-200">
+      <div className="h-6 w-1/3 bg-gray-300 rounded mb-4" />
+      <div className="h-3 w-full bg-gray-200 rounded mb-2" />
+      <div className="h-3 w-5/6 bg-gray-200 rounded mb-6" />
+      <div className="h-10 w-full bg-gray-300 rounded" />
+    </div>
+  );
+}
+
+function ConfettiCanvas({ trigger }) {
+  const canvasRef = useRef(null);
+  useEffect(() => {
+    if (!trigger) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    const w = (canvas.width = window.innerWidth);
+    const h = (canvas.height = window.innerHeight);
+
+    const colors = ["#ff6b6b", "#ffd93d", "#6bcB77", "#4D96FF", "#9D4EDD"].map(c => c.toUpperCase());
+    const particles = [];
+    const count = 80;
+    for (let i = 0; i < count; i++) {
+      particles.push({
+        x: Math.random() * w,
+        y: Math.random() * h - h / 2,
+        r: Math.random() * 6 + 4,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        tilt: Math.random() * 10 - 10,
+        vy: Math.random() * 3 + 2,
+      });
+    }
+
+    let raf;
+    function draw() {
+      ctx.clearRect(0, 0, w, h);
+      particles.forEach((p) => {
+        ctx.beginPath();
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate((p.tilt * Math.PI) / 180);
+        ctx.fillStyle = p.color;
+        ctx.fillRect(-p.r / 2, -p.r / 2, p.r, p.r * 0.6);
+        ctx.restore();
+        p.y += p.vy;
+        p.x += Math.sin(p.y * 0.01) * 2;
+        if (p.y > h + 50) {
+          p.y = -10;
+          p.x = Math.random() * w;
+        }
+      });
+      raf = requestAnimationFrame(draw);
+    }
+    draw();
+    const stopAfter = setTimeout(() => {
+      cancelAnimationFrame(raf);
+      ctx.clearRect(0, 0, w, h);
+    }, 3500);
+
+    return () => {
+      cancelAnimationFrame(raf);
+      clearTimeout(stopAfter);
+      ctx.clearRect(0, 0, w, h);
+    };
+  }, [trigger]);
+  return (
+    <canvas ref={canvasRef} className="pointer-events-none fixed inset-0 z-50" />
+  );
+}
 
 export default function JobsPage() {
   const [loading, setLoading] = useState(true);
   const [student, setStudent] = useState(null);
   const [jobs, setJobs] = useState([]);
-  const [appliedCount, setAppliedCount] = useState(0);
-  const [message, setMessage] = useState("");
+  const [filtered, setFiltered] = useState([]);
+  const [bookmarked, setBookmarked] = useState(new Set());
   const [appliedJobIds, setAppliedJobIds] = useState(new Set());
-  
-  // --- NEW STATE FOR BUTTON FEEDBACK ---
-  const [isApplying, setIsApplying] = useState(false); 
+  const [appliedCount, setAppliedCount] = useState(0);
+  const [search, setSearch] = useState("");
+  const [filterType, setFilterType] = useState("all");
+  const [sortBy, setSortBy] = useState("latest");
+  const [isProcessing, setIsProcessing] = useState(false);
 
-  // Fetch student details and job list
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [jobToApply, setJobToApply] = useState(null);
+  const [confettiTrigger, setConfettiTrigger] = useState(false);
+  const [tempMessage, setTempMessage] = useState("");
+
   useEffect(() => {
-    async function fetchData() {
+    async function load() {
       if (!API_BASE_URL) {
-        setMessage("Configuration error: API_BASE_URL is not set.");
         setLoading(false);
-        window.location.href = "/jobs/login";
+        setTimeout(() => (window.location.href = "/jobs/login"), 800);
         return;
       }
-
       try {
-        const [meRes, jobsRes, appliedRes, myAppsRes] = await Promise.all([
-          fetch(`${API_BASE_URL}/api/student/me`, { credentials: "include" }),
+        const meRes = await fetch(`${API_BASE_URL}/api/student/me`, { credentials: "include" });
+        if (meRes.status === 401) return (window.location.href = "/jobs/login");
+        const me = await meRes.json();
+        setStudent(me);
+
+        const [jobsRes, appliedRes, appsRes] = await Promise.all([
           fetch(`${API_BASE_URL}/api/jobs/all`),
           fetch(`${API_BASE_URL}/api/jobs/applied-count`, { credentials: "include" }),
-          fetch(`${API_BASE_URL}/api/jobs/my-applications`, { credentials: "include" })
+          fetch(`${API_BASE_URL}/api/jobs/my-applications`, { credentials: "include" }),
         ]);
 
-        if (meRes.status === 401 || appliedRes.status === 401 || myAppsRes.status === 401) {
-          window.location.href = "/jobs/login";
-          return;
-        }
+        const jobsData = await jobsRes.json();
+        const appliedData = await appliedRes.json();
+        const appsData = await appsRes.json();
 
-        if (!meRes.ok || !jobsRes.ok || !appliedRes.ok || !myAppsRes.ok) {
-            throw new Error("One or more required API calls failed.");
-        }
-        
-        // Parse and process data
-        const [meData, jobsData, appliedData, myAppsData] = await Promise.all([
-            meRes.json(),
-            jobsRes.json(),
-            appliedRes.json(),
-            myAppsRes.json(),
-        ]);
-
-        const appliedIds = myAppsData.applications 
-          ? new Set(myAppsData.applications.map(app => app.jobId?._id).filter(Boolean))
-          : new Set();
-
-        setStudent(meData);
-        setJobs(jobsData.jobs || []);
+        const jobsList = jobsData.jobs || [];
+        setJobs(jobsList);
+        setFiltered(jobsList);
         setAppliedCount(appliedData.count || 0);
-        setAppliedJobIds(appliedIds);
-
-      } catch (err) {
-        console.error("Dashboard Load Error:", err);
-        setMessage(err.message || "Failed to load dashboard data.");
-        setTimeout(() => window.location.href = "/jobs/login", 2000); 
+        setAppliedJobIds(new Set((appsData?.applications || []).map(a => a.jobId?._id).filter(Boolean)));
+      } catch (e) {
+        console.error(e);
+        setTempMessage("Failed to load jobs.");
       } finally {
         setLoading(false);
       }
     }
-    fetchData();
-  }, []); 
+    load();
+  }, []);
 
-  // Apply handler
-  const handleApply = async (jobId) => {
-    setMessage("");
-    setIsApplying(true); // <-- START LOADING
+  useEffect(() => {
+    let list = [...jobs];
+    if (search.trim()) list = list.filter(j => (j.name || "").toLowerCase().includes(search.toLowerCase()));
+    if (filterType !== "all") list = list.filter(j => (j.type || "").toLowerCase() === filterType.toLowerCase());
+
+    if (sortBy === "latest") list.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    else if (sortBy === "oldest") list.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+    else if (sortBy === "az") list.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+
+    setFiltered(list);
+  }, [jobs, search, filterType, sortBy]);
+
+  const toggleBookmark = (id) => setBookmarked(prev => {
+    const s = new Set(prev);
+    s.has(id) ? s.delete(id) : s.add(id);
+    return s;
+  });
+
+  const openApplyModal = (job) => {
+    setJobToApply(job);
+    setConfirmOpen(true);
+  };
+
+  const confirmApply = async () => {
+    if (!jobToApply) return;
+    setIsProcessing(true);
     try {
       const res = await fetch(`${API_BASE_URL}/api/jobs/apply`, {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ jobId }),
+        body: JSON.stringify({ jobId: jobToApply._id }),
       });
-      const data = await res.json();
       if (res.ok) {
-        setMessage("Job marked as applied ✔️");
-        setAppliedCount(prevCount => prevCount + 1);
-        setAppliedJobIds(prevIds => new Set(prevIds).add(jobId)); 
+        setAppliedJobIds(prev => new Set(prev).add(jobToApply._id));
+        setAppliedCount(prev => prev + 1);
+        setTempMessage("Successfully applied!");
+        setConfettiTrigger(v => !v);
       } else {
-        throw new Error(data.error || "Failed to apply ❌");
+        const data = await res.json();
+        setTempMessage(data.error || "Failed to apply");
       }
-    } catch (err) {
-      setMessage(err.message || "Failed to apply ❌");
+    } catch (e) {
+      setTempMessage("Network error");
     } finally {
-        setIsApplying(false); // <-- STOP LOADING
+      setConfirmOpen(false);
+      setIsProcessing(false);
     }
   };
 
-  // Handle Withdraw
-  const handleWithdraw = async (jobId) => {
-    setMessage("");
-    setIsApplying(true); // <-- START LOADING
+  const handleWithdraw = async (id) => {
+    setIsProcessing(true);
     try {
       const res = await fetch(`${API_BASE_URL}/api/jobs/withdraw`, {
         method: "DELETE",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ jobId }),
+        body: JSON.stringify({ jobId: id }),
       });
-
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || "Failed to withdraw");
+      if (res.ok) {
+        setAppliedJobIds(prev => { const s = new Set(prev); s.delete(id); return s; });
+        setAppliedCount(prev => prev - 1);
+        setTempMessage("Application withdrawn");
+      } else {
+        const data = await res.json();
+        setTempMessage(data.error || "Failed to withdraw");
       }
-
-      setMessage("Application withdrawn.");
-      setAppliedCount(prevCount => prevCount - 1);
-      setAppliedJobIds(prevIds => {
-        const newIds = new Set(prevIds);
-        newIds.delete(jobId);
-        return newIds;
-      });
-
-    } catch (err) {
-      setMessage(err.message || "Failed to withdraw.");
+    } catch (e) {
+      setTempMessage("Network error");
     } finally {
-        setIsApplying(false); // <-- STOP LOADING
+      setIsProcessing(false);
     }
   };
 
+  useEffect(() => {
+    if (!tempMessage) return;
+    const t = setTimeout(() => setTempMessage(""), 3500);
+    return () => clearTimeout(t);
+  }, [tempMessage]);
 
-  if (loading)
-    return (
-      <div className="min-h-screen flex flex-col justify-center items-center text-xl font-semibold bg-gradient-to-br from-blue-100 to-indigo-100 text-blue-800">
-        <svg className="animate-spin h-8 w-8 mr-3 text-blue-500" viewBox="0 0 24 24">
-          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-        </svg>
-        Loading Dashboard...
+  if (loading) return (
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-50 p-8">
+      <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
+        <SkeletonCard />
+        <SkeletonCard />
+        <SkeletonCard />
+        <SkeletonCard />
       </div>
-    );
-  
-  if (!student) {
-    return (
-      <div className="min-h-screen flex justify-center items-center text-xl font-semibold bg-gradient-to-br from-blue-100 to-indigo-100 text-blue-800">
-        Preparing dashboard...
-      </div>
-    );
-  }
+    </div>
+  );
 
   return (
     <>
-      <Head>
-        <title>Student Job Portal - Dashboard</title>
-      </Head>
+      <Head><title>Student Job Portal — Dashboard</title></Head>
 
-      {/* Skip to main content for accessibility */}
-      <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:top-0 focus:left-1/2 focus:-translate-x-1/2 focus:z-50 focus:bg-white focus:text-blue-700 focus:p-3 focus:rounded-b-lg">
-        Skip to main content
-      </a>
+      <ConfettiCanvas trigger={confettiTrigger} />
 
-      <div className="min-h-screen bg-gray-50 text-gray-800 font-sans relative pb-20"> 
-
-        {/* --- Top Gradient Background (Visual Enhancement) --- */}
-        <div className="absolute top-0 left-0 w-full h-60 bg-gradient-to-r from-blue-600 to-purple-600 -z-10"></div>
-
-        {/* Main Content Area */}
-        <main id="main-content" className="max-w-6xl mx-auto px-4 py-8 relative z-10">
-
-          {/* WELCOME HERO */}
-          <section className="bg-white rounded-2xl shadow-xl p-8 md:p-12 mb-8 text-center" role="region" aria-label="Welcome section">
-            <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-3 animate-fade-in">
-              Welcome, {student.name?.split(" ")[0]}!
-            </h1>
-            <p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto animate-fade-in delay-200">
-              Your gateway to exciting career opportunities. Find and apply for jobs tailored for you.
-            </p>
-          </section>
-
-          {/* SUCCESS / ERROR MESSAGE (Centralized and More Prominent) */}
-          {message && (
-            <div 
-              className={`max-w-xl mx-auto p-4 rounded-lg text-center font-medium mb-6 ${message.includes("✔️") ? "bg-green-100 text-green-800 border border-green-200" : "bg-red-100 text-red-800 border border-red-200"}`} 
-              role="alert"
-              aria-live="polite"
-            >
-              {message}
-            </div>
-          )}
-
-          {/* QUICK STATS (Clickable Cards) */}
-          <section className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8" role="list" aria-label="Quick statistics">
-            
-            {/* Jobs Applied Card */}
-            <a 
-              href="/jobs/my-applications" 
-              className="group bg-white rounded-2xl shadow-md p-6 text-center transition-all duration-300 ease-in-out hover:shadow-lg hover:bg-blue-50 focus:outline-none focus:ring-4 focus:ring-blue-300"
-              role="listitem"
-              aria-label={`You have applied to ${appliedCount} jobs. Click to view.`}
-            >
-              <h3 className="text-4xl font-extrabold text-blue-600 group-hover:text-blue-700 transition-colors duration-300">{appliedCount}</h3>
-              <p className="text-gray-700 text-lg mt-1">Jobs Applied</p>
-            </a>
-
-            {/* Branch Card */}
-            <a 
-              href="/jobs/updateprofile" 
-              className="group bg-white rounded-2xl shadow-md p-6 text-center transition-all duration-300 ease-in-out hover:shadow-lg hover:bg-purple-50 focus:outline-none focus:ring-4 focus:ring-purple-300"
-              role="listitem"
-              aria-label={`Your registered branch is ${student.branch}. Click to update profile.`}
-            >
-              <h3 className="text-2xl font-bold text-purple-600 group-hover:text-purple-700 transition-colors duration-300">{student.branch}</h3>
-              <p className="text-gray-700 text-lg mt-1">Branch</p>
-            </a>
-
-            {/* Year Card */}
-            <a 
-              href="/jobs/updateprofile" 
-              className="group bg-white rounded-2xl shadow-md p-6 text-center transition-all duration-300 ease-in-out hover:shadow-lg hover:bg-green-50 focus:outline-none focus:ring-4 focus:ring-green-300"
-              role="listitem"
-              aria-label={`Your registered year is ${student.year}. Click to update profile.`}
-            >
-              <h3 className="text-2xl font-bold text-green-600 group-hover:text-green-700 transition-colors duration-300">{student.year}</h3>
-              <p className="text-gray-700 text-lg mt-1">Year</p>
-            </a>
-          </section>
-
-          {/* HOW IT WORKS (Visually Enhanced Steps) */}
-          <section className="bg-white rounded-2xl shadow-md p-8 mb-8" role="region" aria-label="How the portal works">
-            <h2 className="text-3xl font-bold text-gray-900 mb-6 text-center">How This Portal Works</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {/* Step 1 */}
-              <div className="flex flex-col items-center text-center p-4 bg-gray-50 rounded-lg shadow-sm">
-                <span className="text-4xl text-blue-500 mb-3">🔍</span>
-                <h3 className="text-xl font-semibold mb-2">Browse Jobs</h3>
-                <p className="text-gray-600 text-sm">Explore a curated list of job opportunities.</p>
-              </div>
-              {/* Step 2 */}
-              <div className="flex flex-col items-center text-center p-4 bg-gray-50 rounded-lg shadow-sm">
-                <span className="text-4xl text-purple-500 mb-3">🔗</span>
-                <h3 className="text-xl font-semibold mb-2">Apply Externally</h3>
-                <p className="text-gray-600 text-sm">Click the link to apply on the company's website.</p>
-              </div>
-              {/* Step 3 */}
-              <div className="flex flex-col items-center text-center p-4 bg-gray-50 rounded-lg shadow-sm">
-                <span className="text-4xl text-green-500 mb-3">✅</span>
-                <h3 className="text-xl font-semibold mb-2">Mark as Applied</h3>
-                <p className="text-gray-600 text-sm">Record your application here for tracking.</p>
-              </div>
-              {/* Step 4 */}
-              <div className="flex flex-col items-center text-center p-4 bg-gray-50 rounded-lg shadow-sm">
-                <span className="text-4xl text-yellow-500 mb-3">📊</span>
-                <h3 className="text-xl font-semibold mb-2">Track Progress</h3>
-                <p className="text-gray-600 text-sm">View all your applications and update your profile.</p>
-              </div>
-            </div>
-          </section>
-
-          {/* --- "ALL JOBS" SECTION --- */}
-          <section className="mb-8" aria-labelledby="job-listings-heading">
-            <h2 id="job-listings-heading" className="text-3xl md:text-4xl font-bold text-gray-900 mb-6 text-center">All Opportunities</h2>
-            
-            {/* JOB LIST */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6" role="feed" aria-live="polite">
-              {jobs.length === 0 ? (
-                <p className="text-gray-700 text-lg col-span-full text-center py-8 bg-white rounded-lg shadow-md">No jobs posted yet. Check back soon!</p>
-              ) : (
-                jobs.map((job) => (
-                  <div
-                    key={job._id}
-                    className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-all duration-200 ease-in-out focus-within:ring-4 focus-within:ring-blue-200"
-                    role="article"
-                    aria-label={`Job posting: ${job.name}`}
-                    tabIndex="0" // Make the whole card keyboard focusable
-                  >
-                    <h3 className="text-xl font-bold text-gray-900 mb-2">{job.name}</h3>
-                    {job.description && (
-                      <p className="text-gray-600 text-sm mb-4 line-clamp-3">{job.description}</p>
-                    )}
-
-                    <a
-                      href={job.link}
-                      className="text-blue-700 hover:text-blue-800 font-semibold underline mt-3 inline-block focus:outline-none focus:ring-2 focus:ring-blue-300 rounded"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      aria-label={`Apply for ${job.name} on company website (opens in new tab)`}
-                    >
-                      Apply on Company Website <span aria-hidden="true">→</span>
-                    </a>
-
-                    {/* Conditional Apply/Withdraw Button */}
-                    {appliedJobIds.has(job._id) ? (
-                      <button
-                        onClick={() => handleWithdraw(job._id)}
-                        className="mt-4 w-full bg-red-600 text-white py-2 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-4 focus:ring-red-300 transition-colors duration-200"
-                        aria-label={`Withdraw application for ${job.name}`}
-                        disabled={isApplying} // <-- ADD DISABLE
-                      >
-                        {isApplying ? "Processing..." : "Withdraw"}
-                      </button>
-                    ) : (
-                      <button
-                        onClick={() => handleApply(job._id)}
-                        className="mt-4 w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-4 focus:ring-green-300 transition-colors duration-200"
-                        aria-label={`Mark ${job.name} as applied`}
-                        disabled={isApplying} // <-- ADD DISABLE
-                      >
-                        {isApplying ? "Processing..." : "Apply"}
-                      </button>
-                    )}
-                  </div>
-                ))
-              )}
-            </div>
-          </section>
-        </main>
-
-        {/* --- FLOATING ACTION BUTTON (FAB) --- */}
-        <a 
-          href="/" 
-          className="fixed bottom-6 right-6 bg-black text-white px-4 py-2 rounded-full shadow-lg hover:bg-gray-800 transition transform hover:scale-105 text-sm font-medium"
-          title="Visit Abdul Barr's Portfolio"
+      <div className="min-h-screen bg-gray-50 pb-24 relative">
+        <a
+          href="/"
+          className="fixed bottom-6 right-6 z-50 inline-flex items-center px-6 py-3 rounded-full bg-black text-white shadow-2xl hover:scale-105 transition-transform text-sm font-medium"
           aria-label="Visit Abdul Barr's Portfolio"
         >
           Abdul Barr's Portfolio
         </a>
+
+        <header className="bg-gradient-to-r from-indigo-600 to-blue-600 text-white py-16 rounded-b-[2rem] shadow-xl">
+          <div className="max-w-6xl mx-auto px-6 text-center">
+            <motion.h1 initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45 }} className="text-4xl md:text-5xl font-extrabold">Welcome, {student?.name} 👋</motion.h1>
+            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }} className="text-lg mt-3 opacity-90">Discover curated opportunities — track, apply, and succeed.</motion.p>
+
+            <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-3xl mx-auto">
+              <motion.div initial={{ y: 8, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="bg-white rounded-2xl p-4 shadow-md border border-gray-100">
+                <div className="text-xs uppercase text-gray-500">Jobs Applied</div>
+                <CountUp end={appliedCount} className="text-2xl font-bold text-blue-700" />
+              </motion.div>
+
+              <motion.div initial={{ y: 8, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.05 }} className="bg-white rounded-2xl p-4 shadow-md border border-gray-100">
+                <div className="text-xs uppercase text-gray-500">Branch</div>
+                <div className="text-2xl font-bold text-purple-600">{student?.branch}</div>
+              </motion.div>
+
+              <motion.div initial={{ y: 8, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.1 }} className="bg-white rounded-2xl p-4 shadow-md border border-gray-100">
+                <div className="text-xs uppercase text-gray-500">Year</div>
+                <div className="text-2xl font-bold text-green-600">{student?.year}</div>
+              </motion.div>
+            </div>
+
+          </div>
+        </header>
+
+        <main className="max-w-6xl mx-auto px-6 -mt-10">
+          <AnimatePresence>
+            {tempMessage && (
+              <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="mt-6 p-3 bg-white rounded-xl border-l-4 border-blue-500 shadow">{tempMessage}</motion.div>
+            )}
+          </AnimatePresence>
+
+          <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-white p-4 rounded-2xl mt-6 shadow border border-gray-100">
+            <div className="flex gap-3 items-center w-full md:w-2/3">
+              <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search roles, companies..." className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-300" />
+
+              <select value={filterType} onChange={(e) => setFilterType(e.target.value)} className="p-3 rounded-xl border border-gray-200">
+                <option value="all">All Types</option>
+                <option value="full-time">Full-Time</option>
+                <option value="internship">Internship</option>
+                <option value="part-time">Part-Time</option>
+                <option value="remote">Remote</option>
+                <option value="workshop">Workshop</option>
+                <option value="seminar">Seminar</option>
+              </select>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <label className="text-sm text-gray-600">Sort</label>
+              <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="p-3 rounded-xl border border-gray-200">
+                <option value="latest">Latest</option>
+                <option value="oldest">Oldest</option>
+                <option value="az">A → Z</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="w-full bg-yellow-100 border border-yellow-300 text-yellow-800 text-center text-xs sm:text-sm px-4 py-2 rounded-xl shadow mb-6">
+            All application data is securely recorded and reviewed only for placement purposes.
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
+            <AnimatePresence>
+              {filtered.map(job => (
+                <motion.article key={job._id} layout initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 12 }} transition={{ duration: 0.28 }} className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100 relative">
+                  <button onClick={() => toggleBookmark(job._id)} className={`absolute top-4 right-4 text-lg ${bookmarked.has(job._id) ? "text-yellow-500" : "text-gray-300"}`} aria-label="Bookmark">★</button>
+
+                  <div className="flex items-start gap-4">
+                    <div className="flex-1">
+                      <h3 className="text-xl font-semibold text-gray-900">{job.name}</h3>
+                      <p className="text-sm text-gray-600 mt-2 line-clamp-3">{job.description}</p>
+
+                      <div className="mt-4 flex gap-2 flex-wrap text-xs">
+                        {job.type && <span className="px-3 py-1 rounded-full bg-blue-50 text-blue-700">{job.type}</span>}
+                        {job.location && <span className="px-3 py-1 rounded-full bg-green-50 text-green-700">{job.location}</span>}
+                      </div>
+                    </div>
+
+                    <div className="w-32 flex-shrink-0 flex flex-col items-end gap-3">
+                      <a href={job.link} target="_blank" rel="noreferrer" className="text-blue-600 font-semibold underline">Company Site →</a>
+
+                      {appliedJobIds.has(job._id) ? (
+                        <button disabled={isProcessing} onClick={() => handleWithdraw(job._id)} className="mt-2 w-full py-2 rounded-xl bg-red-500 text-white font-semibold hover:bg-red-600 disabled:opacity-60">{isProcessing ? "Processing..." : "Withdraw"}</button>
+                      ) : (
+                        <button disabled={isProcessing} onClick={() => openApplyModal(job)} className="mt-2 w-full py-2 rounded-xl bg-emerald-500 text-white font-semibold hover:bg-emerald-600 disabled:opacity-60">Apply</button>
+                      )}
+                    </div>
+                  </div>
+                </motion.article>
+              ))}
+            </AnimatePresence>
+          </div>
+        </main>
+
+        <AnimatePresence>
+          {confirmOpen && jobToApply && (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-40 flex items-center justify-center p-4">
+              <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={() => setConfirmOpen(false)} />
+              <motion.div initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 30, opacity: 0 }} transition={{ duration: 0.25 }} className="relative z-50 w-full max-w-2xl bg-white rounded-2xl shadow-2xl p-6 border border-gray-100">
+                <h3 className="text-2xl font-bold mb-2">Confirm Application</h3>
+                <p className="text-gray-700 mb-4">You are about to apply for <strong>{jobToApply.name}</strong>. This will mark the job as applied in your dashboard.</p>
+                <div className="mb-4">
+                  <div className="text-sm text-gray-500">Role</div>
+                  <div className="text-lg font-semibold">{jobToApply.name}</div>
+                </div>
+                <div className="flex gap-3 justify-end">
+                  <button onClick={() => setConfirmOpen(false)} className="px-4 py-2 rounded-lg border border-gray-200">Cancel</button>
+                  <button onClick={confirmApply} disabled={isProcessing} className="px-4 py-2 rounded-lg bg-emerald-500 text-white font-semibold">{isProcessing ? 'Processing...' : 'Confirm & Apply'}</button>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </>
   );

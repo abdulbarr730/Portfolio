@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 
-// --- Use the Environment Variable ---
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function CreateJobPage() {
@@ -10,77 +9,63 @@ export default function CreateJobPage() {
     name: "",
     link: "",
     description: "",
+    type: "internship",
+    location: "",
   });
-  
+
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
-  
-  // --- Check Auth on Load ---
+
+  // Check auth on mount (optional quick check)
   useEffect(() => {
-    const checkAuth = async () => {
-      if (!API_BASE_URL) return;
+    if (!API_BASE_URL) return;
+    (async () => {
       try {
-        // Use any protected route to check for a valid cookie
         const res = await fetch(`${API_BASE_URL}/api/admin/students/pending`, {
           credentials: "include",
         });
         if (res.status === 401) {
-          // If not authorized, redirect to admin login
           window.location.href = "/jobs/admin/login";
-          return;
         }
       } catch (err) {
-        // If the request fails (e.g., server down), also redirect
-        window.location.href = "/jobs/admin/login";
+        // If server down, still keep page visible for local testing
       }
-    };
-    checkAuth();
-  }, []); // Runs once on page load
+    })();
+  }, []);
 
   const handleChange = (e) => {
-    setForm({
-      ...form,
-      [e.target.name]: e.target.value,
-    });
+    setForm({ ...form, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async () => {
     setMessage("");
-    
+
     if (!API_BASE_URL) {
       setMessage("Configuration error: API_BASE_URL is not set.");
       return;
     }
-    
-    // --- Frontend validation ---
+
     if (!form.name || !form.link) {
       setMessage("Job Name and Link are required.");
       return;
     }
-    
+
     setLoading(true);
     try {
       const res = await fetch(`${API_BASE_URL}/api/admin/jobs/create`, {
         method: "POST",
-        credentials: "include", // Sends the login cookie
-        headers: {
-          "Content-Type": "application/json",
-        },
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
       });
-
       const data = await res.json();
 
       if (res.ok) {
         setMessage(`Job "${data.job.name}" created successfully!`);
-        // Clear the form on success
-        setForm({ name: "", link: "", description: "" });
+        setForm({ name: "", link: "", description: "", type: "internship", location: "" });
       } else if (res.status === 401) {
-        // This means the cookie is invalid or expired
         setMessage("Authorization failed. Redirecting to login...");
-        setTimeout(() => {
-          window.location.href = "/jobs/admin/login";
-        }, 1500);
+        setTimeout(() => window.location.href = "/jobs/admin/login", 1200);
       } else {
         setMessage(data.error || "Failed to create job.");
       }
@@ -93,57 +78,73 @@ export default function CreateJobPage() {
   };
 
   return (
-    // Removed outer wrapper and allow content to align to the top of the layout
-    <>
-      <h1 className="text-4xl font-bold mb-6">Create New Job</h1>
-      
-      {/* --- FORM CARD (Moved centering classes here) --- */}
-      <div className="bg-white shadow-lg rounded-2xl p-8 w-full max-w-lg mx-auto"> 
-        
+    <div className="max-w-lg mx-auto py-10">
+      <h1 className="text-3xl font-extrabold mb-6">Create New Job</h1>
+
+      <div className="bg-white shadow-xl rounded-2xl p-8">
         <div className="space-y-4">
           <input
-            type="text"
             name="name"
-            placeholder="Job Title (e.g., Google SWE Intern)"
-            className="w-full p-3 border rounded-md"
             value={form.name}
             onChange={handleChange}
+            placeholder="Job Title (e.g., Google SWE Intern)"
+            className="w-full p-3 rounded-xl border focus:ring-2 focus:ring-blue-300"
           />
 
           <input
-            type="text"
             name="link"
-            placeholder="Application Link (https://...)"
-            className="w-full p-3 border rounded-md"
             value={form.link}
             onChange={handleChange}
+            placeholder="Application Link (https://...)"
+            className="w-full p-3 rounded-xl border focus:ring-2 focus:ring-blue-300"
           />
 
           <textarea
             name="description"
-            placeholder="Short Job Description (Optional)"
-            className="w-full p-3 border rounded-md"
-            rows="3"
             value={form.description}
             onChange={handleChange}
+            rows="3"
+            placeholder="Short Job Description (Optional)"
+            className="w-full p-3 rounded-xl border focus:ring-2 focus:ring-blue-300"
           />
-          
+
+          <input
+            name="location"
+            value={form.location}
+            onChange={handleChange}
+            placeholder="Location (City, Remote, etc.)"
+            className="w-full p-3 rounded-xl border focus:ring-2 focus:ring-blue-300"
+          />
+
+          <select
+            name="type"
+            value={form.type}
+            onChange={handleChange}
+            className="w-full p-3 rounded-xl border bg-white"
+          >
+            <option value="internship">Internship</option>
+            <option value="full-time">Full-Time</option>
+            <option value="part-time">Part-Time</option>
+            <option value="remote">Remote</option>
+            <option value="workshop">Workshop</option>
+            <option value="seminar">Seminar</option>
+          </select>
+
           <button
             onClick={handleSubmit}
-            className="w-full bg-blue-600 text-white py-3 rounded-md hover:bg-blue-700 mt-1"
             disabled={loading}
+            className="w-full py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold shadow hover:scale-[1.01] transition disabled:opacity-60"
           >
             {loading ? "Creating..." : "Create Job"}
           </button>
         </div>
 
-        {/* Messages */}
         {message && (
-          <div className="mt-4 p-3 rounded text-sm text-white bg-black text-center">
+          <div className="mt-4 text-center p-3 rounded-xl bg-black text-white">
             {message}
           </div>
         )}
       </div>
-    </>
+    </div>
   );
 }
