@@ -44,9 +44,11 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 flex justify-center items-center px-4">
-      <div className="bg-white shadow-lg rounded-2xl p-8 w-full max-w-md">
-        <h1 className="text-3xl font-bold text-center mb-6">Admin Login</h1>
+    // FIX: Changed dark background to light neutral
+    <div className="min-h-screen bg-gray-50 flex justify-center items-center px-4"> 
+      {/* FIX: Added border for better separation */}
+      <div className="bg-white shadow-lg rounded-2xl p-8 w-full max-w-md border border-gray-200">
+        <h1 className="text-3xl font-bold text-center mb-6 text-gray-900">Admin Login</h1>
         <div className="space-y-4">
           <input
             type="email"
@@ -65,13 +67,16 @@ export default function AdminLoginPage() {
               onChange={(e) => setPassword(e.target.value)}
             />
             <button
-              type="button"
+              type="button" // Added type="button" for clarity
               onClick={() => setShowPassword(!showPassword)}
               className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-gray-700"
+              aria-label={showPassword ? "Hide password" : "Show password"} // FIX: Added A11y label
             >
               {showPassword ? (
+                // Eye-slash icon
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M3.98 8.223A10.477 10.477 0 0012 6c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-1.13 0-2.197-.2-3.172-.547m-2.286-2.286A10.452 10.452 0 013.98 8.223z" /><path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" d="M3 3l18 18" /></svg>
               ) : (
+                // Eye icon
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" /><path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
               )}
             </button>
