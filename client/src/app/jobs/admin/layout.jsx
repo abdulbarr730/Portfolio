@@ -40,9 +40,14 @@ export default function AdminLayout({ children }) {
         {/* --- MOBILE-ONLY HEADER --- */}
         <MobileHeader onMenuClick={() => setIsSidebarOpen(true)} />
         
-        {/* Your page content */}
+        {/* --- FIX: Wrap children in Suspense --- */}
         <main className="flex-1 p-4 sm:p-8 overflow-y-auto">
-          {children}
+          <Suspense fallback={
+            // Optional: Show a simple loading indicator while the client is fetching search params
+            <div className="text-center py-20 text-gray-500">Loading Filters...</div>
+          }>
+            {children}
+          </Suspense>
         </main>
       </div>
     </div>
