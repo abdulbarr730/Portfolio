@@ -497,7 +497,7 @@ export default function JobsPage() {
                           onClick={() => openApplyModal(job)}
                           className="mt-2 w-full py-2 rounded-xl bg-emerald-500 text-white font-semibold hover:bg-emerald-600 disabled:opacity-60"
                         >
-                          Apply
+                          I have Applied
                         </button>
                       )}
                     </div>
