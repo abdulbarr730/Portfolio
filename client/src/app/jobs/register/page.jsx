@@ -1,23 +1,16 @@
 "use client";
 
 import { useState } from "react";
-// Removed Next.js imports that cause errors in this environment
-// import { useRouter } from "next/navigation";
-// import Link from "next/link";
 
-// --- Use the Environment Variable ---
-// This will be read from your .env.local file in development
-// and from your hosting provider's settings in production.
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function RegisterPage() {
-  // const router = useRouter(); // Removed router
-
   const [form, setForm] = useState({
     name: "",
     email: "",
     password: "",
     rollNumber: "",
+    phoneNumber: "",     // <-- ADDED
     course: "",
     branch: "",
     year: "",
@@ -26,30 +19,30 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
 
-  // pending state when server returns 202
   const [pending, setPending] = useState(false);
   const [pendingInfo, setPendingInfo] = useState(null);
 
-  // cancel modal
   const [showConfirmCancel, setShowConfirmCancel] = useState(false);
   const [cancelLoading, setCancelLoading] = useState(false);
   const [cancelMessage, setCancelMessage] = useState("");
-  
-  const [showPassword, setShowPassword] = useState(false); // <-- ADDED FOR EYE ICON
 
-  const handleChange = (k) => (e) => setForm((s) => ({ ...s, [k]: e.target.value }));
+  const [showPassword, setShowPassword] = useState(false);
+
+  const handleChange = (k) => (e) =>
+    setForm((s) => ({ ...s, [k]: e.target.value }));
 
   const handleRegister = async () => {
     setMessage("");
     setPending(false);
     setPendingInfo(null);
 
-    // small client-side validation
+    // validation
     if (
       !form.name ||
       !form.email ||
       !form.password ||
       !form.rollNumber ||
+      !form.phoneNumber ||       // <-- ADDED
       !form.course ||
       !form.branch ||
       !form.year
@@ -58,7 +51,6 @@ export default function RegisterPage() {
       return;
     }
 
-    // Check if the URL is set
     if (!API_BASE_URL) {
       setMessage("Configuration error: API_BASE_URL is not set.");
       return;
@@ -66,25 +58,37 @@ export default function RegisterPage() {
 
     setLoading(true);
     try {
-      // --- Use the environment variable in the fetch URL ---
       const res = await fetch(`${API_BASE_URL}/api/student/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include", // <-- important
         body: JSON.stringify(form),
       });
 
+      // NEW: if unauthorized → redirect to login
+      if (res.status === 401) {
+        setMessage("Please login to continue.");
+        window.location.href = "/jobs/login";
+        return;
+      }
+
       const j = await res.json();
 
+
       if (res.status === 201) {
-        // approved and created
-        setMessage(j.message || "Registered and approved. Redirecting to login...");
-        // Replaced router.push with standard window.location for navigation
+        setMessage(
+          j.message || "Registered and approved. Redirecting to login..."
+        );
         setTimeout(() => (window.location.href = "/jobs/login"), 900);
       } else if (res.status === 202 || j.pending) {
-        // pending approval
         setPending(true);
-        setPendingInfo({ email: form.email, rollNumber: form.rollNumber });
-        setMessage(j.message || "Registration received. Waiting admin approval.");
+        setPendingInfo({
+          email: form.email,
+          rollNumber: form.rollNumber,
+        });
+        setMessage(
+          j.message || "Registration received. Waiting admin approval."
+        );
       } else {
         setMessage(j.error || "Registration failed");
       }
@@ -112,18 +116,19 @@ export default function RegisterPage() {
         rollNumber: pendingInfo?.rollNumber || form.rollNumber,
       };
 
-      // --- Use the environment variable in the fetch URL ---
-      const res = await fetch(`${API_BASE_URL}/api/student/cancel-registration`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+      const res = await fetch(
+        `${API_BASE_URL}/api/student/cancel-registration`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        }
+      );
 
       const j = await res.json();
 
       if (res.ok) {
         setCancelMessage(j.message || "Registration cancelled");
-        // Replaced router.push with standard window.location for navigation
         setTimeout(() => (window.location.href = "/jobs/register"), 700);
       } else {
         setCancelMessage(j.error || "Failed to cancel");
@@ -140,9 +145,10 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen bg-gray-100 flex justify-center items-center px-4 py-10">
       <div className="bg-white shadow-lg rounded-2xl p-8 w-full max-w-md">
-        <h1 className="text-3xl font-bold text-center mb-6">Student Registration</h1>
+        <h1 className="text-3xl font-bold text-center mb-6">
+          Student Registration
+        </h1>
 
-        {/* Form */}
         {!pending && (
           <div className="space-y-4">
             <input
@@ -161,7 +167,16 @@ export default function RegisterPage() {
               onChange={handleChange("email")}
             />
 
-            {/* --- PASSWORD INPUT WITH SHOW/HIDE ICON --- */}
+            {/* Phone Number */}
+            <input
+              type="tel"
+              placeholder="Phone Number"
+              className="w-full p-3 border rounded-md"
+              value={form.phoneNumber}
+              onChange={handleChange("phoneNumber")}
+            />
+
+            {/* Password */}
             <div className="relative">
               <input
                 type={showPassword ? "text" : "password"}
@@ -173,17 +188,11 @@ export default function RegisterPage() {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-gray-700"
-                aria-label={showPassword ? "Hide password" : "Show password"}
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500"
               >
-                {showPassword ? (
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M3.98 8.223A10.477 10.477 0 0012 6c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-1.13 0-2.197-.2-3.172-.547m-2.286-2.286A10.452 10.452 0 013.98 8.223z" /><path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" d="M3 3l18 18" /></svg>
-                ) : (
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" /><path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                )}
+                {showPassword ? "🙈" : "👁️"}
               </button>
             </div>
-            {/* --- END PASSWORD INPUT --- */}
 
             <input
               type="text"
@@ -193,9 +202,8 @@ export default function RegisterPage() {
               onChange={handleChange("rollNumber")}
             />
 
-            {/* --- COURSE DROPDOWN --- */}
             <select
-              className="w-full p-3 border rounded-md bg-white text-gray-700"
+              className="w-full p-3 border rounded-md"
               value={form.course}
               onChange={handleChange("course")}
             >
@@ -203,9 +211,8 @@ export default function RegisterPage() {
               <option value="B.Tech">B.Tech</option>
             </select>
 
-            {/* --- BRANCH DROPDOWN --- */}
             <select
-              className="w-full p-3 border rounded-md bg-white text-gray-700"
+              className="w-full p-3 border rounded-md"
               value={form.branch}
               onChange={handleChange("branch")}
             >
@@ -219,9 +226,8 @@ export default function RegisterPage() {
               <option value="Other">Other</option>
             </select>
 
-            {/* --- YEAR DROPDOWN --- */}
             <select
-              className="w-full p-3 border rounded-md bg-white text-gray-700"
+              className="w-full p-3 border rounded-md"
               value={form.year}
               onChange={handleChange("year")}
             >
@@ -234,7 +240,7 @@ export default function RegisterPage() {
 
             <button
               onClick={handleRegister}
-              className="w-full bg-blue-600 text-white py-3 rounded-md hover:bg-blue-700 mt-1"
+              className="w-full bg-blue-600 text-white py-3 rounded-md hover:bg-blue-700"
               disabled={loading}
             >
               {loading ? "Registering..." : "Register"}
@@ -242,27 +248,27 @@ export default function RegisterPage() {
           </div>
         )}
 
-        {/* Pending state */}
+        {/* Pending */}
         {pending && (
           <div className="space-y-4">
-            <div className="p-4 rounded-md bg-yellow-50 border border-yellow-200">
+            <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-md">
               <p className="font-semibold">Registration pending</p>
               <p className="text-sm text-gray-700 mt-1">
-                Your registration is waiting for admin approval. You cannot log in until approved.
+                Your registration is waiting for admin approval.
               </p>
             </div>
 
             <div className="flex gap-3">
               <button
                 onClick={() => setShowConfirmCancel(true)}
-                className="flex-1 bg-red-500 text-white py-2 rounded-md hover:bg-red-600"
+                className="flex-1 bg-red-500 text-white py-2 rounded-md"
               >
                 Cancel registration
               </button>
 
               <button
-                onClick={() => (window.location.href = "/jobs/login")} // Replaced router.push with standard window.location for navigation
-                className="flex-1 bg-gray-200 text-gray-800 py-2 rounded-md hover:bg-gray-300"
+                onClick={() => (window.location.href = "/jobs/login")}
+                className="flex-1 bg-gray-200 py-2 rounded-md"
               >
                 Back to login
               </button>
@@ -272,47 +278,46 @@ export default function RegisterPage() {
 
         {/* Messages */}
         {message && (
-          <div className="mt-4 p-3 rounded text-sm text-white bg-black text-center">
+          <div className="mt-4 bg-black text-white p-3 rounded text-center">
             {message}
           </div>
         )}
 
         {cancelMessage && (
-          <div className="mt-4 p-3 rounded text-sm text-white bg-red-600 text-center">
+          <div className="mt-4 bg-red-600 text-white p-3 rounded text-center">
             {cancelMessage}
           </div>
         )}
 
         <p className="text-center mt-5 text-gray-700">
           Already have an account?{" "}
-          {/* Replaced Next.js Link with a standard E tag */}
           <a href="/jobs/login" className="text-blue-600 underline">
             Login here
           </a>
         </p>
       </div>
 
-      {/* Confirm cancel modal */}
+      {/* Cancel Modal */}
       {showConfirmCancel && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="w-full max-w-md bg-white rounded-lg p-6 shadow-lg">
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-xl w-full max-w-md">
             <h3 className="text-lg font-semibold mb-2">Confirm cancellation</h3>
             <p className="text-sm text-gray-600 mb-4">
-              Are you sure you want to cancel your pending registration? This will permanently delete your pending record.
+              Are you sure you want to cancel your pending registration?
             </p>
 
             <div className="flex gap-3">
               <button
                 onClick={confirmCancel}
                 disabled={cancelLoading}
-                className="flex-1 bg-red-600 text-white py-2 rounded hover:bg-red-700"
+                className="flex-1 bg-red-600 text-white py-2 rounded-md"
               >
-                {cancelLoading ? "Cancelling..." : "Yes, cancel registration"}
+                {cancelLoading ? "Cancelling..." : "Yes, cancel"}
               </button>
 
               <button
                 onClick={() => setShowConfirmCancel(false)}
-                className="flex-1 bg-gray-200 py-2 rounded hover:bg-gray-300"
+                className="flex-1 bg-gray-200 py-2 rounded-md"
               >
                 No, keep it
               </button>

@@ -26,6 +26,12 @@ const StudentSchema = new mongoose.Schema({
     index: true,
   },
 
+  phoneNumber: {             // <-- ADDED
+    type: String,
+    required: true,
+    trim: true,
+  },
+
   course: {
     type: String,
     required: true,
@@ -41,20 +47,18 @@ const StudentSchema = new mongoose.Schema({
     required: true,
   },
 
-  // --- FIX: ADD THESE TWO FIELDS ---
   approved: {
     type: Boolean,
-    default: false, // Students are 'pending' by default
+    default: false,
   },
+
   registered: {
     type: Boolean,
-    default: false, // Becomes true upon creation/approval
+    default: false,
   },
-  // --- END FIX ---
 
   registeredAt: {
     type: Date,
-    // default: Date.now, // Let the register route handle this
   },
 
 }, { timestamps: true });

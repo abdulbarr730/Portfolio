@@ -12,11 +12,9 @@ const ADMIN_SECRET = process.env.ADMIN_SECRET;
 const COOKIE_NAME = 'student_token';
 
 // --- Fail-Fast Security Check ---
-// Your application should not run with insecure, hardcoded secrets.
-// If .env is missing, this will stop the server.
 if (!JWT_SECRET || !ADMIN_SECRET) {
   console.error("FATAL ERROR: JWT_SECRET or ADMIN_SECRET is not defined in .env");
-  process.exit(1); // Exit the application
+  process.exit(1);
 }
 
 /* -------------------------------------
@@ -35,13 +33,10 @@ router.post('/login', async (req, res) => {
     const isMatch = await bcrypt.compare(password, student.passwordHash);
     if (!isMatch) return res.status(400).json({ error: 'Invalid credentials' });
 
-    // --- FIX: Check if account is approved ---
     if (!student.approved) {
       return res.status(403).json({ error: 'Account is pending admin approval.' });
     }
-    // --- End Fix ---
 
-    // Create JWT
     const token = jwt.sign(
       {
         id: student._id,
@@ -53,13 +48,11 @@ router.post('/login', async (req, res) => {
       { expiresIn: '7d' }
     );
 
-    // Set http-only cookie
     res.cookie(COOKIE_NAME, token, {
       httpOnly: true,
-      // CRITICAL FIX: Must be Secure: true and SameSite: None for cross-site login
-      secure: process.env.NODE_ENV === 'production', 
+      secure: process.env.NODE_ENV === 'production',
       sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
-      path: '/', // Ensure the path is root
+      path: '/',
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
@@ -72,18 +65,14 @@ router.post('/login', async (req, res) => {
 });
 
 /* -------------------------------------
- * GET LOGGED-IN STUDENT DATA (Refactored)
+ * GET LOGGED-IN STUDENT DATA
  * ------------------------------------- */
-// The studentAuth middleware handles token verification
 router.get('/me', studentAuth, async (req, res) => {
   try {
-    // studentAuth middleware provides 'req.student.id'
     const student = await Student.findById(req.student.id).select('-passwordHash');
-
     if (!student) {
       return res.status(404).json({ error: "Student not found" });
     }
-
     return res.status(200).json(student);
 
   } catch (error) {
@@ -105,13 +94,12 @@ router.get('/logout', (req, res) => {
  * ------------------------------------- */
 router.put('/update-profile', studentAuth, async (req, res) => {
   try {
-    const { name, email, course, branch, year } = req.body;
+    const { name, email, course, branch, year, phoneNumber } = req.body;
 
-    if (!name || !email || !course || !branch || !year) {
+    if (!name || !email || !course || !branch || !year || !phoneNumber) {
       return res.status(400).json({ error: "All fields are required" });
     }
 
-    // Check if email already exists for another student
     const existingEmail = await Student.findOne({
       email,
       _id: { $ne: req.student.id }
@@ -128,7 +116,8 @@ router.put('/update-profile', studentAuth, async (req, res) => {
         email,
         course,
         branch,
-        year
+        year,
+        phoneNumber
       },
       { new: true }
     ).select('-passwordHash');
@@ -145,7 +134,7 @@ router.put('/update-profile', studentAuth, async (req, res) => {
 });
 
 /* -------------------------------------
- * CHANGE PASSWORD (Protected)
+ * CHANGE PASSWORD
  * ------------------------------------- */
 router.put('/change-password', studentAuth, async (req, res) => {
   try {
@@ -160,13 +149,11 @@ router.put('/change-password', studentAuth, async (req, res) => {
       return res.status(404).json({ error: "Student not found" });
     }
 
-    // Validate old password
     const isMatch = await bcrypt.compare(oldPassword, student.passwordHash);
     if (!isMatch) {
       return res.status(400).json({ error: "Incorrect old password" });
     }
 
-    // Hash new password
     const salt = await bcrypt.genSalt(10);
     const newHash = await bcrypt.hash(newPassword, salt);
 
@@ -184,20 +171,17 @@ router.put('/change-password', studentAuth, async (req, res) => {
 /* -------------------------------------
  * REGISTER (with Approval Logic)
  * ------------------------------------- */
-// Creates an approved user immediately if roll is in ApprovedRoll.
-// Otherwise stores a PENDING student record (approved:false, registered:false)
 router.post('/register', async (req, res) => {
   try {
-    const { name, email, password, rollNumber, course, branch, year } = req.body;
+    const { name, email, password, rollNumber, course, branch, year, phoneNumber } = req.body;
 
-    if (!name || !email || !password || !rollNumber || !course || !branch || !year) {
+    if (!name || !email || !password || !rollNumber || !course || !branch || !year || !phoneNumber) {
       return res.status(400).json({ error: 'All fields are required' });
     }
 
     const rn = String(rollNumber).trim();
     const em = String(email).trim().toLowerCase();
 
-    // check for existing conflicts
     const existingByRoll = await Student.findOne({ rollNumber: rn });
     if (existingByRoll) {
       return res.status(409).json({ error: 'Roll number already exists. Contact admin if this is an error.' });
@@ -207,15 +191,12 @@ router.post('/register', async (req, res) => {
       return res.status(409).json({ error: 'Email already registered. Please login or use a different email.' });
     }
 
-    // hash password (store even for pending records)
     const salt = await bcrypt.genSalt(10);
     const passwordHash = await bcrypt.hash(password, salt);
 
-    // check approved rolls
     const approved = await ApprovedRoll.findOne({ rollNumber: rn });
 
     if (approved) {
-      // create an approved account (immediately usable)
       await Student.create({
         name,
         email: em,
@@ -224,6 +205,7 @@ router.post('/register', async (req, res) => {
         course,
         branch,
         year,
+        phoneNumber,
         approved: true,
         registered: true,
         registeredAt: new Date()
@@ -231,15 +213,15 @@ router.post('/register', async (req, res) => {
 
       return res.status(201).json({ success: true, message: 'Registered and approved. You can now login.' });
     } else {
-      // create pending record; user cannot login yet
       await Student.create({
         name,
         email: em,
-        passwordHash,           // stored for future approval
+        passwordHash,
         rollNumber: rn,
         course,
         branch,
         year,
+        phoneNumber,
         approved: false,
         registered: false
       });
@@ -260,8 +242,6 @@ router.post('/register', async (req, res) => {
 /* -------------------------------------
  * CANCEL PENDING REGISTRATION
  * ------------------------------------- */
-// Deletes a pending registration (no password required).
-// Only deletes when approved===false && registered===false.
 router.post('/cancel-registration', async (req, res) => {
   try {
     const { email, rollNumber } = req.body;
@@ -277,7 +257,6 @@ router.post('/cancel-registration', async (req, res) => {
       return res.status(404).json({ error: 'Pending registration not found' });
     }
 
-    // Only allow deletion of pending records
     if (student.approved === true || student.registered === true) {
       return res.status(403).json({ error: 'This account is already approved/active and cannot be cancelled here.' });
     }
@@ -290,8 +269,5 @@ router.post('/cancel-registration', async (req, res) => {
     return res.status(500).json({ error: 'Server error' });
   }
 });
-
-
-
 
 module.exports = router;
