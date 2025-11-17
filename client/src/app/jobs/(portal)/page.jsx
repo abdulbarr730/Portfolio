@@ -1,163 +1,350 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import Head from 'next/head'; // For page title
 
-export default function JobsPage() {
-  const router = useRouter();
-  const [loading, setLoading] = useState(true);
-  const [student, setStudent] = useState(null);
-  const [jobs, setJobs] = useState([]);
-  const [appliedCount, setAppliedCount] = useState(0);
-  const [message, setMessage] = useState("");
+// --- Use the Environment Variable ---
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
-  // Fetch student details and job list
+// --- Custom Hook for Centralized Data Fetching ---
+const useJobsDashboardData = () => {
+  const [dataState, setDataState] = useState({
+    loading: true,
+    student: null,
+    jobs: [],
+    appliedCount: 0,
+    appliedJobIds: new Set(),
+    error: null,
+  });
+
   useEffect(() => {
     async function fetchData() {
-      try {
-        const res = await fetch("/api/student/me", { credentials: "include" });
+      if (!API_BASE_URL) {
+        setDataState(s => ({ ...s, loading: false, error: "Configuration error: API_BASE_URL is not set." }));
+        // Delay redirect slightly to show error message
+        setTimeout(() => window.location.href = "/jobs/login", 1000);
+        return;
+      }
 
-        if (res.status === 401) {
-          router.push("/jobs/login");
+      try {
+        const [meRes, jobsRes, appliedRes, myAppsRes] = await Promise.all([
+          fetch(`${API_BASE_URL}/api/student/me`, { credentials: "include" }),
+          fetch(`${API_BASE_URL}/api/jobs/all`),
+          fetch(`${API_BASE_URL}/api/jobs/applied-count`, { credentials: "include" }),
+          fetch(`${API_BASE_URL}/api/jobs/my-applications`, { credentials: "include" })
+        ]);
+
+        // Check for 401s (Unauthenticated) first
+        if (meRes.status === 401 || appliedRes.status === 401 || myAppsRes.status === 401) {
+          window.location.href = "/jobs/login";
           return;
         }
 
-        const data = await res.json();
-        setStudent(data);
+        // Check for general API errors
+        if (!meRes.ok || !jobsRes.ok || !appliedRes.ok || !myAppsRes.ok) {
+            throw new Error("One or more required API calls failed.");
+        }
 
-        // Fetch jobs from backend
-        const jobsRes = await fetch("/api/jobs/all");
-        const jobsData = await jobsRes.json();
-        setJobs(jobsData.jobs || []);
+        // Parse and process data
+        const [meData, jobsData, appliedData, myAppsData] = await Promise.all([
+            meRes.json(),
+            jobsRes.json(),
+            appliedRes.json(),
+            myAppsRes.json(),
+        ]);
 
-        // Fetch applied jobs count
-        const appliedRes = await fetch("/api/jobs/applied-count", {
-          credentials: "include",
+        const appliedIds = myAppsData.applications 
+          ? new Set(myAppsData.applications.map(app => app.jobId?._id).filter(Boolean))
+          : new Set();
+
+        setDataState({
+          loading: false,
+          student: meData,
+          jobs: jobsData.jobs || [],
+          appliedCount: appliedData.count || 0,
+          appliedJobIds: appliedIds,
+          error: null,
         });
-        const appliedData = await appliedRes.json();
-        setAppliedCount(appliedData.count || 0);
 
-        setLoading(false);
       } catch (err) {
-        console.log(err);
-        router.push("/jobs/login");
+        console.error("Dashboard Load Error:", err);
+        setDataState(s => ({ ...s, loading: false, error: err.message || "Failed to load dashboard data." }));
+        setTimeout(() => window.location.href = "/jobs/login", 2000); // Redirect after showing error
       }
     }
-
     fetchData();
   }, []);
+
+  return dataState;
+};
+// --- End Custom Hook ---
+
+
+export default function JobsPage() {
+  const { loading, student, jobs, appliedCount, appliedJobIds, error } = useJobsDashboardData();
+  const [message, setMessage] = useState(""); // For Apply/Withdraw specific messages
+
+  // Effect to clear general fetch error once local message is set (e.g., after redirect)
+  useEffect(() => {
+    if (error && !message) {
+      setMessage(error);
+    }
+  }, [error, message]);
 
   // Apply handler
   const handleApply = async (jobId) => {
     setMessage("");
-
-    const res = await fetch("/api/jobs/apply", {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ jobId }),
-    });
-
-    const data = await res.json();
-
-    if (res.ok) {
-      setMessage("Job marked as applied ✔️");
-      setAppliedCount(appliedCount + 1);
-    } else {
-      setMessage(data.error || "Failed to apply ❌");
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/jobs/apply`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ jobId }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setMessage("Job marked as applied ✔️");
+        // Use state update pattern for count and IDs
+        // eslint-disable-next-line @next/next/no-un-element-handler-props
+        setAppliedCount(prevCount => prevCount + 1);
+        // eslint-disable-next-line @next/next/no-un-element-handler-props
+        setAppliedJobIds(prevIds => new Set(prevIds).add(jobId)); 
+      } else {
+        throw new Error(data.error || "Failed to apply.");
+      }
+    } catch (err) {
+      setMessage(err.message || "Failed to apply ❌");
     }
   };
 
+  // Handle Withdraw
+  const handleWithdraw = async (jobId) => {
+    setMessage("");
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/jobs/withdraw`, {
+        method: "DELETE",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ jobId }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to withdraw");
+      }
+
+      setMessage("Application withdrawn.");
+      // Use state update pattern for count and IDs
+      // eslint-disable-next-line @next/next/no-un-element-handler-props
+      setAppliedCount(prevCount => prevCount - 1);
+      // eslint-disable-next-line @next/next/no-un-element-handler-props
+      setAppliedJobIds(prevIds => {
+        const newIds = new Set(prevIds);
+        newIds.delete(jobId);
+        return newIds;
+      });
+
+    } catch (err) {
+      setMessage(err.message || "Failed to withdraw.");
+    }
+  };
+
+
   if (loading)
     return (
-      <div className="min-h-screen flex justify-center items-center text-xl font-semibold">
-        Loading...
+      <div className="min-h-screen flex flex-col justify-center items-center text-xl font-semibold bg-gradient-to-br from-blue-100 to-indigo-100 text-blue-800">
+        <svg className="animate-spin h-8 w-8 mr-3 text-blue-500" viewBox="0 0 24 24">
+          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        Loading Dashboard...
       </div>
     );
+  
+  if (!student) {
+    // This case should ideally not happen if the fetch is correct, but handles initial null state
+    return (
+      <div className="min-h-screen flex justify-center items-center text-xl font-semibold bg-gradient-to-br from-blue-100 to-indigo-100 text-blue-800">
+        Preparing your dashboard...
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gray-100 px-6 py-10">
+    <>
+      <Head>
+        <title>Student Job Portal - Dashboard</title>
+      </Head>
 
-      {/* WELCOME HERO */}
-      <div className="max-w-5xl mx-auto bg-white rounded-2xl shadow-lg p-10 mb-10">
-        <h1 className="text-4xl font-bold mb-2">
-          Welcome, {student?.name.split(" ")[0]} 👋
-        </h1>
-        <p className="text-gray-600 text-lg">
-          Explore the latest job opportunities curated for your branch and year.
-        </p>
-      </div>
+      {/* Skip to main content for accessibility */}
+      <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:top-0 focus:left-1/2 focus:-translate-x-1/2 focus:z-50 focus:bg-white focus:text-blue-700 focus:p-3 focus:rounded-b-lg">
+        Skip to main content
+      </a>
 
-      {/* QUICK STATS */}
-      <div className="max-w-5xl mx-auto grid grid-cols-1 sm:grid-cols-3 gap-6 mb-10">
-        <div className="bg-white shadow-md rounded-xl p-6 text-center">
-          <h3 className="text-3xl font-bold text-blue-600">{appliedCount}</h3>
-          <p className="text-gray-600">Jobs Applied</p>
-        </div>
+      <div className="min-h-screen bg-gray-50 text-gray-800 font-sans relative pb-20"> {/* Increased padding-bottom for FAB */}
 
-        <div className="bg-white shadow-md rounded-xl p-6 text-center">
-          <h3 className="text-xl font-semibold">{student.branch}</h3>
-          <p className="text-gray-600">Branch</p>
-        </div>
+        {/* --- Top Gradient Background (Visual Enhancement) --- */}
+        <div className="absolute top-0 left-0 w-full h-60 bg-gradient-to-r from-blue-600 to-purple-600 -z-10"></div>
 
-        <div className="bg-white shadow-md rounded-xl p-6 text-center">
-          <h3 className="text-xl font-semibold">{student.year}</h3>
-          <p className="text-gray-600">Year</p>
-        </div>
-      </div>
+        {/* Main Content Area */}
+        <main id="main-content" className="max-w-6xl mx-auto px-4 py-8 relative z-10">
 
-      {/* HOW IT WORKS */}
-      <div className="max-w-5xl mx-auto bg-white rounded-2xl shadow-md p-8 mb-10">
-        <h2 className="text-2xl font-bold mb-4">How this portal works</h2>
-        <ul className="space-y-2 text-gray-700">
-          <li>• Browse through the list of jobs below</li>
-          <li>• Click “I Applied” after applying on the job link</li>
-          <li>• Your application is recorded automatically</li>
-          <li>• Update your profile anytime</li>
-          <li>• View your application history at any moment</li>
-        </ul>
-      </div>
+          {/* WELCOME HERO */}
+          <section className="bg-white rounded-2xl shadow-xl p-8 md:p-12 mb-8 text-center" role="region" aria-label="Welcome section">
+            <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-3 animate-fade-in">
+              Welcome, {student.name?.split(" ")[0]}!
+            </h1>
+            <p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto animate-fade-in delay-200">
+              Your gateway to exciting career opportunities. Find and apply for jobs tailored for you.
+            </p>
+          </section>
 
-      {/* JOB LIST */}
-      <div className="max-w-5xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6">
-        {jobs.length === 0 ? (
-          <p className="text-gray-700 text-lg">No jobs posted yet.</p>
-        ) : (
-          jobs.map((job) => (
-            <div
-              key={job._id}
-              className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition"
+          {/* SUCCESS / ERROR MESSAGE (Centralized and More Prominent) */}
+          {message && (
+            <div 
+              className={`max-w-xl mx-auto p-4 rounded-lg text-center font-medium mb-6 ${message.includes("✔️") ? "bg-green-100 text-green-800 border border-green-200" : "bg-red-100 text-red-800 border border-red-200"}`} 
+              role="alert"
+              aria-live="polite"
             >
-              <h3 className="text-xl font-bold">{job.name}</h3>
-              {job.description && (
-                <p className="text-gray-600 mt-2">{job.description}</p>
-              )}
-
-              <a
-                href={job.link}
-                className="text-blue-600 underline mt-3 inline-block"
-                target="_blank"
-              >
-                Apply on Company Website →
-              </a>
-
-              <button
-                onClick={() => handleApply(job._id)}
-                className="mt-4 w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition"
-              >
-                I Applied
-              </button>
+              {message}
             </div>
-          ))
-        )}
-      </div>
+          )}
 
-      {/* SUCCESS / ERROR MESSAGE */}
-      {message && (
-        <div className="max-w-5xl mx-auto mt-6 p-4 bg-black text-white rounded-lg text-center">
-          {message}
-        </div>
-      )}
-    </div>
+          {/* QUICK STATS (Clickable Cards) */}
+          <section className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8" role="list" aria-label="Quick statistics">
+            
+            {/* Jobs Applied Card */}
+            <a 
+              href="/jobs/my-applications" 
+              className="group bg-white rounded-2xl shadow-md p-6 text-center transition-all duration-300 ease-in-out hover:shadow-lg hover:bg-blue-50 focus:outline-none focus:ring-4 focus:ring-blue-300"
+              role="listitem"
+              aria-label={`You have applied to ${appliedCount} jobs. Click to view.`}
+            >
+              <h3 className="text-4xl font-extrabold text-blue-600 group-hover:text-blue-700 transition-colors duration-300">{appliedCount}</h3>
+              <p className="text-gray-700 text-lg mt-1">Jobs Applied</p>
+            </a>
+
+            {/* Branch Card */}
+            <a 
+              href="/jobs/updateprofile" 
+              className="group bg-white rounded-2xl shadow-md p-6 text-center transition-all duration-300 ease-in-out hover:shadow-lg hover:bg-purple-50 focus:outline-none focus:ring-4 focus:ring-purple-300"
+              role="listitem"
+              aria-label={`Your registered branch is ${student.branch}. Click to update profile.`}
+            >
+              <h3 className="text-2xl font-bold text-purple-600 group-hover:text-purple-700 transition-colors duration-300">{student.branch}</h3>
+              <p className="text-gray-700 text-lg mt-1">Branch</p>
+            </a>
+
+            {/* Year Card */}
+            <a 
+              href="/jobs/updateprofile" 
+              className="group bg-white rounded-2xl shadow-md p-6 text-center transition-all duration-300 ease-in-out hover:shadow-lg hover:bg-green-50 focus:outline-none focus:ring-4 focus:ring-green-300"
+              role="listitem"
+              aria-label={`Your registered year is ${student.year}. Click to update profile.`}
+            >
+              <h3 className="text-2xl font-bold text-green-600 group-hover:text-green-700 transition-colors duration-300">{student.year}</h3>
+              <p className="text-gray-700 text-lg mt-1">Year</p>
+            </a>
+          </section>
+
+          {/* HOW IT WORKS (Visually Enhanced Steps) */}
+          <section className="bg-white rounded-2xl shadow-md p-8 mb-8" role="region" aria-label="How the portal works">
+            <h2 className="text-3xl font-bold text-gray-900 mb-6 text-center">How This Portal Works</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {/* Step 1 */}
+              <div className="flex flex-col items-center text-center p-4 bg-gray-50 rounded-lg shadow-sm">
+                <span className="text-4xl text-blue-500 mb-3">🔍</span>
+                <h3 className="text-xl font-semibold mb-2">Browse Jobs</h3>
+                <p className="text-gray-600 text-sm">Explore a curated list of job opportunities.</p>
+              </div>
+              {/* Step 2 */}
+              <div className="flex flex-col items-center text-center p-4 bg-gray-50 rounded-lg shadow-sm">
+                <span className="text-4xl text-purple-500 mb-3">🔗</span>
+                <h3 className="text-xl font-semibold mb-2">Apply Externally</h3>
+                <p className="text-gray-600 text-sm">Click the link to apply on the company's website.</p>
+              </div>
+              {/* Step 3 */}
+              <div className="flex flex-col items-center text-center p-4 bg-gray-50 rounded-lg shadow-sm">
+                <span className="text-4xl text-green-500 mb-3">✅</span>
+                <h3 className="text-xl font-semibold mb-2">Mark as Applied</h3>
+                <p className="text-gray-600 text-sm">Record your application here for tracking.</p>
+              </div>
+              {/* Step 4 */}
+              <div className="flex flex-col items-center text-center p-4 bg-gray-50 rounded-lg shadow-sm">
+                <span className="text-4xl text-yellow-500 mb-3">📊</span>
+                <h3 className="text-xl font-semibold mb-2">Track Progress</h3>
+                <p className="text-gray-600 text-sm">View all your applications and update your profile.</p>
+              </div>
+            </div>
+          </section>
+
+          {/* --- "ALL JOBS" SECTION --- */}
+          <section className="mb-8" aria-labelledby="job-listings-heading">
+            <h2 id="job-listings-heading" className="text-3xl md:text-4xl font-bold text-gray-900 mb-6 text-center">All Opportunities</h2>
+            
+            {/* JOB LIST */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6" role="feed" aria-live="polite">
+              {jobs.length === 0 ? (
+                <p className="text-gray-700 text-lg col-span-full text-center py-8 bg-white rounded-lg shadow-md">No jobs posted yet. Check back soon!</p>
+              ) : (
+                jobs.map((job) => (
+                  <div
+                    key={job._id}
+                    className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-all duration-200 ease-in-out focus-within:ring-4 focus-within:ring-blue-200"
+                    role="article"
+                    aria-label={`Job posting: ${job.name}`}
+                    tabIndex="0" // Make the whole card keyboard focusable
+                  >
+                    <h3 className="text-xl font-bold text-gray-900 mb-2">{job.name}</h3>
+                    {job.description && (
+                      <p className="text-gray-600 text-sm mb-4 line-clamp-3">{job.description}</p>
+                    )}
+
+                    <a
+                      href={job.link}
+                      className="text-blue-700 hover:text-blue-800 font-semibold underline mt-3 inline-block focus:outline-none focus:ring-2 focus:ring-blue-300 rounded"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={`Apply for ${job.name} on company website (opens in new tab)`}
+                    >
+                      Apply on Company Website <span aria-hidden="true">→</span>
+                    </a>
+
+                    {/* Conditional Apply/Withdraw Button */}
+                    {appliedJobIds.has(job._id) ? (
+                      <button
+                        onClick={() => handleWithdraw(job._id)}
+                        className="mt-4 w-full bg-red-600 text-white py-2 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-4 focus:ring-red-300 transition-colors duration-200"
+                        aria-label={`Withdraw application for ${job.name}`}
+                      >
+                        Withdraw
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => handleApply(job._id)}
+                        className="mt-4 w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-4 focus:ring-green-300 transition-colors duration-200"
+                        aria-label={`Mark ${job.name} as applied`}
+                      >
+                        Apply
+                      </button>
+                    )}
+                  </div>
+                ))
+              )}
+            </div>
+          </section>
+        </main>
+
+        {/* --- FLOATING ACTION BUTTON (FAB) --- */}
+        <a 
+          href="/" 
+          className="fixed bottom-6 right-6 bg-gray-800 text-white px-5 py-3 rounded-full shadow-xl hover:bg-gray-700 transition transform hover:scale-105 text-base font-medium focus:outline-none focus:ring-4 focus:ring-gray-300 z-40"
+          title="Visit Abdul Barr's Portfolio"
+          aria-label="Visit Abdul Barr's Portfolio"
+        >
+          Abdul Barr's Portfolio
+        </a>
+      </div>
+    </>
   );
 }

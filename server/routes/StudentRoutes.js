@@ -4,55 +4,24 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const Student = require('../models/student.model');
 const studentAuth = require('../middleware/studentAuth');
+const ApprovedRoll = require('../models/approvedRoll.model');
 
 // Load environment variables
-const JWT_SECRET = process.env.JWT_SECRET || 'supersecretjwt';
+const JWT_SECRET = process.env.JWT_SECRET;
+const ADMIN_SECRET = process.env.ADMIN_SECRET;
 const COOKIE_NAME = 'student_token';
 
-/* -------------------------------------
-   REGISTER STUDENT
-------------------------------------- */
-router.post('/register', async (req, res) => {
-  try {
-    const { name, email, password, rollNumber, course, branch, year } = req.body;
-
-    if (!name || !email || !password || !rollNumber || !course || !branch || !year) {
-      return res.status(400).json({ error: 'All fields are required' });
-    }
-
-    // Check existing email or rollNumber
-    const existingEmail = await Student.findOne({ email });
-    if (existingEmail) return res.status(400).json({ error: 'Email already registered' });
-
-    const existingRoll = await Student.findOne({ rollNumber });
-    if (existingRoll) return res.status(400).json({ error: 'Roll number already registered' });
-
-    // Hash password
-    const salt = await bcrypt.genSalt(10);
-    const passwordHash = await bcrypt.hash(password, salt);
-
-    // Create student entry
-    const student = await Student.create({
-      name,
-      email,
-      passwordHash,
-      rollNumber,
-      course,
-      branch,
-      year,
-    });
-
-    return res.status(201).json({ message: 'Registration successful' });
-
-  } catch (error) {
-    console.log(error);
-    return res.status(500).json({ error: 'Server error' });
-  }
-});
+// --- Fail-Fast Security Check ---
+// Your application should not run with insecure, hardcoded secrets.
+// If .env is missing, this will stop the server.
+if (!JWT_SECRET || !ADMIN_SECRET) {
+  console.error("FATAL ERROR: JWT_SECRET or ADMIN_SECRET is not defined in .env");
+  process.exit(1); // Exit the application
+}
 
 /* -------------------------------------
-   LOGIN STUDENT
-------------------------------------- */
+ * LOGIN STUDENT
+ * ------------------------------------- */
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -60,11 +29,17 @@ router.post('/login', async (req, res) => {
     if (!email || !password)
       return res.status(400).json({ error: 'Email and password required' });
 
-    const student = await Student.findOne({ email });
+    const student = await Student.findOne({ email: String(email).trim().toLowerCase() });
     if (!student) return res.status(400).json({ error: 'Invalid credentials' });
 
     const isMatch = await bcrypt.compare(password, student.passwordHash);
     if (!isMatch) return res.status(400).json({ error: 'Invalid credentials' });
+
+    // --- FIX: Check if account is approved ---
+    if (!student.approved) {
+      return res.status(403).json({ error: 'Account is pending admin approval.' });
+    }
+    // --- End Fix ---
 
     // Create JWT
     const token = jwt.sign(
@@ -95,15 +70,17 @@ router.post('/login', async (req, res) => {
 });
 
 /* -------------------------------------
-   GET LOGGED-IN STUDENT DATA
-------------------------------------- */
-router.get('/me', async (req, res) => {
+ * GET LOGGED-IN STUDENT DATA (Refactored)
+ * ------------------------------------- */
+// The studentAuth middleware handles token verification
+router.get('/me', studentAuth, async (req, res) => {
   try {
-    const token = req.cookies[COOKIE_NAME];
-    if (!token) return res.status(401).json({ error: 'Not logged in' });
+    // studentAuth middleware provides 'req.student.id'
+    const student = await Student.findById(req.student.id).select('-passwordHash');
 
-    const decoded = jwt.verify(token, JWT_SECRET);
-    const student = await Student.findById(decoded.id).select('-passwordHash');
+    if (!student) {
+      return res.status(404).json({ error: "Student not found" });
+    }
 
     return res.status(200).json(student);
 
@@ -114,18 +91,16 @@ router.get('/me', async (req, res) => {
 });
 
 /* -------------------------------------
-   LOGOUT STUDENT
-------------------------------------- */
+ * LOGOUT STUDENT
+ * ------------------------------------- */
 router.get('/logout', (req, res) => {
   res.clearCookie(COOKIE_NAME);
   return res.status(200).json({ message: 'Logged out successfully' });
 });
 
-
-
 /* -------------------------------------
-    UPDATE PROFILE (Protected)
-------------------------------------- */
+ * UPDATE PROFILE (Protected)
+ * ------------------------------------- */
 router.put('/update-profile', studentAuth, async (req, res) => {
   try {
     const { name, email, course, branch, year } = req.body;
@@ -168,8 +143,8 @@ router.put('/update-profile', studentAuth, async (req, res) => {
 });
 
 /* -------------------------------------
-    CHANGE PASSWORD (Protected)
-------------------------------------- */
+ * CHANGE PASSWORD (Protected)
+ * ------------------------------------- */
 router.put('/change-password', studentAuth, async (req, res) => {
   try {
     const { oldPassword, newPassword } = req.body;
@@ -203,6 +178,118 @@ router.put('/change-password', studentAuth, async (req, res) => {
     return res.status(500).json({ error: "Server error" });
   }
 });
+
+/* -------------------------------------
+ * REGISTER (with Approval Logic)
+ * ------------------------------------- */
+// Creates an approved user immediately if roll is in ApprovedRoll.
+// Otherwise stores a PENDING student record (approved:false, registered:false)
+router.post('/register', async (req, res) => {
+  try {
+    const { name, email, password, rollNumber, course, branch, year } = req.body;
+
+    if (!name || !email || !password || !rollNumber || !course || !branch || !year) {
+      return res.status(400).json({ error: 'All fields are required' });
+    }
+
+    const rn = String(rollNumber).trim();
+    const em = String(email).trim().toLowerCase();
+
+    // check for existing conflicts
+    const existingByRoll = await Student.findOne({ rollNumber: rn });
+    if (existingByRoll) {
+      return res.status(409).json({ error: 'Roll number already exists. Contact admin if this is an error.' });
+    }
+    const existingByEmail = await Student.findOne({ email: em });
+    if (existingByEmail) {
+      return res.status(409).json({ error: 'Email already registered. Please login or use a different email.' });
+    }
+
+    // hash password (store even for pending records)
+    const salt = await bcrypt.genSalt(10);
+    const passwordHash = await bcrypt.hash(password, salt);
+
+    // check approved rolls
+    const approved = await ApprovedRoll.findOne({ rollNumber: rn });
+
+    if (approved) {
+      // create an approved account (immediately usable)
+      await Student.create({
+        name,
+        email: em,
+        passwordHash,
+        rollNumber: rn,
+        course,
+        branch,
+        year,
+        approved: true,
+        registered: true,
+        registeredAt: new Date()
+      });
+
+      return res.status(201).json({ success: true, message: 'Registered and approved. You can now login.' });
+    } else {
+      // create pending record; user cannot login yet
+      await Student.create({
+        name,
+        email: em,
+        passwordHash,           // stored for future approval
+        rollNumber: rn,
+        course,
+        branch,
+        year,
+        approved: false,
+        registered: false
+      });
+
+      return res.status(202).json({
+        pending: true,
+        message: 'Registration received. Waiting admin approval.',
+        email: em,
+        rollNumber: rn
+      });
+    }
+  } catch (err) {
+    console.error('register error', err);
+    return res.status(500).json({ error: 'Server error' });
+  }
+});
+
+/* -------------------------------------
+ * CANCEL PENDING REGISTRATION
+ * ------------------------------------- */
+// Deletes a pending registration (no password required).
+// Only deletes when approved===false && registered===false.
+router.post('/cancel-registration', async (req, res) => {
+  try {
+    const { email, rollNumber } = req.body;
+
+    if (!email && !rollNumber) {
+      return res.status(400).json({ error: 'Provide email or rollNumber to cancel' });
+    }
+
+    const query = email ? { email: String(email).toLowerCase() } : { rollNumber: String(rollNumber).trim() };
+    const student = await Student.findOne(query);
+
+    if (!student) {
+      return res.status(404).json({ error: 'Pending registration not found' });
+    }
+
+    // Only allow deletion of pending records
+    if (student.approved === true || student.registered === true) {
+      return res.status(403).json({ error: 'This account is already approved/active and cannot be cancelled here.' });
+    }
+
+    await Student.deleteOne({ _id: student._id });
+
+    return res.status(200).json({ success: true, message: 'Registration cancelled and record removed.' });
+  } catch (err) {
+    console.error('cancel-registration error', err);
+    return res.status(500).json({ error: 'Server error' });
+  }
+});
+
+
 
 
 module.exports = router;

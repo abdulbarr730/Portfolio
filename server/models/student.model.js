@@ -41,9 +41,20 @@ const StudentSchema = new mongoose.Schema({
     required: true,
   },
 
+  // --- FIX: ADD THESE TWO FIELDS ---
+  approved: {
+    type: Boolean,
+    default: false, // Students are 'pending' by default
+  },
+  registered: {
+    type: Boolean,
+    default: false, // Becomes true upon creation/approval
+  },
+  // --- END FIX ---
+
   registeredAt: {
     type: Date,
-    default: Date.now,
+    // default: Date.now, // Let the register route handle this
   },
 
 }, { timestamps: true });

@@ -4,30 +4,8 @@ const Job = require("../models/job.model");
 const Application = require("../models/application.model");
 const studentAuth = require("../middleware/studentAuth");
 
-// ------------------------
-// ADMIN: Create new job
-// ------------------------
-router.post("/create", async (req, res) => {
-  try {
-    const { name, link, description } = req.body;
 
-    if (!name || !link) {
-      return res.status(400).json({ error: "Name and link required" });
-    }
 
-    const job = await Job.create({
-      name,
-      link,
-      description,
-      createdBy: "admin",
-    });
-
-    res.status(201).json({ message: "Job created successfully", job });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Server error" });
-  }
-});
 
 // ------------------------
 // STUDENT: Fetch all jobs
@@ -101,5 +79,30 @@ router.get("/my-applications", studentAuth, async (req, res) => {
   }
 });
 
+/* ------------------------
+ * STUDENT: Withdraw Application (NEW)
+ * ------------------------ */
+router.delete("/withdraw", studentAuth, async (req, res) => {
+  try {
+    const { jobId } = req.body;
 
+    if (!jobId) {
+      return res.status(400).json({ error: "Job ID required" });
+    }
+
+    const result = await Application.findOneAndDelete({
+      studentId: req.student.id,
+      jobId: jobId,
+    });
+
+    if (!result) {
+      return res.status(404).json({ error: "Application not found" });
+    }
+
+    res.status(200).json({ message: "Application withdrawn successfully" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
 module.exports = router;
