@@ -4,9 +4,9 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Head from "next/head";
 import { motion, AnimatePresence } from "framer-motion";
 
-// FINAL : Modern Professional + Premium Soft UI
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
+// -------------------- CountUp --------------------
 function CountUp({ end = 0, duration = 800, className = "text-4xl font-bold" }) {
   const [value, setValue] = useState(0);
   useEffect(() => {
@@ -28,6 +28,7 @@ function CountUp({ end = 0, duration = 800, className = "text-4xl font-bold" }) 
   return <div className={className}>{value}</div>;
 }
 
+// -------------------- Skeleton Card --------------------
 function SkeletonCard() {
   return (
     <div className="animate-pulse p-6 bg-white rounded-2xl shadow-md border border-gray-200">
@@ -39,6 +40,7 @@ function SkeletonCard() {
   );
 }
 
+// -------------------- Confetti --------------------
 function ConfettiCanvas({ trigger }) {
   const canvasRef = useRef(null);
   useEffect(() => {
@@ -49,8 +51,8 @@ function ConfettiCanvas({ trigger }) {
     const w = (canvas.width = window.innerWidth);
     const h = (canvas.height = window.innerHeight);
 
-    const colors = ["#ff6b6b", "#ffd93d", "#6bcB77", "#4D96FF", "#9D4EDD"].map(
-      (c) => c.toUpperCase()
+    const colors = ["#ff6b6b", "#ffd93d", "#6bcB77", "#4D96FF", "#9D4EDD"].map((c) =>
+      c.toUpperCase()
     );
     const particles = [];
     const count = 80;
@@ -97,14 +99,13 @@ function ConfettiCanvas({ trigger }) {
       ctx.clearRect(0, 0, w, h);
     };
   }, [trigger]);
+
   return (
-    <canvas
-      ref={canvasRef}
-      className="pointer-events-none fixed inset-0 z-50"
-    />
+    <canvas ref={canvasRef} className="pointer-events-none fixed inset-0 z-50" />
   );
 }
 
+// -------------------- MAIN PAGE --------------------
 export default function JobsPage() {
   const [loading, setLoading] = useState(true);
   const [student, setStudent] = useState(null);
@@ -113,16 +114,22 @@ export default function JobsPage() {
   const [bookmarked, setBookmarked] = useState(new Set());
   const [appliedJobIds, setAppliedJobIds] = useState(new Set());
   const [appliedCount, setAppliedCount] = useState(0);
+
   const [search, setSearch] = useState("");
   const [filterType, setFilterType] = useState("all");
   const [sortBy, setSortBy] = useState("latest");
-  const [isProcessing, setIsProcessing] = useState(false);
 
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [jobToApply, setJobToApply] = useState(null);
+
   const [confettiTrigger, setConfettiTrigger] = useState(false);
   const [tempMessage, setTempMessage] = useState("");
 
+  // ⛔ FIX: Per–job loading
+  const [processingApplyId, setProcessingApplyId] = useState(null);
+  const [processingWithdrawId, setProcessingWithdrawId] = useState(null);
+
+  // -------------------- Load Data --------------------
   useEffect(() => {
     async function load() {
       if (!API_BASE_URL) {
@@ -134,16 +141,14 @@ export default function JobsPage() {
         const meRes = await fetch(`${API_BASE_URL}/api/student/me`, {
           credentials: "include",
         });
-        if (meRes.status === 401)
-          return (window.location.href = "/jobs/login");
+        if (meRes.status === 401) return (window.location.href = "/jobs/login");
+
         const me = await meRes.json();
         setStudent(me);
 
         const [jobsRes, appliedRes, appsRes] = await Promise.all([
           fetch(`${API_BASE_URL}/api/jobs/all`),
-          fetch(`${API_BASE_URL}/api/jobs/applied-count`, {
-            credentials: "include",
-          }),
+          fetch(`${API_BASE_URL}/api/jobs/applied-count`, { credentials: "include" }),
           fetch(`${API_BASE_URL}/api/jobs/my-applications`, {
             credentials: "include",
           }),
@@ -174,6 +179,7 @@ export default function JobsPage() {
     load();
   }, []);
 
+  // -------------------- Filtering --------------------
   useEffect(() => {
     let list = [...jobs];
     if (search.trim())
@@ -202,6 +208,7 @@ export default function JobsPage() {
       return s;
     });
 
+  // -------------------- Apply --------------------
   const openApplyModal = (job) => {
     setJobToApply(job);
     setConfirmOpen(true);
@@ -209,7 +216,8 @@ export default function JobsPage() {
 
   const confirmApply = async () => {
     if (!jobToApply) return;
-    setIsProcessing(true);
+    setProcessingApplyId(jobToApply._id);
+
     try {
       const res = await fetch(`${API_BASE_URL}/api/jobs/apply`, {
         method: "POST",
@@ -217,6 +225,7 @@ export default function JobsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ jobId: jobToApply._id }),
       });
+
       if (res.ok) {
         setAppliedJobIds((prev) => new Set(prev).add(jobToApply._id));
         setAppliedCount((prev) => prev + 1);
@@ -226,16 +235,18 @@ export default function JobsPage() {
         const data = await res.json();
         setTempMessage(data.error || "Failed to apply");
       }
-    } catch (e) {
+    } catch {
       setTempMessage("Network error");
     } finally {
       setConfirmOpen(false);
-      setIsProcessing(false);
+      setProcessingApplyId(null);
     }
   };
 
+  // -------------------- Withdraw --------------------
   const handleWithdraw = async (id) => {
-    setIsProcessing(true);
+    setProcessingWithdrawId(id);
+
     try {
       const res = await fetch(`${API_BASE_URL}/api/jobs/withdraw`, {
         method: "DELETE",
@@ -243,11 +254,12 @@ export default function JobsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ jobId: id }),
       });
+
       if (res.ok) {
         setAppliedJobIds((prev) => {
-          const s = new Set(prev);
-          s.delete(id);
-          return s;
+          const copy = new Set(prev);
+          copy.delete(id);
+          return copy;
         });
         setAppliedCount((prev) => prev - 1);
         setTempMessage("Application withdrawn");
@@ -255,19 +267,21 @@ export default function JobsPage() {
         const data = await res.json();
         setTempMessage(data.error || "Failed to withdraw");
       }
-    } catch (e) {
+    } catch {
       setTempMessage("Network error");
     } finally {
-      setIsProcessing(false);
+      setProcessingWithdrawId(null);
     }
   };
 
+  // -------------------- Temp Message --------------------
   useEffect(() => {
     if (!tempMessage) return;
     const t = setTimeout(() => setTempMessage(""), 3500);
     return () => clearTimeout(t);
   }, [tempMessage]);
 
+  // -------------------- LOADING UI --------------------
   if (loading)
     return (
       <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-50 p-8">
@@ -280,6 +294,7 @@ export default function JobsPage() {
       </div>
     );
 
+  // -------------------- UI --------------------
   return (
     <>
       <Head>
@@ -289,15 +304,8 @@ export default function JobsPage() {
       <ConfettiCanvas trigger={confettiTrigger} />
 
       <div className="min-h-screen bg-gray-50 pb-24 relative">
-        {/* Footer Button */}
-        <a
-          href="/"
-          className="fixed bottom-6 right-6 z-50 inline-flex items-center px-6 py-3 rounded-full bg-black text-white shadow-2xl hover:scale-105 transition-transform text-sm font-medium"
-        >
-          Abdul Barr's Portfolio
-        </a>
 
-        {/* HEADER */}
+        {/* ================= HEADER ================= */}
         <header className="bg-gradient-to-r from-indigo-600 to-blue-600 text-white py-16 rounded-b-[2rem] shadow-xl">
           <div className="max-w-6xl mx-auto px-6 text-center">
             <motion.h1
@@ -318,16 +326,11 @@ export default function JobsPage() {
               Discover curated opportunities — track, apply, and succeed.
             </motion.p>
 
-            {/* 🔥 CLICKABLE HEADER CARDS */}
+            {/* 🔥 Clickable Cards */}
             <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-3xl mx-auto">
-
-              {/* Jobs Applied → CLICKABLE */}
-              {/* Jobs Applied → CLICKABLE */}
-              {/* Jobs Applied → CLICKABLE */}
               <motion.div
                 onClick={() => (window.location.href = "/jobs/my-applications")}
-                className="cursor-pointer bg-white rounded-2xl p-4 shadow-md border border-gray-100 
-                          transition-all duration-200 hover:shadow-lg hover:scale-[1.03] hover:bg-neutral-50"
+                className="cursor-pointer bg-white rounded-2xl p-4 shadow-md border border-gray-100 transition-all duration-200 hover:shadow-lg hover:scale-[1.03] hover:bg-neutral-50"
                 initial={{ y: 8, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
               >
@@ -335,11 +338,9 @@ export default function JobsPage() {
                 <CountUp end={appliedCount} className="text-2xl font-bold text-blue-700" />
               </motion.div>
 
-              {/* Branch → CLICKABLE */}
               <motion.div
                 onClick={() => (window.location.href = "/jobs/updateprofile")}
-                className="cursor-pointer bg-white rounded-2xl p-4 shadow-md border border-gray-100
-                          transition-all duration-200 hover:shadow-lg hover:scale-[1.03] hover:bg-neutral-50"
+                className="cursor-pointer bg-white rounded-2xl p-4 shadow-md border border-gray-100 transition-all duration-200 hover:shadow-lg hover:scale-[1.03] hover:bg-neutral-50"
                 initial={{ y: 8, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.05 }}
@@ -348,11 +349,9 @@ export default function JobsPage() {
                 <div className="text-2xl font-bold text-purple-600">{student?.branch}</div>
               </motion.div>
 
-              {/* Year → CLICKABLE */}
               <motion.div
                 onClick={() => (window.location.href = "/jobs/updateprofile")}
-                className="cursor-pointer bg-white rounded-2xl p-4 shadow-md border border-gray-100
-                          transition-all duration-200 hover:shadow-lg hover:scale-[1.03] hover:bg-neutral-50"
+                className="cursor-pointer bg-white rounded-2xl p-4 shadow-md border border-gray-100 transition-all duration-200 hover:shadow-lg hover:scale-[1.03] hover:bg-neutral-50"
                 initial={{ y: 8, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.1 }}
@@ -360,16 +359,14 @@ export default function JobsPage() {
                 <div className="text-xs uppercase text-gray-500">Year</div>
                 <div className="text-2xl font-bold text-green-600">{student?.year}</div>
               </motion.div>
-
-
             </div>
           </div>
         </header>
 
-        {/* BODY CONTENT BELOW */}
-        {/* (unchanged — same as your existing code) */}
-
+        {/* ================= BODY ================= */}
         <main className="max-w-6xl mx-auto px-6 -mt-10">
+
+          {/* Temp Message */}
           <AnimatePresence>
             {tempMessage && (
               <motion.div
@@ -383,6 +380,7 @@ export default function JobsPage() {
             )}
           </AnimatePresence>
 
+          {/* Filters */}
           <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-white p-4 rounded-2xl mt-6 shadow border border-gray-100">
             <div className="flex gap-3 items-center w-full md:w-2/3">
               <input
@@ -422,11 +420,10 @@ export default function JobsPage() {
           </div>
 
           <div className="w-full bg-yellow-100 border border-yellow-300 text-yellow-800 text-center text-xs sm:text-sm px-4 py-2 rounded-xl shadow mb-6">
-            All application data is securely recorded and reviewed only for
-            placement purposes.
+            All application data is securely recorded and reviewed only for placement purposes.
           </div>
 
-          {/* JOB CARDS */}
+          {/* ================= JOB CARDS ================= */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
             <AnimatePresence>
               {filtered.map((job) => (
@@ -437,14 +434,13 @@ export default function JobsPage() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 12 }}
                   transition={{ duration: 0.28 }}
-                  className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100 relative"
+                  className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100 relative hover:shadow-xl hover:scale-[1.02] transition-all duration-200"
                 >
+                  {/* Bookmark */}
                   <button
                     onClick={() => toggleBookmark(job._id)}
                     className={`absolute top-4 right-4 text-lg ${
-                      bookmarked.has(job._id)
-                        ? "text-yellow-500"
-                        : "text-gray-300"
+                      bookmarked.has(job._id) ? "text-yellow-500" : "text-gray-300"
                     }`}
                   >
                     ★
@@ -452,12 +448,9 @@ export default function JobsPage() {
 
                   <div className="flex items-start gap-4">
                     <div className="flex-1">
-                      <h3 className="text-xl font-semibold text-gray-900">
-                        {job.name}
-                      </h3>
-                      <p className="text-sm text-gray-600 mt-2 line-clamp-3">
-                        {job.description}
-                      </p>
+                      <h3 className="text-xl font-semibold text-gray-900">{job.name}</h3>
+
+                      <p className="text-sm text-gray-600 mt-2 line-clamp-3">{job.description}</p>
 
                       <div className="mt-4 flex gap-2 flex-wrap text-xs">
                         {job.type && (
@@ -473,6 +466,7 @@ export default function JobsPage() {
                       </div>
                     </div>
 
+                    {/* Apply / Withdraw */}
                     <div className="w-32 flex-shrink-0 flex flex-col items-end gap-3">
                       <a
                         href={job.link}
@@ -485,19 +479,23 @@ export default function JobsPage() {
 
                       {appliedJobIds.has(job._id) ? (
                         <button
-                          disabled={isProcessing}
+                          disabled={processingWithdrawId === job._id}
                           onClick={() => handleWithdraw(job._id)}
                           className="mt-2 w-full py-2 rounded-xl bg-red-500 text-white font-semibold hover:bg-red-600 disabled:opacity-60"
                         >
-                          {isProcessing ? "Processing..." : "Withdraw"}
+                          {processingWithdrawId === job._id
+                            ? "Withdrawing..."
+                            : "Withdraw"}
                         </button>
                       ) : (
                         <button
-                          disabled={isProcessing}
+                          disabled={processingApplyId === job._id}
                           onClick={() => openApplyModal(job)}
                           className="mt-2 w-full py-2 rounded-xl bg-emerald-500 text-white font-semibold hover:bg-emerald-600 disabled:opacity-60"
                         >
-                          I have Applied
+                          {processingApplyId === job._id
+                            ? "Processing..."
+                            : "I have Applied"}
                         </button>
                       )}
                     </div>
@@ -508,7 +506,7 @@ export default function JobsPage() {
           </div>
         </main>
 
-        {/* APPLY MODAL */}
+        {/* ================= APPLY MODAL ================= */}
         <AnimatePresence>
           {confirmOpen && jobToApply && (
             <motion.div
@@ -521,6 +519,7 @@ export default function JobsPage() {
                 className="absolute inset-0 bg-black/30 backdrop-blur-sm"
                 onClick={() => setConfirmOpen(false)}
               />
+
               <motion.div
                 initial={{ y: 30, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
@@ -529,15 +528,17 @@ export default function JobsPage() {
                 className="relative z-50 w-full max-w-2xl bg-white rounded-2xl shadow-2xl p-6 border border-gray-100"
               >
                 <h3 className="text-2xl font-bold mb-2">Confirm Application</h3>
+
                 <p className="text-gray-700 mb-4">
-                  You are about to confirm for{" "}
-                  <strong>{jobToApply.name}</strong>. This will mark the job as
-                  applied in your dashboard.
+                  You are about to confirm for <strong>{jobToApply.name}</strong>. This
+                  will mark the job as applied in your dashboard.
                 </p>
+
                 <div className="mb-4">
                   <div className="text-sm text-gray-500">Role</div>
                   <div className="text-lg font-semibold">{jobToApply.name}</div>
                 </div>
+
                 <div className="flex gap-3 justify-end">
                   <button
                     onClick={() => setConfirmOpen(false)}
@@ -545,12 +546,15 @@ export default function JobsPage() {
                   >
                     Cancel
                   </button>
+
                   <button
                     onClick={confirmApply}
-                    disabled={isProcessing}
+                    disabled={processingApplyId === jobToApply._id}
                     className="px-4 py-2 rounded-lg bg-emerald-500 text-white font-semibold"
                   >
-                    {isProcessing ? "Processing..." : "Confirm & Apply"}
+                    {processingApplyId === jobToApply._id
+                      ? "Processing..."
+                      : "Confirm & Apply"}
                   </button>
                 </div>
               </motion.div>
