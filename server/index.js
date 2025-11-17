@@ -66,7 +66,6 @@ app.use("/api/admin/auth", adminAuthRoutes); // <-- Login/Logout (NOT protected)
 app.use("/api/admin", adminAuth, adminApiRoutes);
 
 
-// app.listen(PORT, () => {
-//   console.log(`Server is running on port: ${PORT}`);
-// });
-module.exports = app;
+app.listen(PORT, () => {
+  console.log(`Server is running on port: ${PORT}`);
+});
