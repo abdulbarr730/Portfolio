@@ -49,7 +49,9 @@ function ConfettiCanvas({ trigger }) {
     const w = (canvas.width = window.innerWidth);
     const h = (canvas.height = window.innerHeight);
 
-    const colors = ["#ff6b6b", "#ffd93d", "#6bcB77", "#4D96FF", "#9D4EDD"].map(c => c.toUpperCase());
+    const colors = ["#ff6b6b", "#ffd93d", "#6bcB77", "#4D96FF", "#9D4EDD"].map(
+      (c) => c.toUpperCase()
+    );
     const particles = [];
     const count = 80;
     for (let i = 0; i < count; i++) {
@@ -96,7 +98,10 @@ function ConfettiCanvas({ trigger }) {
     };
   }, [trigger]);
   return (
-    <canvas ref={canvasRef} className="pointer-events-none fixed inset-0 z-50" />
+    <canvas
+      ref={canvasRef}
+      className="pointer-events-none fixed inset-0 z-50"
+    />
   );
 }
 
@@ -126,15 +131,22 @@ export default function JobsPage() {
         return;
       }
       try {
-        const meRes = await fetch(`${API_BASE_URL}/api/student/me`, { credentials: "include" });
-        if (meRes.status === 401) return (window.location.href = "/jobs/login");
+        const meRes = await fetch(`${API_BASE_URL}/api/student/me`, {
+          credentials: "include",
+        });
+        if (meRes.status === 401)
+          return (window.location.href = "/jobs/login");
         const me = await meRes.json();
         setStudent(me);
 
         const [jobsRes, appliedRes, appsRes] = await Promise.all([
           fetch(`${API_BASE_URL}/api/jobs/all`),
-          fetch(`${API_BASE_URL}/api/jobs/applied-count`, { credentials: "include" }),
-          fetch(`${API_BASE_URL}/api/jobs/my-applications`, { credentials: "include" }),
+          fetch(`${API_BASE_URL}/api/jobs/applied-count`, {
+            credentials: "include",
+          }),
+          fetch(`${API_BASE_URL}/api/jobs/my-applications`, {
+            credentials: "include",
+          }),
         ]);
 
         const jobsData = await jobsRes.json();
@@ -145,7 +157,13 @@ export default function JobsPage() {
         setJobs(jobsList);
         setFiltered(jobsList);
         setAppliedCount(appliedData.count || 0);
-        setAppliedJobIds(new Set((appsData?.applications || []).map(a => a.jobId?._id).filter(Boolean)));
+        setAppliedJobIds(
+          new Set(
+            (appsData?.applications || [])
+              .map((a) => a.jobId?._id)
+              .filter(Boolean)
+          )
+        );
       } catch (e) {
         console.error(e);
         setTempMessage("Failed to load jobs.");
@@ -158,21 +176,31 @@ export default function JobsPage() {
 
   useEffect(() => {
     let list = [...jobs];
-    if (search.trim()) list = list.filter(j => (j.name || "").toLowerCase().includes(search.toLowerCase()));
-    if (filterType !== "all") list = list.filter(j => (j.type || "").toLowerCase() === filterType.toLowerCase());
+    if (search.trim())
+      list = list.filter((j) =>
+        (j.name || "").toLowerCase().includes(search.toLowerCase())
+      );
+    if (filterType !== "all")
+      list = list.filter(
+        (j) => (j.type || "").toLowerCase() === filterType.toLowerCase()
+      );
 
-    if (sortBy === "latest") list.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-    else if (sortBy === "oldest") list.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-    else if (sortBy === "az") list.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+    if (sortBy === "latest")
+      list.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    else if (sortBy === "oldest")
+      list.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+    else if (sortBy === "az")
+      list.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
 
     setFiltered(list);
   }, [jobs, search, filterType, sortBy]);
 
-  const toggleBookmark = (id) => setBookmarked(prev => {
-    const s = new Set(prev);
-    s.has(id) ? s.delete(id) : s.add(id);
-    return s;
-  });
+  const toggleBookmark = (id) =>
+    setBookmarked((prev) => {
+      const s = new Set(prev);
+      s.has(id) ? s.delete(id) : s.add(id);
+      return s;
+    });
 
   const openApplyModal = (job) => {
     setJobToApply(job);
@@ -190,10 +218,10 @@ export default function JobsPage() {
         body: JSON.stringify({ jobId: jobToApply._id }),
       });
       if (res.ok) {
-        setAppliedJobIds(prev => new Set(prev).add(jobToApply._id));
-        setAppliedCount(prev => prev + 1);
+        setAppliedJobIds((prev) => new Set(prev).add(jobToApply._id));
+        setAppliedCount((prev) => prev + 1);
         setTempMessage("Successfully applied!");
-        setConfettiTrigger(v => !v);
+        setConfettiTrigger((v) => !v);
       } else {
         const data = await res.json();
         setTempMessage(data.error || "Failed to apply");
@@ -216,8 +244,12 @@ export default function JobsPage() {
         body: JSON.stringify({ jobId: id }),
       });
       if (res.ok) {
-        setAppliedJobIds(prev => { const s = new Set(prev); s.delete(id); return s; });
-        setAppliedCount(prev => prev - 1);
+        setAppliedJobIds((prev) => {
+          const s = new Set(prev);
+          s.delete(id);
+          return s;
+        });
+        setAppliedCount((prev) => prev - 1);
         setTempMessage("Application withdrawn");
       } else {
         const data = await res.json();
@@ -236,69 +268,135 @@ export default function JobsPage() {
     return () => clearTimeout(t);
   }, [tempMessage]);
 
-  if (loading) return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-50 p-8">
-      <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
-        <SkeletonCard />
-        <SkeletonCard />
-        <SkeletonCard />
-        <SkeletonCard />
+  if (loading)
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-50 p-8">
+        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
+          <SkeletonCard />
+          <SkeletonCard />
+          <SkeletonCard />
+          <SkeletonCard />
+        </div>
       </div>
-    </div>
-  );
+    );
 
   return (
     <>
-      <Head><title>Student Job Portal — Dashboard</title></Head>
+      <Head>
+        <title>Student Job Portal — Dashboard</title>
+      </Head>
 
       <ConfettiCanvas trigger={confettiTrigger} />
 
       <div className="min-h-screen bg-gray-50 pb-24 relative">
+        {/* Footer Button */}
         <a
           href="/"
           className="fixed bottom-6 right-6 z-50 inline-flex items-center px-6 py-3 rounded-full bg-black text-white shadow-2xl hover:scale-105 transition-transform text-sm font-medium"
-          aria-label="Visit Abdul Barr's Portfolio"
         >
           Abdul Barr's Portfolio
         </a>
 
+        {/* HEADER */}
         <header className="bg-gradient-to-r from-indigo-600 to-blue-600 text-white py-16 rounded-b-[2rem] shadow-xl">
           <div className="max-w-6xl mx-auto px-6 text-center">
-            <motion.h1 initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45 }} className="text-4xl md:text-5xl font-extrabold">Welcome, {student?.name} 👋</motion.h1>
-            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }} className="text-lg mt-3 opacity-90">Discover curated opportunities — track, apply, and succeed.</motion.p>
+            <motion.h1
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.45 }}
+              className="text-4xl md:text-5xl font-extrabold"
+            >
+              Welcome, {student?.name} 👋
+            </motion.h1>
 
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.1 }}
+              className="text-lg mt-3 opacity-90"
+            >
+              Discover curated opportunities — track, apply, and succeed.
+            </motion.p>
+
+            {/* 🔥 CLICKABLE HEADER CARDS */}
             <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-3xl mx-auto">
-              <motion.div initial={{ y: 8, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="bg-white rounded-2xl p-4 shadow-md border border-gray-100">
+
+              {/* Jobs Applied → CLICKABLE */}
+              {/* Jobs Applied → CLICKABLE */}
+              {/* Jobs Applied → CLICKABLE */}
+              <motion.div
+                onClick={() => (window.location.href = "/jobs/my-applications")}
+                className="cursor-pointer bg-white rounded-2xl p-4 shadow-md border border-gray-100 
+                          transition-all duration-200 hover:shadow-lg hover:scale-[1.03] hover:bg-neutral-50"
+                initial={{ y: 8, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+              >
                 <div className="text-xs uppercase text-gray-500">Jobs Applied</div>
                 <CountUp end={appliedCount} className="text-2xl font-bold text-blue-700" />
               </motion.div>
 
-              <motion.div initial={{ y: 8, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.05 }} className="bg-white rounded-2xl p-4 shadow-md border border-gray-100">
+              {/* Branch → CLICKABLE */}
+              <motion.div
+                onClick={() => (window.location.href = "/jobs/updateprofile")}
+                className="cursor-pointer bg-white rounded-2xl p-4 shadow-md border border-gray-100
+                          transition-all duration-200 hover:shadow-lg hover:scale-[1.03] hover:bg-neutral-50"
+                initial={{ y: 8, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.05 }}
+              >
                 <div className="text-xs uppercase text-gray-500">Branch</div>
                 <div className="text-2xl font-bold text-purple-600">{student?.branch}</div>
               </motion.div>
 
-              <motion.div initial={{ y: 8, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.1 }} className="bg-white rounded-2xl p-4 shadow-md border border-gray-100">
+              {/* Year → CLICKABLE */}
+              <motion.div
+                onClick={() => (window.location.href = "/jobs/updateprofile")}
+                className="cursor-pointer bg-white rounded-2xl p-4 shadow-md border border-gray-100
+                          transition-all duration-200 hover:shadow-lg hover:scale-[1.03] hover:bg-neutral-50"
+                initial={{ y: 8, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.1 }}
+              >
                 <div className="text-xs uppercase text-gray-500">Year</div>
                 <div className="text-2xl font-bold text-green-600">{student?.year}</div>
               </motion.div>
-            </div>
 
+
+            </div>
           </div>
         </header>
+
+        {/* BODY CONTENT BELOW */}
+        {/* (unchanged — same as your existing code) */}
 
         <main className="max-w-6xl mx-auto px-6 -mt-10">
           <AnimatePresence>
             {tempMessage && (
-              <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="mt-6 p-3 bg-white rounded-xl border-l-4 border-blue-500 shadow">{tempMessage}</motion.div>
+              <motion.div
+                initial={{ opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                className="mt-6 p-3 bg-white rounded-xl border-l-4 border-blue-500 shadow"
+              >
+                {tempMessage}
+              </motion.div>
             )}
           </AnimatePresence>
 
           <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-white p-4 rounded-2xl mt-6 shadow border border-gray-100">
             <div className="flex gap-3 items-center w-full md:w-2/3">
-              <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search roles, companies..." className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-300" />
+              <input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search roles, companies..."
+                className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-300"
+              />
 
-              <select value={filterType} onChange={(e) => setFilterType(e.target.value)} className="p-3 rounded-xl border border-gray-200">
+              <select
+                value={filterType}
+                onChange={(e) => setFilterType(e.target.value)}
+                className="p-3 rounded-xl border border-gray-200"
+              >
                 <option value="all">All Types</option>
                 <option value="full-time">Full-Time</option>
                 <option value="internship">Internship</option>
@@ -311,7 +409,11 @@ export default function JobsPage() {
 
             <div className="flex items-center gap-3">
               <label className="text-sm text-gray-600">Sort</label>
-              <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="p-3 rounded-xl border border-gray-200">
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="p-3 rounded-xl border border-gray-200"
+              >
                 <option value="latest">Latest</option>
                 <option value="oldest">Oldest</option>
                 <option value="az">A → Z</option>
@@ -320,33 +422,83 @@ export default function JobsPage() {
           </div>
 
           <div className="w-full bg-yellow-100 border border-yellow-300 text-yellow-800 text-center text-xs sm:text-sm px-4 py-2 rounded-xl shadow mb-6">
-            All application data is securely recorded and reviewed only for placement purposes.
+            All application data is securely recorded and reviewed only for
+            placement purposes.
           </div>
 
+          {/* JOB CARDS */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
             <AnimatePresence>
-              {filtered.map(job => (
-                <motion.article key={job._id} layout initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 12 }} transition={{ duration: 0.28 }} className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100 relative">
-                  <button onClick={() => toggleBookmark(job._id)} className={`absolute top-4 right-4 text-lg ${bookmarked.has(job._id) ? "text-yellow-500" : "text-gray-300"}`} aria-label="Bookmark">★</button>
+              {filtered.map((job) => (
+                <motion.article
+                  key={job._id}
+                  layout
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 12 }}
+                  transition={{ duration: 0.28 }}
+                  className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100 relative"
+                >
+                  <button
+                    onClick={() => toggleBookmark(job._id)}
+                    className={`absolute top-4 right-4 text-lg ${
+                      bookmarked.has(job._id)
+                        ? "text-yellow-500"
+                        : "text-gray-300"
+                    }`}
+                  >
+                    ★
+                  </button>
 
                   <div className="flex items-start gap-4">
                     <div className="flex-1">
-                      <h3 className="text-xl font-semibold text-gray-900">{job.name}</h3>
-                      <p className="text-sm text-gray-600 mt-2 line-clamp-3">{job.description}</p>
+                      <h3 className="text-xl font-semibold text-gray-900">
+                        {job.name}
+                      </h3>
+                      <p className="text-sm text-gray-600 mt-2 line-clamp-3">
+                        {job.description}
+                      </p>
 
                       <div className="mt-4 flex gap-2 flex-wrap text-xs">
-                        {job.type && <span className="px-3 py-1 rounded-full bg-blue-50 text-blue-700">{job.type}</span>}
-                        {job.location && <span className="px-3 py-1 rounded-full bg-green-50 text-green-700">{job.location}</span>}
+                        {job.type && (
+                          <span className="px-3 py-1 rounded-full bg-blue-50 text-blue-700">
+                            {job.type}
+                          </span>
+                        )}
+                        {job.location && (
+                          <span className="px-3 py-1 rounded-full bg-green-50 text-green-700">
+                            {job.location}
+                          </span>
+                        )}
                       </div>
                     </div>
 
                     <div className="w-32 flex-shrink-0 flex flex-col items-end gap-3">
-                      <a href={job.link} target="_blank" rel="noreferrer" className="text-blue-600 font-semibold underline">Company Site →</a>
+                      <a
+                        href={job.link}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-blue-600 font-semibold underline"
+                      >
+                        Company Site →
+                      </a>
 
                       {appliedJobIds.has(job._id) ? (
-                        <button disabled={isProcessing} onClick={() => handleWithdraw(job._id)} className="mt-2 w-full py-2 rounded-xl bg-red-500 text-white font-semibold hover:bg-red-600 disabled:opacity-60">{isProcessing ? "Processing..." : "Withdraw"}</button>
+                        <button
+                          disabled={isProcessing}
+                          onClick={() => handleWithdraw(job._id)}
+                          className="mt-2 w-full py-2 rounded-xl bg-red-500 text-white font-semibold hover:bg-red-600 disabled:opacity-60"
+                        >
+                          {isProcessing ? "Processing..." : "Withdraw"}
+                        </button>
                       ) : (
-                        <button disabled={isProcessing} onClick={() => openApplyModal(job)} className="mt-2 w-full py-2 rounded-xl bg-emerald-500 text-white font-semibold hover:bg-emerald-600 disabled:opacity-60">Apply</button>
+                        <button
+                          disabled={isProcessing}
+                          onClick={() => openApplyModal(job)}
+                          className="mt-2 w-full py-2 rounded-xl bg-emerald-500 text-white font-semibold hover:bg-emerald-600 disabled:opacity-60"
+                        >
+                          Apply
+                        </button>
                       )}
                     </div>
                   </div>
@@ -356,20 +508,50 @@ export default function JobsPage() {
           </div>
         </main>
 
+        {/* APPLY MODAL */}
         <AnimatePresence>
           {confirmOpen && jobToApply && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-40 flex items-center justify-center p-4">
-              <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={() => setConfirmOpen(false)} />
-              <motion.div initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 30, opacity: 0 }} transition={{ duration: 0.25 }} className="relative z-50 w-full max-w-2xl bg-white rounded-2xl shadow-2xl p-6 border border-gray-100">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-40 flex items-center justify-center p-4"
+            >
+              <div
+                className="absolute inset-0 bg-black/30 backdrop-blur-sm"
+                onClick={() => setConfirmOpen(false)}
+              />
+              <motion.div
+                initial={{ y: 30, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: 30, opacity: 0 }}
+                transition={{ duration: 0.25 }}
+                className="relative z-50 w-full max-w-2xl bg-white rounded-2xl shadow-2xl p-6 border border-gray-100"
+              >
                 <h3 className="text-2xl font-bold mb-2">Confirm Application</h3>
-                <p className="text-gray-700 mb-4">You are about to apply for <strong>{jobToApply.name}</strong>. This will mark the job as applied in your dashboard.</p>
+                <p className="text-gray-700 mb-4">
+                  You are about to apply for{" "}
+                  <strong>{jobToApply.name}</strong>. This will mark the job as
+                  applied in your dashboard.
+                </p>
                 <div className="mb-4">
                   <div className="text-sm text-gray-500">Role</div>
                   <div className="text-lg font-semibold">{jobToApply.name}</div>
                 </div>
                 <div className="flex gap-3 justify-end">
-                  <button onClick={() => setConfirmOpen(false)} className="px-4 py-2 rounded-lg border border-gray-200">Cancel</button>
-                  <button onClick={confirmApply} disabled={isProcessing} className="px-4 py-2 rounded-lg bg-emerald-500 text-white font-semibold">{isProcessing ? 'Processing...' : 'Confirm & Apply'}</button>
+                  <button
+                    onClick={() => setConfirmOpen(false)}
+                    className="px-4 py-2 rounded-lg border border-gray-200"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={confirmApply}
+                    disabled={isProcessing}
+                    className="px-4 py-2 rounded-lg bg-emerald-500 text-white font-semibold"
+                  >
+                    {isProcessing ? "Processing..." : "Confirm & Apply"}
+                  </button>
                 </div>
               </motion.div>
             </motion.div>
