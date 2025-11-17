@@ -7,28 +7,27 @@ import Head from 'next/head'; // Added for the page title
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function JobsPage() {
-  
-  // --- FIX: Define ALL State Variables Locally ---
   const [loading, setLoading] = useState(true);
   const [student, setStudent] = useState(null);
   const [jobs, setJobs] = useState([]);
   const [appliedCount, setAppliedCount] = useState(0);
-  const [appliedJobIds, setAppliedJobIds] = useState(new Set()); // Used for button state
-  const [message, setMessage] = useState(""); // Used for Apply/Withdraw specific messages
-  const [error, setError] = useState(null); // Used for critical fetch errors
+  const [message, setMessage] = useState("");
+  const [appliedJobIds, setAppliedJobIds] = useState(new Set());
+  
+  // --- NEW STATE FOR BUTTON FEEDBACK ---
+  const [isApplying, setIsApplying] = useState(false); 
 
   // Fetch student details and job list
   useEffect(() => {
     async function fetchData() {
       if (!API_BASE_URL) {
-        setError("Configuration error: API_BASE_URL is not set.");
+        setMessage("Configuration error: API_BASE_URL is not set.");
         setLoading(false);
-        setTimeout(() => window.location.href = "/jobs/login", 1000);
+        window.location.href = "/jobs/login";
         return;
       }
 
       try {
-        // Fetch all data in parallel
         const [meRes, jobsRes, appliedRes, myAppsRes] = await Promise.all([
           fetch(`${API_BASE_URL}/api/student/me`, { credentials: "include" }),
           fetch(`${API_BASE_URL}/api/jobs/all`),
@@ -36,7 +35,6 @@ export default function JobsPage() {
           fetch(`${API_BASE_URL}/api/jobs/my-applications`, { credentials: "include" })
         ]);
 
-        // Check auth status
         if (meRes.status === 401 || appliedRes.status === 401 || myAppsRes.status === 401) {
           window.location.href = "/jobs/login";
           return;
@@ -58,26 +56,26 @@ export default function JobsPage() {
           ? new Set(myAppsData.applications.map(app => app.jobId?._id).filter(Boolean))
           : new Set();
 
-        // --- Set all state here ---
         setStudent(meData);
         setJobs(jobsData.jobs || []);
         setAppliedCount(appliedData.count || 0);
         setAppliedJobIds(appliedIds);
-        
+
       } catch (err) {
         console.error("Dashboard Load Error:", err);
-        setError(err.message || "Failed to load dashboard data.");
-        setTimeout(() => window.location.href = "/jobs/login", 2000); // Redirect after showing error
+        setMessage(err.message || "Failed to load dashboard data.");
+        setTimeout(() => window.location.href = "/jobs/login", 2000); 
       } finally {
         setLoading(false);
       }
     }
     fetchData();
-  }, [appliedJobIds]); // Added appliedJobIds to dependencies
+  }, []); 
 
   // Apply handler
   const handleApply = async (jobId) => {
     setMessage("");
+    setIsApplying(true); // <-- START LOADING
     try {
       const res = await fetch(`${API_BASE_URL}/api/jobs/apply`, {
         method: "POST",
@@ -91,16 +89,19 @@ export default function JobsPage() {
         setAppliedCount(prevCount => prevCount + 1);
         setAppliedJobIds(prevIds => new Set(prevIds).add(jobId)); 
       } else {
-        throw new Error(data.error || "Failed to apply.");
+        throw new Error(data.error || "Failed to apply ❌");
       }
     } catch (err) {
       setMessage(err.message || "Failed to apply ❌");
+    } finally {
+        setIsApplying(false); // <-- STOP LOADING
     }
   };
 
   // Handle Withdraw
   const handleWithdraw = async (jobId) => {
     setMessage("");
+    setIsApplying(true); // <-- START LOADING
     try {
       const res = await fetch(`${API_BASE_URL}/api/jobs/withdraw`, {
         method: "DELETE",
@@ -124,6 +125,8 @@ export default function JobsPage() {
 
     } catch (err) {
       setMessage(err.message || "Failed to withdraw.");
+    } finally {
+        setIsApplying(false); // <-- STOP LOADING
     }
   };
 
@@ -293,16 +296,18 @@ export default function JobsPage() {
                         onClick={() => handleWithdraw(job._id)}
                         className="mt-4 w-full bg-red-600 text-white py-2 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-4 focus:ring-red-300 transition-colors duration-200"
                         aria-label={`Withdraw application for ${job.name}`}
+                        disabled={isApplying} // <-- ADD DISABLE
                       >
-                        Withdraw
+                        {isApplying ? "Processing..." : "Withdraw"}
                       </button>
                     ) : (
                       <button
                         onClick={() => handleApply(job._id)}
                         className="mt-4 w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-4 focus:ring-green-300 transition-colors duration-200"
                         aria-label={`Mark ${job.name} as applied`}
+                        disabled={isApplying} // <-- ADD DISABLE
                       >
-                        I Applied 
+                        {isApplying ? "Processing..." : "Apply"}
                       </button>
                     )}
                   </div>
@@ -315,7 +320,7 @@ export default function JobsPage() {
         {/* --- FLOATING ACTION BUTTON (FAB) --- */}
         <a 
           href="/" 
-          className="fixed bottom-6 right-6 bg-black text-white px-4 py-2 rounded-lg shadow-lg hover:bg-gray-800 transition transform hover:scale-105 text-sm font-medium"
+          className="fixed bottom-6 right-6 bg-black text-white px-4 py-2 rounded-full shadow-lg hover:bg-gray-800 transition transform hover:scale-105 text-sm font-medium"
           title="Visit Abdul Barr's Portfolio"
           aria-label="Visit Abdul Barr's Portfolio"
         >
