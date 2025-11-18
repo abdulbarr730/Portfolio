@@ -4,7 +4,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Head from "next/head";
 import { motion, AnimatePresence } from "framer-motion";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+// ✅ FIX: Default to empty string to allow Vercel Rewrites (relative paths)
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
 // -------------------- CountUp --------------------
 function CountUp({ end = 0, duration = 800, className = "text-4xl font-bold" }) {
@@ -132,11 +133,9 @@ export default function JobsPage() {
   // -------------------- Load Data --------------------
   useEffect(() => {
     async function load() {
-      if (!API_BASE_URL) {
-        setLoading(false);
-        setTimeout(() => (window.location.href = "/jobs/login"), 800);
-        return;
-      }
+      // 🗑️ DELETED: The check "if (!API_BASE_URL)" is gone.
+      // We now proceed directly to fetch, which will use relative paths if API_BASE_URL is empty.
+
       try {
         const meRes = await fetch(`${API_BASE_URL}/api/student/me`, {
           credentials: "include",
