@@ -1,14 +1,17 @@
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
   async rewrites() {
     return [
       {
-        source: '/api/:path*', // When the frontend calls /api/anything
-        destination: 'https://portfolio-backend-omega-khaki.vercel.app//api/:path*', // Proxy to backend
+        source: '/api/:path*',
+        // 👇 REPLACE THIS with your actual Backend Vercel URL
+        destination: 'https://portfolio-backend-omega-khaki.vercel.app/api/:path*', 
       },
     ];
   },
 };
 
-module.exports = nextConfig;
+// In .mjs files, we use 'export default' instead of 'module.exports'
+export default nextConfig;
