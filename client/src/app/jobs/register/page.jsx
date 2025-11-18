@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+// ✅ FIX: Default to empty string so relative paths work with Vercel Rewrites
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
 export default function RegisterPage() {
   const [form, setForm] = useState({
@@ -10,7 +11,7 @@ export default function RegisterPage() {
     email: "",
     password: "",
     rollNumber: "",
-    phoneNumber: "",     // <-- ADDED
+    phoneNumber: "",    // <-- ADDED
     course: "",
     branch: "",
     year: "",
@@ -51,13 +52,11 @@ export default function RegisterPage() {
       return;
     }
 
-    if (!API_BASE_URL) {
-      setMessage("Configuration error: API_BASE_URL is not set.");
-      return;
-    }
+    // 🗑️ REMOVED: The check "if (!API_BASE_URL)" is gone.
 
     setLoading(true);
     try {
+      // ✅ FIX: Uses relative path /api/... if API_BASE_URL is empty
       const res = await fetch(`${API_BASE_URL}/api/student/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -104,11 +103,7 @@ export default function RegisterPage() {
     setCancelMessage("");
     setCancelLoading(true);
 
-    if (!API_BASE_URL) {
-      setCancelMessage("Configuration error: API_BASE_URL is not set.");
-      setCancelLoading(false);
-      return;
-    }
+    // 🗑️ REMOVED: The check "if (!API_BASE_URL)" is gone.
 
     try {
       const payload = {
@@ -116,6 +111,7 @@ export default function RegisterPage() {
         rollNumber: pendingInfo?.rollNumber || form.rollNumber,
       };
 
+      // ✅ FIX: Uses relative path /api/... if API_BASE_URL is empty
       const res = await fetch(
         `${API_BASE_URL}/api/student/cancel-registration`,
         {

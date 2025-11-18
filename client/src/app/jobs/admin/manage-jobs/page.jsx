@@ -3,7 +3,8 @@
 
 import { useState, useEffect } from "react";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+// ✅ FIX: Default to empty string so relative paths work with Vercel Rewrites
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
 export default function ManageJobsPage() {
   const [loading, setLoading] = useState(true);
@@ -12,13 +13,11 @@ export default function ManageJobsPage() {
 
   useEffect(() => {
     const fetchJobs = async () => {
-      if (!API_BASE_URL) {
-        setMessage("Configuration error: API_BASE_URL is not set.");
-        setLoading(false);
-        return;
-      }
+      // 🗑️ REMOVED: The check "if (!API_BASE_URL)" is gone.
+
       setLoading(true);
       try {
+        // ✅ FIX: Uses relative path /api/... if API_BASE_URL is empty
         const res = await fetch(`${API_BASE_URL}/api/admin/jobs/all`, {
           credentials: "include",
         });

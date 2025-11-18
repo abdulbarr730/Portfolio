@@ -5,8 +5,8 @@ import { useState } from "react";
 // import { useRouter } from "next/navigation";
 // import Link from "next/link";
 
-// --- Use the Environment Variable ---
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+// --- Use the Environment Variable (Default to empty string for Rewrites) ---
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
 export default function LoginPage() {
   // const router = useRouter(); // Removed router
@@ -33,15 +33,10 @@ export default function LoginPage() {
     setPendingInfo(null);
     setLoading(true);
 
-    // Check if the URL is set
-    if (!API_BASE_URL) {
-      setMessage("Configuration error: API_BASE_URL is not set.");
-      setLoading(false);
-      return;
-    }
-
+    // 🗑️ REMOVED: The check "if (!API_BASE_URL)" is gone.
+    
     try {
-      // --- FIX: Use absolute URL from environment variable ---
+      // --- FIX: Uses relative URL if API_BASE_URL is empty ---
       const res = await fetch(`${API_BASE_URL}/api/student/login`, {
         method: "POST",
         credentials: "include", // This is important for cookies
@@ -80,16 +75,11 @@ export default function LoginPage() {
     setCancelMessage("");
     setCancelLoading(true);
 
-    // Check if the URL is set
-    if (!API_BASE_URL) {
-      setCancelMessage("Configuration error: API_BASE_URL is not set.");
-      setCancelLoading(false);
-      return;
-    }
+    // 🗑️ REMOVED: The check "if (!API_BASE_URL)" is gone.
 
     try {
       const payload = { email: pendingInfo?.email || email };
-      // --- FIX: Use absolute URL from environment variable ---
+      // --- FIX: Uses relative URL if API_BASE_URL is empty ---
       const res = await fetch(`${API_BASE_URL}/api/student/cancel-registration`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },

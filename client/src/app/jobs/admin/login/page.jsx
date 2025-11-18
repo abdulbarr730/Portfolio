@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 
-// --- Use the Environment Variable ---
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+// ✅ FIX: Default to empty string so relative paths work with Vercel Rewrites
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
 export default function AdminLoginPage() {
   const [email, setEmail] = useState("");
@@ -13,14 +13,12 @@ export default function AdminLoginPage() {
   const [showPassword, setShowPassword] = useState(false);
 
   const handleLogin = async () => {
-    if (!API_BASE_URL) {
-      setMessage("Configuration error: API_BASE_URL is not set.");
-      return;
-    }
+    // 🗑️ REMOVED: The check "if (!API_BASE_URL)" is gone.
     
     setLoading(true);
     setMessage("");
     try {
+      // ✅ FIX: Uses relative path /api/... if API_BASE_URL is empty
       const res = await fetch(`${API_BASE_URL}/api/admin/auth/login`, {
         method: "POST",
         credentials: "include", // IMPORTANT for setting the cookie

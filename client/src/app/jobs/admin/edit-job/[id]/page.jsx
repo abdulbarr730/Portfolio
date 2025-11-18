@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+// ✅ FIX: Default to empty string so relative paths work with Vercel Rewrites
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
 export default function EditJobPage() {
   const router = useRouter();
@@ -25,6 +26,7 @@ export default function EditJobPage() {
     if (!id) return;
     (async () => {
       try {
+        // ✅ FIX: Uses relative path /api/... because API_BASE_URL is empty
         const res = await fetch(`${API_BASE_URL}/api/admin/jobs/${id}`, {
           credentials: "include",
         });
@@ -65,6 +67,7 @@ export default function EditJobPage() {
 
     setSaving(true);
     try {
+      // ✅ FIX: Uses relative path /api/...
       const res = await fetch(`${API_BASE_URL}/api/admin/jobs/${id}`, {
         method: "PUT",
         credentials: "include",

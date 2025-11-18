@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+// ✅ FIX: Default to empty string so relative paths work with Vercel Rewrites
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
 export default function UpdateProfilePage() {
   const [loading, setLoading] = useState(true);
@@ -33,13 +34,10 @@ export default function UpdateProfilePage() {
   // ----------------------------
   useEffect(() => {
     async function fetchProfile() {
-      if (!API_BASE_URL) {
-        setMessage("Configuration error: API_BASE_URL is not set.");
-        setLoading(false);
-        return;
-      }
+      // 🗑️ REMOVED: The check "if (!API_BASE_URL)" is gone.
 
       try {
+        // ✅ FIX: Uses relative path /api/... if API_BASE_URL is empty
         const res = await fetch(`${API_BASE_URL}/api/student/me`, {
           credentials: "include",
         });
@@ -77,14 +75,12 @@ export default function UpdateProfilePage() {
   const handleSave = async () => {
     setMessage("");
 
-    if (!API_BASE_URL) {
-      setMessage("Configuration error: API_BASE_URL is not set.");
-      return;
-    }
+    // 🗑️ REMOVED: The check "if (!API_BASE_URL)" is gone.
 
     setSaving(true);
 
     try {
+      // ✅ FIX: Uses relative path /api/... if API_BASE_URL is empty
       const res = await fetch(`${API_BASE_URL}/api/student/update-profile`, {
         method: "PUT",
         credentials: "include",
@@ -119,10 +115,7 @@ export default function UpdateProfilePage() {
   const handleChangePassword = async () => {
     setMessage("");
 
-    if (!API_BASE_URL) {
-      setMessage("Configuration error: API_BASE_URL is not set.");
-      return;
-    }
+    // 🗑️ REMOVED: The check "if (!API_BASE_URL)" is gone.
 
     if (passwords.newPassword !== passwords.confirmNewPassword) {
       setMessage("New passwords do not match");
@@ -132,6 +125,7 @@ export default function UpdateProfilePage() {
     setPwLoading(true);
 
     try {
+      // ✅ FIX: Uses relative path /api/... if API_BASE_URL is empty
       const res = await fetch(`${API_BASE_URL}/api/student/change-password`, {
         method: "PUT",
         credentials: "include",

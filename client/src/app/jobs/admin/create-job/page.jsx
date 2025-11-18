@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+// ✅ FIX: Default to empty string for Vercel Rewrites
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
 export default function CreateJobPage() {
   const [form, setForm] = useState({
@@ -18,9 +19,11 @@ export default function CreateJobPage() {
 
   // Check auth on mount (optional quick check)
   useEffect(() => {
-    if (!API_BASE_URL) return;
+    // 🗑️ REMOVED: The check "if (!API_BASE_URL)" is gone.
+    
     (async () => {
       try {
+        // ✅ FIX: Uses relative path /api/... if API_BASE_URL is empty
         const res = await fetch(`${API_BASE_URL}/api/admin/students/pending`, {
           credentials: "include",
         });
@@ -40,10 +43,7 @@ export default function CreateJobPage() {
   const handleSubmit = async () => {
     setMessage("");
 
-    if (!API_BASE_URL) {
-      setMessage("Configuration error: API_BASE_URL is not set.");
-      return;
-    }
+    // 🗑️ REMOVED: The check "if (!API_BASE_URL)" is gone.
 
     if (!form.name || !form.link) {
       setMessage("Job Name and Link are required.");
@@ -52,6 +52,7 @@ export default function CreateJobPage() {
 
     setLoading(true);
     try {
+      // ✅ FIX: Uses relative path /api/... if API_BASE_URL is empty
       const res = await fetch(`${API_BASE_URL}/api/admin/jobs/create`, {
         method: "POST",
         credentials: "include",

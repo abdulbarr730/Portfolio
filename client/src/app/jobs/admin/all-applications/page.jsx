@@ -5,15 +5,14 @@ import Head from "next/head";
 import { motion, AnimatePresence } from "framer-motion";
 import * as XLSX from "xlsx";
 
+// ✅ FIX: Default to empty string for Vercel Rewrites
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
 /**
  * Admin Jobs Card Grid (full file)
  * - Cards grouped by job (from /api/admin/applications/by-job)
  * - Modal with applicants table (includes phone)
- * - Export Job and Export All with auto-fit column widths (option A: perfect-fit width = charLen * 1.2)
- *
- * Copy-paste ready.
+ * - Export Job and Export All with auto-fit column widths
  */
 
 // small util: format date nicely
@@ -26,7 +25,7 @@ const formatDate = (iso) => {
   }
 };
 
-// Auto column width helper for XLSX sheets (perfect-fit multiplier = 1.2)
+// Auto column width helper for XLSX sheets
 function setAutoColumnWidthsFromRows(ws, rows, multiplier = 1.2) {
   if (!rows || rows.length === 0) return;
   const keys = Object.keys(rows[0]);
@@ -40,7 +39,6 @@ function setAutoColumnWidthsFromRows(ws, rows, multiplier = 1.2) {
   });
 
   ws["!cols"] = maxLens.map((len) => {
-    // 'wch' works for Excel desktop; multiply by multiplier and add small padding
     const width = Math.ceil(len * multiplier) + 1;
     return { wch: width };
   });
@@ -49,11 +47,9 @@ function setAutoColumnWidthsFromRows(ws, rows, multiplier = 1.2) {
 // Export helper: rows -> excel file with auto column widths
 function exportRowsToExcel(rows, filename = "export.xlsx") {
   const ws = XLSX.utils.json_to_sheet(rows);
-  // auto-fit columns
   try {
-    setAutoColumnWidthsFromRows(ws, rows, 1.2); // Option A: perfect-fit
+    setAutoColumnWidthsFromRows(ws, rows, 1.2);
   } catch (e) {
-    // fallback: do nothing if fails
     console.warn("Auto column width failed:", e);
   }
   const wb = XLSX.utils.book_new();
@@ -63,32 +59,30 @@ function exportRowsToExcel(rows, filename = "export.xlsx") {
 
 export default function AdminJobsCardGrid() {
   const [loading, setLoading] = useState(true);
-  const [jobsData, setJobsData] = useState([]); // from /applications/by-job (grouped by job)
+  const [jobsData, setJobsData] = useState([]); 
   const [message, setMessage] = useState("");
   const [search, setSearch] = useState("");
   const [filterBranch, setFilterBranch] = useState("all");
   const [filterYear, setFilterYear] = useState("all");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
-  const [selectedJob, setSelectedJob] = useState(null); // job group object
+  const [selectedJob, setSelectedJob] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [withdrawLoadingId, setWithdrawLoadingId] = useState(null);
-  const [sortBy, setSortBy] = useState("recent"); // recent, oldest, applicants-desc
+  const [sortBy, setSortBy] = useState("recent");
   const [loadingError, setLoadingError] = useState("");
 
   // fetch grouped-by-job data on mount
   useEffect(() => {
     let mounted = true;
     async function load() {
-      if (!API_BASE_URL) {
-        setMessage("Configuration error: API_BASE_URL not set.");
-        setLoading(false);
-        return;
-      }
+      // 🗑️ REMOVED: The blocking check "if (!API_BASE_URL)" is gone.
+      
       setLoading(true);
       setMessage("");
       try {
+        // ✅ FIX: Uses relative path /api/... if API_BASE_URL is empty
         const res = await fetch(`${API_BASE_URL}/api/admin/applications/by-job`, {
           credentials: "include",
         });
@@ -114,7 +108,7 @@ export default function AdminJobsCardGrid() {
     };
   }, []);
 
-  // derive list of branches & years for filters from jobsData -> applications
+  // derive list of branches & years for filters
   const { branches, years } = useMemo(() => {
     const branchSet = new Set();
     const yearSet = new Set();
@@ -130,11 +124,10 @@ export default function AdminJobsCardGrid() {
     };
   }, [jobsData]);
 
-  // Stats computed from jobsData
+  // Stats
   const stats = useMemo(() => {
     const totalJobs = jobsData.length;
     const totalApplications = jobsData.reduce((acc, j) => acc + (j.applications?.length || 0), 0);
-    // unique students across all jobs
     const studentIds = new Set();
     jobsData.forEach((j) => {
       (j.applications || []).forEach((a) => {
@@ -142,7 +135,6 @@ export default function AdminJobsCardGrid() {
         studentIds.add(sid);
       });
     });
-    // job with most applicants
     let mostJob = null;
     jobsData.forEach((j) => {
       const count = j.applications?.length || 0;
@@ -152,16 +144,14 @@ export default function AdminJobsCardGrid() {
     return { totalJobs, totalApplications, totalStudents: studentIds.size, mostJob, zeroJobs };
   }, [jobsData]);
 
-  // Filtering and searching on cards
+  // Filtering
   const filteredJobs = useMemo(() => {
     let list = [...jobsData];
 
-    // Search: check jobName OR any student's name/roll/email
     if (search.trim()) {
       const q = search.toLowerCase();
       list = list.filter((j) => {
         if ((j.jobName || "").toLowerCase().includes(q)) return true;
-        // search inside applicants
         if ((j.applications || []).some((a) => {
           return (a.studentName || "").toLowerCase().includes(q) ||
             (String(a.studentRoll || "").toLowerCase()).includes(q) ||
@@ -171,17 +161,14 @@ export default function AdminJobsCardGrid() {
       });
     }
 
-    // Filter by branch
     if (filterBranch !== "all") {
       list = list.filter((j) => (j.applications || []).some((a) => (a.studentBranch || "").toLowerCase() === filterBranch.toLowerCase()));
     }
 
-    // Filter by year
     if (filterYear !== "all") {
       list = list.filter((j) => (j.applications || []).some((a) => String(a.studentYear) === String(filterYear)));
     }
 
-    // Filter by date range (appliedAt)
     if (dateFrom) {
       const from = new Date(dateFrom);
       list = list.filter((j) => (j.applications || []).some((a) => new Date(a.appliedAt) >= from));
@@ -192,7 +179,6 @@ export default function AdminJobsCardGrid() {
       list = list.filter((j) => (j.applications || []).some((a) => new Date(a.appliedAt) <= to));
     }
 
-    // Sorting
     if (sortBy === "recent") {
       list.sort((a, b) => new Date(b.jobCreatedAt || b.jobCreatedAt) - new Date(a.jobCreatedAt || a.jobCreatedAt));
     } else if (sortBy === "oldest") {
@@ -204,18 +190,15 @@ export default function AdminJobsCardGrid() {
     return list;
   }, [jobsData, search, filterBranch, filterYear, dateFrom, dateTo, sortBy]);
 
-  // Open modal for a job (job object from by-job aggregation)
   const openJobModal = (job) => {
     setSelectedJob(job);
     setModalOpen(true);
   };
 
-  // Helper to extract phone number robustly
   const extractPhone = (app) => {
     return app.studentPhone || app.studentPhoneNumber || app.phoneNumber || app.phone || app.student_mobile || app.mobile || "-";
   };
 
-  // Export job -> excel (auto column width)
   const exportJob = (job) => {
     const rows = (job.applications || []).map((a) => ({
       "Student Name": a.studentName || "",
@@ -231,7 +214,6 @@ export default function AdminJobsCardGrid() {
     exportRowsToExcel(rows, `${(job.jobName || "job").replace(/\s+/g, "_")}_applications.xlsx`);
   };
 
-  // Export ALL (flat rows) with auto width
   const exportAll = async () => {
     setIsExporting(true);
     try {
@@ -260,7 +242,6 @@ export default function AdminJobsCardGrid() {
     }
   };
 
-  // Withdraw handler inside modal (admin can withdraw a student's application)
   const withdrawApplication = async (jobId, studentRollOrEmail, appliedAt) => {
     if (!confirm("Withdraw this student's application? This will delete the application record.")) return;
 
@@ -278,7 +259,6 @@ export default function AdminJobsCardGrid() {
         throw new Error(d.error || "Failed to withdraw");
       }
 
-      // on success, remove from local state
       setJobsData((prev) => prev.map((j) => {
         if (j._id !== jobId && j.jobId !== jobId && j.jobLink !== jobId) return j;
         return { ...j, applications: (j.applications || []).filter((a) => !((a.studentRoll === studentRollOrEmail || a.studentEmail === studentRollOrEmail) && new Date(a.appliedAt).toISOString() === new Date(appliedAt).toISOString())) };
@@ -293,7 +273,6 @@ export default function AdminJobsCardGrid() {
     }
   };
 
-  // Skeleton while loading
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 p-8">
@@ -320,7 +299,7 @@ export default function AdminJobsCardGrid() {
       <div className="min-h-screen bg-gray-50 pb-24">
         <div className="max-w-7xl mx-auto px-6 py-8">
 
-          {/* Top row: title + top actions */}
+          {/* Top row */}
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
             <div>
               <h1 className="text-3xl font-extrabold">Applications — Job Grid</h1>
@@ -328,17 +307,11 @@ export default function AdminJobsCardGrid() {
             </div>
 
             <div className="flex items-center gap-3">
-              {/* Export All */}
               <button onClick={exportAll} disabled={isExporting} className="bg-green-600 text-white px-4 py-2 rounded-md shadow hover:bg-green-700">
                 {isExporting ? "Exporting..." : "Export All"}
               </button>
 
-              {/* VIEW FULL APPLICATIONS button */}
-              <a
-                href="/jobs/admin/export-view"
-                className="bg-indigo-600 text-white px-4 py-2 rounded-md shadow hover:bg-indigo-700"
-                title="View Full Applications"
-              >
+              <a href="/jobs/admin/export-view" className="bg-indigo-600 text-white px-4 py-2 rounded-md shadow hover:bg-indigo-700" title="View Full Applications">
                 View Full Applications
               </a>
 
@@ -346,7 +319,7 @@ export default function AdminJobsCardGrid() {
             </div>
           </div>
 
-          {/* Statistics bar */}
+          {/* Stats */}
           <div className="bg-white rounded-xl shadow p-4 mb-6 border">
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               <div className="p-3">
@@ -373,7 +346,7 @@ export default function AdminJobsCardGrid() {
             )}
           </div>
 
-          {/* Filters & search */}
+          {/* Filters */}
           <div className="bg-white p-4 rounded-xl border shadow mb-6 flex flex-col md:flex-row gap-3 md:items-center">
             <div className="flex items-center gap-3 flex-1">
               <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search job, student name or roll..." className="w-full p-3 rounded-xl border focus:ring-2 focus:ring-blue-300" />
@@ -400,7 +373,7 @@ export default function AdminJobsCardGrid() {
             </div>
           </div>
 
-          {/* Grid of job cards */}
+          {/* Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredJobs.length === 0 ? (
               <div className="col-span-full bg-white p-6 rounded-xl text-center text-gray-600">No matching jobs.</div>
@@ -432,19 +405,30 @@ export default function AdminJobsCardGrid() {
             ))}
           </div>
 
-          {/* Message */}
           {message && <div className="mt-6 p-3 bg-yellow-100 text-yellow-800 rounded-md">{message}</div>}
           {loadingError && <div className="mt-6 p-3 bg-red-100 text-red-800 rounded-md">Error: {loadingError}</div>}
         </div>
 
-        {/* Modal for selected job applicants */}
+        {/* Modal: ✅ FIXED SCROLLING */}
         <AnimatePresence>
           {modalOpen && selectedJob && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center p-4">
-              <div className="absolute inset-0 bg-black/30" onClick={() => { setModalOpen(false); setSelectedJob(null); }} />
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            >
+              <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={() => { setModalOpen(false); setSelectedJob(null); }} />
 
-              <motion.div initial={{ y: 20 }} animate={{ y: 0 }} exit={{ y: 20 }} className="relative z-50 w-full max-w-4xl bg-white rounded-2xl shadow-2xl p-6 border">
-                <div className="flex justify-between items-start gap-4 mb-4">
+              {/* Added max-h-[90vh] and flex-col to ensure scrolling inside modal */}
+              <motion.div
+                initial={{ y: 20 }}
+                animate={{ y: 0 }}
+                exit={{ y: 20 }}
+                className="relative z-50 w-full max-w-6xl bg-white rounded-2xl shadow-2xl p-6 border max-h-[90vh] flex flex-col"
+              >
+                {/* Header Section */}
+                <div className="flex justify-between items-start gap-4 mb-4 flex-shrink-0">
                   <div>
                     <h2 className="text-2xl font-bold">{selectedJob.jobName}</h2>
                     <div className="text-sm text-gray-600 mt-1">Applicants: {selectedJob.applications?.length || 0}</div>
@@ -457,26 +441,28 @@ export default function AdminJobsCardGrid() {
                   </div>
                 </div>
 
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left">
-                    <thead className="bg-gray-50">
+                {/* Table Container: ✅ Scrollable vertically */}
+                <div className="flex-1 overflow-auto border rounded-lg">
+                  <table className="w-full text-left relative">
+                    {/* Sticky Header */}
+                    <thead className="bg-gray-100 sticky top-0 z-10 shadow-sm">
                       <tr>
-                        <th className="px-3 py-2 text-sm text-gray-500">#</th>
-                        <th className="px-3 py-2 text-sm text-gray-500">Student Name</th>
-                        <th className="px-3 py-2 text-sm text-gray-500">Email</th>
-                        <th className="px-3 py-2 text-sm text-gray-500">Phone</th>
-                        <th className="px-3 py-2 text-sm text-gray-500">Roll</th>
-                        <th className="px-3 py-2 text-sm text-gray-500">Branch</th>
-                        <th className="px-3 py-2 text-sm text-gray-500">Year</th>
-                        <th className="px-3 py-2 text-sm text-gray-500">Applied On</th>
-                        <th className="px-3 py-2 text-sm text-gray-500">Actions</th>
+                        <th className="px-3 py-3 text-sm font-semibold text-gray-600">#</th>
+                        <th className="px-3 py-3 text-sm font-semibold text-gray-600">Student Name</th>
+                        <th className="px-3 py-3 text-sm font-semibold text-gray-600">Email</th>
+                        <th className="px-3 py-3 text-sm font-semibold text-gray-600">Phone</th>
+                        <th className="px-3 py-3 text-sm font-semibold text-gray-600">Roll</th>
+                        <th className="px-3 py-3 text-sm font-semibold text-gray-600">Branch</th>
+                        <th className="px-3 py-3 text-sm font-semibold text-gray-600">Year</th>
+                        <th className="px-3 py-3 text-sm font-semibold text-gray-600">Applied On</th>
+                        <th className="px-3 py-3 text-sm font-semibold text-gray-600">Actions</th>
                       </tr>
                     </thead>
-                    <tbody>
+                    <tbody className="divide-y divide-gray-100">
                       {(selectedJob.applications || []).map((a, idx) => {
                         const phone = extractPhone(a);
                         return (
-                          <tr key={a.studentEmail + a.appliedAt} className="border-b">
+                          <tr key={a.studentEmail + a.appliedAt} className="hover:bg-gray-50 transition-colors">
                             <td className="px-3 py-2 text-sm text-gray-700">{idx + 1}</td>
                             <td className="px-3 py-2 text-sm font-medium text-gray-800">{a.studentName}</td>
                             <td className="px-3 py-2 text-sm text-gray-600">{a.studentEmail}</td>
@@ -489,7 +475,7 @@ export default function AdminJobsCardGrid() {
                               <button
                                 onClick={() => withdrawApplication(selectedJob._id || selectedJob.jobId || selectedJob.jobLink, a.studentRoll || a.studentEmail, a.appliedAt)}
                                 disabled={withdrawLoadingId === (a.studentRoll || a.studentEmail) + "_" + a.appliedAt}
-                                className="text-red-600 hover:underline"
+                                className="text-red-600 hover:underline font-medium"
                               >
                                 {withdrawLoadingId === (a.studentRoll || a.studentEmail) + "_" + a.appliedAt ? "Processing..." : "Withdraw"}
                               </button>
@@ -499,7 +485,7 @@ export default function AdminJobsCardGrid() {
                       })}
                       {(!selectedJob.applications || selectedJob.applications.length === 0) && (
                         <tr>
-                          <td colSpan={9} className="px-3 py-4 text-center text-gray-600">No applicants for this job yet.</td>
+                          <td colSpan={9} className="px-3 py-8 text-center text-gray-500">No applicants for this job yet.</td>
                         </tr>
                       )}
                     </tbody>

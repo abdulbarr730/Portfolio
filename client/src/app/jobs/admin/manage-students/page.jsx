@@ -4,7 +4,8 @@ import { useState, useEffect } from "react";
 // We cannot remove this import, but we can prevent compilation failure
 import { useSearchParams } from "next/navigation"; 
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+// ✅ FIX: Default to empty string so relative paths work with Vercel Rewrites
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
 // --- Helper functions ---
 const formatYear = (year) => {
@@ -97,7 +98,6 @@ export default function ManageStudentsPage() {
   const [modalStudent, setModalStudent] = useState(null);
 
   // --- FILTER STATES ---
-  // We use searchParams.get('status') which is safe because the hook is imported
   const initialStatus = searchParams.get('status') || "All"; 
   const [filterCourse, setFilterCourse] = useState("All");
   const [filterBranch, setFilterBranch] = useState("All");
@@ -108,12 +108,13 @@ export default function ManageStudentsPage() {
   const [selectedStudents, setSelectedStudents] = useState(new Set());
 
 
-  // --- Core Fetch Function (same) ---
+  // --- Core Fetch Function ---
   const fetchStudents = async () => {
-    // ... (fetch logic remains the same)
-    if (!API_BASE_URL) return;
+    // 🗑️ REMOVED: The check "if (!API_BASE_URL) return;" is gone.
+    
     setLoading(true);
     try {
+      // ✅ FIX: Uses relative path /api/... if API_BASE_URL is empty
       const res = await fetch(`${API_BASE_URL}/api/admin/students/all`, { credentials: "include" });
 
       if (res.status === 401) {
@@ -136,7 +137,7 @@ export default function ManageStudentsPage() {
     fetchStudents();
   }, []);
 
-  // --- Bulk Selection Handlers (same) ---
+  // --- Bulk Selection Handlers ---
   const handleToggleSelectAll = () => {
     if (selectedStudents.size === filteredStudents.length) {
       setSelectedStudents(new Set()); // Deselect all
@@ -157,7 +158,7 @@ export default function ManageStudentsPage() {
     setSelectedStudents(newSelection);
   };
 
-  // --- Single Approval Handler (same) ---
+  // --- Single Approval Handler ---
   const handleApproval = async (studentId, approveStatus) => {
     const action = approveStatus ? "approve" : "unapprove";
     if (!confirm(`Are you sure you want to ${action} this student?`)) {
@@ -188,7 +189,7 @@ export default function ManageStudentsPage() {
     }
   };
 
-  // --- Single Delete Handler (same) ---
+  // --- Single Delete Handler ---
   const handleDelete = async (studentId, studentName) => {
     if (!confirm(`WARNING: Are you sure you want to permanently DELETE ${studentName} and all their application data?`)) {
       return;
@@ -216,7 +217,7 @@ export default function ManageStudentsPage() {
     setMessage(`Password for Student ID ${studentId.substring(0, 5)}... has been reset.`);
   };
 
-  // --- NEW: Bulk Action Handler (same) ---
+  // --- Bulk Action Handler ---
   const handleBulkAction = async (actionType) => {
     if (selectedStudents.size === 0) {
       setMessage("Select at least one student to perform a bulk action.");
@@ -280,7 +281,7 @@ export default function ManageStudentsPage() {
   };
 
 
-  // --- Filtering Logic (same) ---
+  // --- Filtering Logic ---
   const filteredStudents = students.filter(student => {
     // Search filter
     const searchMatch = student.name.toLowerCase().includes(search.toLowerCase()) ||
