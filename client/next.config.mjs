@@ -1,4 +1,14 @@
 /** @type {import('next').NextConfig} */
-const nextConfig = {};
+const nextConfig = {
+  reactStrictMode: true,
+  async rewrites() {
+    return [
+      {
+        source: '/api/:path*', // When the frontend calls /api/anything
+        destination: 'https://portfolio-backend-omega-khaki.vercel.app//api/:path*', // Proxy to backend
+      },
+    ];
+  },
+};
 
-export default nextConfig;
+module.exports = nextConfig;
