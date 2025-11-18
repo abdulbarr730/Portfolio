@@ -2,8 +2,8 @@
 
 import { usePathname } from "next/navigation";
 
-// --- Use the Environment Variable ---
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+// ✅ FIX: Default to empty string so relative paths work with Vercel Rewrites
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
 // Helper component for links
 function NavLink({ href, children }) {
@@ -30,6 +30,7 @@ function NavLink({ href, children }) {
 export default function JobsAdminSidebar({ isOpen, onClose }) {
   const handleLogout = async () => {
     try {
+      // ✅ FIX: Uses relative path /api/... because API_BASE_URL is empty
       await fetch(`${API_BASE_URL}/api/admin/auth/logout`, {
         credentials: "include"
       });

@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useRef } from "react";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+// ✅ FIX: Default to empty string so relative paths work with Vercel Rewrites
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
 export default function Navbar_Jobs() {
   const [student, setStudent] = useState(null);
@@ -12,8 +13,9 @@ export default function Navbar_Jobs() {
   const mobileMenuRef = useRef(null);
 
   useEffect(() => {
-    if (!API_BASE_URL) return;
+    // 🗑️ REMOVED: The check "if (!API_BASE_URL) return;" is gone.
 
+    // ✅ FIX: Uses relative path /api/... if API_BASE_URL is empty
     fetch(`${API_BASE_URL}/api/student/me`, { credentials: "include" })
       .then(async (res) => {
         if (res.status === 401) {
