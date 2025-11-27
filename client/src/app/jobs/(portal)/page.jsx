@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Head from "next/head";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -116,6 +116,10 @@ export default function JobsPage() {
   const [appliedJobIds, setAppliedJobIds] = useState(new Set());
   const [appliedCount, setAppliedCount] = useState(0);
 
+  // --- Verification States ---
+  const [visitedLinks, setVisitedLinks] = useState(new Set());
+  const [confirmChecked, setConfirmChecked] = useState(false);
+
   const [search, setSearch] = useState("");
   const [filterType, setFilterType] = useState("all");
   const [sortBy, setSortBy] = useState("latest");
@@ -126,16 +130,12 @@ export default function JobsPage() {
   const [confettiTrigger, setConfettiTrigger] = useState(false);
   const [tempMessage, setTempMessage] = useState("");
 
-  // ⛔ FIX: Per–job loading
   const [processingApplyId, setProcessingApplyId] = useState(null);
   const [processingWithdrawId, setProcessingWithdrawId] = useState(null);
 
   // -------------------- Load Data --------------------
   useEffect(() => {
     async function load() {
-      // 🗑️ DELETED: The check "if (!API_BASE_URL)" is gone.
-      // We now proceed directly to fetch, which will use relative paths if API_BASE_URL is empty.
-
       try {
         const meRes = await fetch(`${API_BASE_URL}/api/student/me`, {
           credentials: "include",
@@ -207,9 +207,15 @@ export default function JobsPage() {
       return s;
     });
 
+  // -------------------- Link Click Handler --------------------
+  const handleExternalLinkClick = (jobId) => {
+    setVisitedLinks((prev) => new Set(prev).add(jobId));
+  };
+
   // -------------------- Apply --------------------
   const openApplyModal = (job) => {
     setJobToApply(job);
+    setConfirmChecked(false);
     setConfirmOpen(true);
   };
 
@@ -325,7 +331,6 @@ export default function JobsPage() {
               Discover curated opportunities — track, apply, and succeed.
             </motion.p>
 
-            {/* 🔥 Clickable Cards */}
             <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-3xl mx-auto">
               <motion.div
                 onClick={() => (window.location.href = "/jobs/my-applications")}
@@ -365,7 +370,6 @@ export default function JobsPage() {
         {/* ================= BODY ================= */}
         <main className="max-w-6xl mx-auto px-6 -mt-10">
 
-          {/* Temp Message */}
           <AnimatePresence>
             {tempMessage && (
               <motion.div
@@ -425,82 +429,109 @@ export default function JobsPage() {
           {/* ================= JOB CARDS ================= */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
             <AnimatePresence>
-              {filtered.map((job) => (
-                <motion.article
-                  key={job._id}
-                  layout
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 12 }}
-                  transition={{ duration: 0.28 }}
-                  className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100 relative hover:shadow-xl hover:scale-[1.02] transition-all duration-200"
-                >
-                  {/* Bookmark */}
-                  <button
-                    onClick={() => toggleBookmark(job._id)}
-                    className={`absolute top-4 right-4 text-lg ${
-                      bookmarked.has(job._id) ? "text-yellow-500" : "text-gray-300"
-                    }`}
+              {filtered.map((job) => {
+                // --- NEW: Email Detection Logic ---
+                const rawLink = job.link || "";
+                // Check if it's an email (either starts with mailto or contains @ but no http)
+                const isEmail = rawLink.startsWith("mailto:") || (rawLink.includes("@") && !rawLink.startsWith("http"));
+                
+                // If it looks like an email but misses mailto:, add it.
+                const finalHref = isEmail && !rawLink.startsWith("mailto:") 
+                  ? `mailto:${rawLink}` 
+                  : rawLink;
+
+                const linkText = isEmail ? "Send Email ✉️" : "Company Site →";
+
+                return (
+                  <motion.article
+                    key={job._id}
+                    layout
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 12 }}
+                    transition={{ duration: 0.28 }}
+                    className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100 relative hover:shadow-xl hover:scale-[1.02] transition-all duration-200"
                   >
-                    ★
-                  </button>
+                    {/* Bookmark */}
+                    <button
+                      onClick={() => toggleBookmark(job._id)}
+                      className={`absolute top-4 right-4 text-lg ${
+                        bookmarked.has(job._id) ? "text-yellow-500" : "text-gray-300"
+                      }`}
+                    >
+                      ★
+                    </button>
 
-                  <div className="flex items-start gap-4">
-                    <div className="flex-1">
-                      <h3 className="text-xl font-semibold text-gray-900">{job.name}</h3>
+                    <div className="flex items-start gap-4">
+                      <div className="flex-1">
+                        <h3 className="text-xl font-semibold text-gray-900">{job.name}</h3>
 
-                      <p className="text-sm text-gray-600 mt-2 line-clamp-3">{job.description}</p>
+                        <p className="text-sm text-gray-600 mt-2 line-clamp-3">{job.description}</p>
 
-                      <div className="mt-4 flex gap-2 flex-wrap text-xs">
-                        {job.type && (
-                          <span className="px-3 py-1 rounded-full bg-blue-50 text-blue-700">
-                            {job.type}
-                          </span>
-                        )}
-                        {job.location && (
-                          <span className="px-3 py-1 rounded-full bg-green-50 text-green-700">
-                            {job.location}
-                          </span>
+                        <div className="mt-4 flex gap-2 flex-wrap text-xs">
+                          {job.type && (
+                            <span className="px-3 py-1 rounded-full bg-blue-50 text-blue-700">
+                              {job.type}
+                            </span>
+                          )}
+                          {job.location && (
+                            <span className="px-3 py-1 rounded-full bg-green-50 text-green-700">
+                              {job.location}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Apply / Withdraw Area */}
+                      <div className="w-36 flex-shrink-0 flex flex-col items-end gap-3">
+                        
+                        {/* --- LINK BUTTON (Handles Email or URL) --- */}
+                        <a
+                          href={finalHref}
+                          target={isEmail ? "_self" : "_blank"}
+                          rel="noreferrer"
+                          onClick={() => handleExternalLinkClick(job._id)}
+                          className={`text-sm font-semibold underline ${isEmail ? 'text-purple-600' : 'text-blue-600'}`}
+                        >
+                          {linkText}
+                        </a>
+
+                        {appliedJobIds.has(job._id) ? (
+                          <button
+                            disabled={processingWithdrawId === job._id}
+                            onClick={() => handleWithdraw(job._id)}
+                            className="mt-2 w-full py-2 rounded-xl bg-red-500 text-white font-semibold hover:bg-red-600 disabled:opacity-60 text-xs"
+                          >
+                            {processingWithdrawId === job._id
+                              ? "Withdrawing..."
+                              : "Withdraw"}
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => {
+                              if (!visitedLinks.has(job._id)) {
+                                  const msg = isEmail ? "⚠️ Please click Send Email first!" : "⚠️ Please visit the Company Site first!";
+                                  setTempMessage(msg);
+                                  return;
+                              }
+                              openApplyModal(job);
+                            }}
+                            disabled={processingApplyId === job._id}
+                            className={`mt-2 w-full py-2 rounded-xl text-white font-semibold transition-all text-xs
+                              ${visitedLinks.has(job._id) 
+                                  ? "bg-emerald-500 hover:bg-emerald-600 shadow-md cursor-pointer" 
+                                  : "bg-gray-300 cursor-not-allowed"}`}
+                          >
+                            {visitedLinks.has(job._id) 
+                              ? (processingApplyId === job._id ? "Processing..." : "I have Applied") 
+                              : (isEmail ? "Email First" : "Visit Link First")}
+                          </button>
                         )}
                       </div>
                     </div>
-
-                    {/* Apply / Withdraw */}
-                    <div className="w-32 flex-shrink-0 flex flex-col items-end gap-3">
-                      <a
-                        href={job.link}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-blue-600 font-semibold underline"
-                      >
-                        Company Site →
-                      </a>
-
-                      {appliedJobIds.has(job._id) ? (
-                        <button
-                          disabled={processingWithdrawId === job._id}
-                          onClick={() => handleWithdraw(job._id)}
-                          className="mt-2 w-full py-2 rounded-xl bg-red-500 text-white font-semibold hover:bg-red-600 disabled:opacity-60"
-                        >
-                          {processingWithdrawId === job._id
-                            ? "Withdrawing..."
-                            : "Withdraw"}
-                        </button>
-                      ) : (
-                        <button
-                          disabled={processingApplyId === job._id}
-                          onClick={() => openApplyModal(job)}
-                          className="mt-2 w-full py-2 rounded-xl bg-emerald-500 text-white font-semibold hover:bg-emerald-600 disabled:opacity-60"
-                        >
-                          {processingApplyId === job._id
-                            ? "Processing..."
-                            : "I have Applied"}
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                </motion.article>
-              ))}
+                  </motion.article>
+                );
+              })}
             </AnimatePresence>
           </div>
         </main>
@@ -529,8 +560,7 @@ export default function JobsPage() {
                 <h3 className="text-2xl font-bold mb-2">Confirm Application</h3>
 
                 <p className="text-gray-700 mb-4">
-                  You are about to confirm for <strong>{jobToApply.name}</strong>. This
-                  will mark the job as applied in your dashboard.
+                  Did you successfully submit the application for <strong>{jobToApply.name}</strong>?
                 </p>
 
                 <div className="mb-4">
@@ -538,18 +568,37 @@ export default function JobsPage() {
                   <div className="text-lg font-semibold">{jobToApply.name}</div>
                 </div>
 
+                {/* --- Verification Checkbox --- */}
+                <div className="mb-6 bg-blue-50 p-3 rounded-lg border border-blue-100">
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <input 
+                      type="checkbox" 
+                      className="mt-1 w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      checked={confirmChecked}
+                      onChange={(e) => setConfirmChecked(e.target.checked)}
+                    />
+                    <span className="text-sm text-gray-700">
+                       I verify that I have submitted my application (via Website or Email) for this role.
+                    </span>
+                  </label>
+                </div>
+
                 <div className="flex gap-3 justify-end">
                   <button
                     onClick={() => setConfirmOpen(false)}
-                    className="px-4 py-2 rounded-lg border border-gray-200"
+                    className="px-4 py-2 rounded-lg border border-gray-200 hover:bg-gray-50"
                   >
                     Cancel
                   </button>
 
                   <button
                     onClick={confirmApply}
-                    disabled={processingApplyId === jobToApply._id}
-                    className="px-4 py-2 rounded-lg bg-emerald-500 text-white font-semibold"
+                    disabled={!confirmChecked || processingApplyId === jobToApply._id}
+                    className={`px-4 py-2 rounded-lg text-white font-semibold transition-colors
+                      ${confirmChecked 
+                        ? "bg-emerald-500 hover:bg-emerald-600" 
+                        : "bg-gray-300 cursor-not-allowed"
+                      }`}
                   >
                     {processingApplyId === jobToApply._id
                       ? "Processing..."
