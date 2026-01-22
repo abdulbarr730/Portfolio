@@ -10,25 +10,39 @@ import { usePathname, useRouter } from 'next/navigation';
 
 gsap.registerPlugin(ScrollTrigger);
 
-// UPDATED: Added "View Resume" link at the top
+// Review moved above Contact + View Resume kept on top
 const HAMBURGER_LINKS = [
-  { id: 'https://drive.google.com/file/d/1vnZADDPLb2hbOnx8Fi3W0m8LEesof_z6/view?usp=drive_link', text: 'View Resume', type: 'link', target: '_blank' },
+  {
+    id: 'https://drive.google.com/file/d/1vnZADDPLb2hbOnx8Fi3W0m8LEesof_z6/view?usp=drive_link',
+    text: 'View Resume',
+    type: 'link',
+    target: '_blank',
+  },
   { id: 'hero', text: 'Home', type: 'scroll' },
   { id: '/blog', text: 'Blog', type: 'link' },
   { id: 'about', text: 'About Me', type: 'scroll' },
   { id: '/projects', text: 'Projects', type: 'link' },
   { id: '/codecraft', text: 'Code Craft', type: 'link' },
   { id: '/experience', text: 'Experience', type: 'link' },
+
+  // Review ABOVE Contact
+  {
+    id: 'reviews',
+    text: 'Review',
+    type: 'scroll',
+    cta: 'Drop a review if you liked anything about me or my projects',
+  },
   { id: 'contact', text: 'Contact', type: 'scroll' },
-  { id: 'reviews', text: 'Review', type: 'scroll', cta: "Drop a review if you liked anything about me or my projects" },
 ];
 
 const Navbar = () => {
   const component = useRef(null);
   const mobileMenuRef = useRef(null);
   const bookRef = useRef(null);
+
   const pathname = usePathname();
   const router = useRouter();
+
   const [menuOpen, setMenuOpen] = useState(false);
   const [clickedReviewDot, setClickedReviewDot] = useState(false);
 
@@ -43,10 +57,12 @@ const Navbar = () => {
           scrub: 1,
         },
       });
+
       tl.to('.name-part-barr', { x: '-100%', opacity: 0, duration: 1 });
       tl.to('.name-part-abdul', { scale: 0.8, opacity: 0, duration: 1 }, '<');
       tl.fromTo('.initial-logo', { opacity: 0, scale: 0.85 }, { opacity: 1, scale: 1, duration: 1 }, '<');
     }, component);
+
     return () => ctx.revert();
   }, []);
 
@@ -70,28 +86,32 @@ const Navbar = () => {
     }
   }, [menuOpen]);
 
-  // Animate Book An Appointment
+  // Animate Book CTA
   useLayoutEffect(() => {
     gsap.from(bookRef.current, {
       y: -10,
       scale: 0.95,
       opacity: 0,
       duration: 0.6,
-      ease: 'back.out(1.7)',
+      ease: 'power3.out',
     });
   }, []);
 
   // Close on outside click or Escape
   useLayoutEffect(() => {
     if (!menuOpen) return;
+
     function handleClick(event) {
       if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target)) setMenuOpen(false);
     }
+
     function handleEscape(event) {
       if (event.key === 'Escape') setMenuOpen(false);
     }
+
     document.addEventListener('mousedown', handleClick);
     document.addEventListener('keydown', handleEscape);
+
     return () => {
       document.removeEventListener('mousedown', handleClick);
       document.removeEventListener('keydown', handleEscape);
@@ -105,6 +125,7 @@ const Navbar = () => {
     } else {
       scroll.scrollTo(document.getElementById(id)?.offsetTop - 50 || 0);
     }
+
     setMenuOpen(false);
 
     if (id === 'reviews') setClickedReviewDot(true);
@@ -120,31 +141,32 @@ const Navbar = () => {
           <div className="flex items-center justify-between h-full">
             {/* Logo */}
             <div className="relative h-12 w-52 flex items-center">
-              <Link
-                href="/"
-                className="full-name-container absolute top-[6px] left-0 flex items-center whitespace-nowrap"
-              >
+              <Link href="/" className="full-name-container absolute top-[6px] left-0 flex items-center whitespace-nowrap">
                 <span className="name-part-abdul text-xl font-bold text-primary leading-none pt-2">Abdul</span>
                 <span className="name-part-barr text-xl font-bold text-primary ml-1.5 leading-none pt-2">Barr</span>
               </Link>
-              <Link
-                href="/"
-                className="initial-logo absolute top-[4px] left-0 flex items-center justify-center w-12 h-12 opacity-0"
-              >
+
+              <Link href="/" className="initial-logo absolute top-[4px] left-0 flex items-center justify-center w-12 h-12 opacity-0">
                 <Image src="/logo.png" alt="Logo" width={48} height={48} />
               </Link>
             </div>
 
             {/* Right section: Book + Hamburger */}
-            <div className="flex items-center flex-shrink-0 space-x-3 sm:space-x-4 text-primary">
+            <div className="flex items-center flex-shrink-0 space-x-3 sm:space-x-4">
+              {/* DOMINANT CTA BUTTON */}
               <Link
                 href="/services"
                 ref={bookRef}
-                className="font-semibold underline text-primary cursor-pointer transform transition-all duration-200 hover:scale-105 hover:underline-offset-4 text-sm sm:text-base whitespace-nowrap"
+                className="group relative text-sm sm:text-base font-semibold text-black tracking-wide whitespace-nowrap hover:text-black"
               >
                 Book An Appointment
-              </Link>
 
+                {/* Always visible underline */}
+                <span className="absolute left-0 -bottom-1 h-[2px] w-full bg-black/40" />
+
+                {/* Hover underline animation (top of it) */}
+                <span className="absolute left-0 -bottom-1 h-[2px] w-full bg-black scale-x-0 origin-left transition-transform duration-300 ease-out group-hover:scale-x-100" />
+              </Link>
               {/* Hamburger */}
               <button
                 className="relative inline-flex flex-col justify-center items-center z-[999] h-8 w-8"
@@ -187,12 +209,13 @@ const Navbar = () => {
       {/* Mobile Menu */}
       <aside
         ref={mobileMenuRef}
-        className={`fixed top-0 right-0 h-full w-64 bg-white shadow-xl z-[999] flex flex-col translate-x-full`}
+        className="fixed top-0 right-0 h-full w-64 bg-white shadow-xl z-[999] flex flex-col translate-x-full"
       >
         <div className="flex justify-between items-center p-5 border-b border-primary/10">
           <Link href="/" className="flex items-center justify-center w-10 h-10">
             <Image src="/logo.png" alt="Logo" width={40} height={40} />
           </Link>
+
           <button
             onClick={() => setMenuOpen(false)}
             className="text-4xl text-secondary hover:text-primary transition-colors"
@@ -212,13 +235,14 @@ const Navbar = () => {
               >
                 {item.text}
                 <span className="absolute bottom-1 left-0 w-0 h-[2px] bg-primary transition-all duration-300 group-hover:w-full" />
+
                 {item.cta && !clickedReviewDot && (
                   <span className="absolute right-0 top-3 w-2 h-2 bg-black rounded-full animate-ping"></span>
                 )}
+
                 {item.cta && <p className="text-xs text-secondary mt-1">{item.cta}</p>}
               </div>
             ) : (
-              // UPDATED: Added target and rel props for external links
               <Link
                 key={item.id}
                 href={item.id}
@@ -254,6 +278,7 @@ const Navbar = () => {
               <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4" />
             </svg>
           </Link>
+
           <Link
             href="https://www.linkedin.com/in/abdul-barr-9092a4251"
             target="_blank"

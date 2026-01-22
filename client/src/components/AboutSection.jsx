@@ -166,7 +166,7 @@ const AboutSection = () => {
             />
           </div>
           <div className="w-full p-6 text-center">
-            <h3 className="text-5xl font-bold text-primary mb-2">6+</h3>
+            <h3 className="text-5xl font-bold text-primary mb-2">8+</h3>
             <p className="text-lg text-secondary mb-4">Projects Completed</p>
             <Link
               href="/projects"
