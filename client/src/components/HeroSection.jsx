@@ -38,7 +38,6 @@ const HeroSection = () => {
         willChange: 'transform',
       });
 
-      // Animate all hero content except mobile avatar (to prevent flashing)
       gsap.set('.hero-content-layer', { y: 35, opacity: 0, willChange: 'transform, opacity' });
 
       // Mobile avatar initial state (off-screen left)
@@ -92,7 +91,7 @@ const HeroSection = () => {
         '>-0.02'
       );
 
-      // MOBILE AVATAR: CURVE ENTRY (NO BOUNCE)
+      // MOBILE AVATAR: CURVE ENTRY
       tl.to(
         '.mobile-avatar',
         {
@@ -128,17 +127,19 @@ const HeroSection = () => {
       }
 
       // Sidebar scroll exit
-      gsap.to(sidebarRef.current, {
-        x: '100%',
-        opacity: 0,
-        ease: 'power2.in',
-        scrollTrigger: {
-          trigger: component.current,
-          start: 'bottom 80%',
-          end: 'bottom 50%',
-          scrub: 1,
-        },
-      });
+      if (sidebarRef.current) {
+        gsap.to(sidebarRef.current, {
+          x: '100%',
+          opacity: 0,
+          ease: 'power2.in',
+          scrollTrigger: {
+            trigger: component.current,
+            start: 'bottom 80%',
+            end: 'bottom 50%',
+            scrub: 1,
+          },
+        });
+      }
 
       // Marquee loop
       if (marqueeRef.current) {
@@ -201,10 +202,7 @@ const HeroSection = () => {
   return (
     <section
       ref={component}
-      className="
-        relative w-full overflow-hidden bg-background
-        min-h-[100svh] md:h-screen
-      "
+      className="relative w-full bg-background overflow-hidden min-h-[100svh] md:h-screen"
     >
       {/* INTRO OVERLAY */}
       <div className="intro-svg-container fixed inset-0 z-[9999] bg-black flex items-center justify-center pointer-events-auto">
@@ -232,20 +230,13 @@ const HeroSection = () => {
       </div>
 
       {/* MAIN CONTENT */}
-      <div className="hero-container relative w-full min-h-[100svh] md:h-full">
+      <div className="hero-container relative w-full h-full">
         <RightSidebar ref={sidebarRef} />
 
         <div className="relative z-10 w-full min-h-[100svh] md:h-screen overflow-hidden">
           {/* MOBILE */}
-          <div
-            className="
-              md:hidden flex flex-col items-center justify-center
-              min-h-[100svh]
-              px-4 pt-10
-              pb-[140px]
-            "
-          >
-            {/* Mobile avatar (curved entry) */}
+          <div className="md:hidden flex flex-col items-center justify-center h-full px-4 pt-10 pb-[180px]">
+            {/* Mobile avatar */}
             <div className="mobile-avatar image-container mb-6 relative z-10">
               <div className="w-48 h-48 rounded-full overflow-hidden border-4 border-primary/10">
                 <Image
@@ -406,41 +397,39 @@ const HeroSection = () => {
             </div>
           </div>
 
-          {/* MARQUEE */}
+          {/* MARQUEE (FIXED on mobile, absolute on desktop) */}
           <Link
             href="/projects"
             className="
-              absolute bottom-0 w-full
+              fixed bottom-0 left-0 w-full z-50
               h-16 md:h-24
               bg-primary/5 border-t border-primary/10
-              z-40 overflow-hidden cursor-pointer backdrop-blur-sm group
-              pb-[max(env(safe-area-inset-bottom),14px)]
+              overflow-hidden cursor-pointer backdrop-blur-sm group
+              md:absolute md:bottom-0
+              pb-[max(env(safe-area-inset-bottom),12px)]
             "
             onMouseEnter={handleMarqueeEnter}
             onMouseLeave={handleMarqueeLeave}
             ref={marqueeRef}
           >
-            <div className="marquee-track absolute inset-0 flex items-center whitespace-nowrap w-max opacity-40 group-hover:opacity-70 transition-opacity duration-300 z-0">
-              {[...allProjectsData, ...allProjectsData].map((project, i) => (
-                <div key={i} className="flex items-center mx-6 md:mx-8">
-                  <span className="text-base md:text-2xl font-black text-primary/80 uppercase tracking-widest">
-                    {project.title}
-                  </span>
-                  <span className="ml-6 md:ml-8 text-secondary/30 text-base md:text-xl">•</span>
-                </div>
-              ))}
+            {/* Center marquee text vertically */}
+            <div className="absolute inset-0 flex items-center">
+              <div className="marquee-track flex whitespace-nowrap w-max opacity-40 group-hover:opacity-70 transition-opacity duration-300">
+                {[...allProjectsData, ...allProjectsData].map((project, i) => (
+                  <div key={i} className="flex items-center mx-8">
+                    <span className="text-lg md:text-2xl font-black text-primary/80 uppercase tracking-widest">
+                      {project.title}
+                    </span>
+                    <span className="ml-8 text-secondary/30 text-lg md:text-xl">•</span>
+                  </div>
+                ))}
+              </div>
             </div>
 
+            {/* Slam button */}
             <div
               ref={slamTextRef}
-              className="
-                absolute top-1 md:top-2 left-1/2 -translate-x-1/2
-                z-10 bg-primary text-background
-                px-5 md:px-6 py-2
-                rounded-full font-bold text-[10px] md:text-sm
-                uppercase tracking-widest shadow-xl
-                border border-background/20 opacity-0 whitespace-nowrap
-              "
+              className="absolute top-1 left-1/2 -translate-x-1/2 z-10 bg-primary text-background px-6 py-2 rounded-full font-bold text-[10px] md:text-sm uppercase tracking-widest shadow-xl border border-background/20 opacity-0 whitespace-nowrap"
             >
               View All Projects &rarr;
             </div>
