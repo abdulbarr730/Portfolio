@@ -10,7 +10,7 @@ import { usePathname, useRouter } from 'next/navigation';
 
 gsap.registerPlugin(ScrollTrigger);
 
-// Review moved above Contact + View Resume kept on top
+// ✅ Updated Links Order
 const HAMBURGER_LINKS = [
   {
     id: 'https://drive.google.com/file/d/1vnZADDPLb2hbOnx8Fi3W0m8LEesof_z6/view?usp=drive_link',
@@ -22,17 +22,19 @@ const HAMBURGER_LINKS = [
   { id: '/blog', text: 'Blog', type: 'link' },
   { id: 'about', text: 'About Me', type: 'scroll' },
   { id: '/projects', text: 'Projects', type: 'link' },
+  { id: '/services', text: 'Services', type: 'link' }, // ✅ Added Services here
   { id: '/codecraft', text: 'Code Craft', type: 'link' },
-  { id: '/experience', text: 'Experience', type: 'link' },
 
-  // Review ABOVE Contact
+  // ✅ Review is now 3rd from the last
   {
     id: 'reviews',
     text: 'Review',
     type: 'scroll',
     cta: 'Drop a review if you liked anything about me or my projects',
   },
-  { id: 'contact', text: 'Contact', type: 'scroll' },
+  
+  { id: '/experience', text: 'Experience', type: 'link' }, // 2nd Last
+  { id: '/contact', text: 'Contact', type: 'link' },       // Last
 ];
 
 const Navbar = () => {
@@ -155,7 +157,7 @@ const Navbar = () => {
             <div className="flex items-center flex-shrink-0 space-x-3 sm:space-x-4">
               {/* DOMINANT CTA BUTTON */}
               <Link
-                href="/services"
+                href="/contact"
                 ref={bookRef}
                 className="group relative text-sm sm:text-base font-semibold text-black tracking-wide whitespace-nowrap hover:text-black"
               >

@@ -6,6 +6,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Image from 'next/image';
 import Link from 'next/link';
 import ProjectPreview from './ProjectPreview';
+import { allProjectsData } from '@/app/data/projectData';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -70,11 +71,11 @@ const certifications = [
 
 const AboutSection = () => {
   const component = useRef(null);
-  const photoCardImageRef = useRef(null); // Ref for the photo card's image container
+  const photoCardImageRef = useRef(null);
 
   useLayoutEffect(() => {
     let ctx = gsap.context(() => {
-      // Your existing section fade-in animation
+      // Section Fade In
       gsap.from('.about-item', {
         opacity: 0,
         y: 50,
@@ -88,13 +89,13 @@ const AboutSection = () => {
         },
       });
 
-      // Your existing arrow animation
+      // Arrow Animation
       gsap.utils.toArray('.connecting-arrow').forEach((el, i) => {
         gsap.fromTo(el, { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.9, ease: 'power3.out', delay: 0.25 + i * 0.08 });
         gsap.to(el, { y: '+=6', repeat: -1, yoyo: true, ease: 'sine.inOut', duration: 1.8, delay: 1.2 + i * 0.1, });
       });
 
-      // NEW: Image Stretch Animation for the main photo card
+      // Image Stretch Animation
       if (photoCardImageRef.current) {
         const image = photoCardImageRef.current.querySelector('img');
         gsap.fromTo(image,
@@ -137,7 +138,6 @@ const AboutSection = () => {
           </p>
         </div>
 
-
         {/* Journey */}
         <div className="about-item order-2 lg:order-3 text-center lg:text-left">
           <h3 className="text-2xl font-semibold text-primary mb-6">
@@ -166,7 +166,8 @@ const AboutSection = () => {
             />
           </div>
           <div className="w-full p-6 text-center">
-            <h3 className="text-5xl font-bold text-primary mb-2">8+</h3>
+            {/* Dynamic Count */}
+            <h3 className="text-5xl font-bold text-primary mb-2">{allProjectsData.length}+</h3>
             <p className="text-lg text-secondary mb-4">Projects Completed</p>
             <Link
               href="/projects"
@@ -178,7 +179,7 @@ const AboutSection = () => {
           </div>
         </div>
 
-        {/* ===== Desktop arrow: positioned relative to the grid (visible on lg and above) ===== */}
+        {/* Desktop arrow */}
         <div className="about-item hidden lg:block absolute top-[68%] left-[27%] w-48 h-24 pointer-events-none z-20">
           <Image
             src="/arrows.png"
@@ -195,10 +196,9 @@ const AboutSection = () => {
         <h3 className="text-3xl font-bold text-primary mb-12">Featured Projects</h3>
         <ProjectPreview />
 
-        {/* UPDATED: Added span with whitespace-nowrap and responsive text */}
         <div className="mt-8">
           <Link
-            href="/projects" // Assuming '/projects' is your dedicated projects page
+            href="/projects"
             className="inline-flex items-center text-primary font-bold hover:underline group text-sm sm:text-base"
           >
             <span className="whitespace-nowrap">
@@ -210,8 +210,7 @@ const AboutSection = () => {
           </Link>
         </div>
 
-
-        {/* NEW CTA: Book a Service */}
+        {/* CTA: Book a Service */}
         <div className="mt-12">
           <Link
             href="/services"
@@ -237,8 +236,7 @@ const AboutSection = () => {
         </div>
       </div>
 
-
-      {/* NEW: Connecting Arrow and Text added as requested */}
+      {/* Connecting Arrow */}
       <div className="about-item flex flex-col items-center my-16 text-center">
         <p className="italic text-lg text-secondary mb-4 max-w-md">
           The tech behind the work
@@ -269,61 +267,63 @@ const AboutSection = () => {
       </div>
 
       {/* Certifications */}
-      <div className="relative py-20 px-6 bg-gradient-to-b from-zinc-50 via-zinc-100 to-zinc-50 rounded-3xl">
-      <h3 className="text-4xl font-bold text-primary text-center mb-14 tracking-tight">
-        Certifications & Achievements
-      </h3>
+      <div className="relative py-20 px-6 bg-gradient-to-b from-zinc-50 via-zinc-100 to-zinc-50 rounded-3xl mt-12">
+        <h3 className="text-4xl font-bold text-primary text-center mb-14 tracking-tight">
+          Certifications & Achievements
+        </h3>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
-        {certifications.map((cert, index) => (
-          <div
-            key={index}
-            className="relative group bg-zinc-100 border border-zinc-200 rounded-2xl p-6 transition-all duration-300
-                         hover:shadow-[0_0_25px_-5px_rgba(99,102,241,0.25)] hover:-translate-y-1 overflow-hidden"
-          >
-            {/* ✨ Ripple pulse effect */}
-            <div className="absolute inset-0 opacity-0 group-hover:opacity-100">
-              <div className="absolute inset-0 bg-gradient-to-tr from-indigo-500/10 to-transparent animate-pulse rounded-2xl"></div>
-            </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          {certifications.map((cert, index) => {
+            // Determine if this card is clickable
+            const isLink = !!cert.link;
+            const Wrapper = isLink ? 'a' : 'div';
+            const wrapperProps = isLink ? {
+              href: cert.link,
+              target: "_blank",
+              rel: "noopener noreferrer"
+            } : {};
 
-            {/* Card Content */}
-            <div className="relative z-10 flex items-center space-x-4">
-              <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-full bg-indigo-600/10 text-indigo-600 ">
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  viewBox="0 0 24 24"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                </svg>
-              </div>
+            return (
+              <Wrapper
+                key={index}
+                {...wrapperProps}
+                className={`relative group bg-zinc-100 border border-zinc-200 rounded-2xl p-6 transition-all duration-300
+                           hover:shadow-[0_0_25px_-5px_rgba(99,102,241,0.25)] hover:-translate-y-1 overflow-hidden 
+                           ${isLink ? 'cursor-pointer' : ''}`}
+              >
+                {/* ✨ Ripple pulse effect */}
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+                  <div className="absolute inset-0 bg-gradient-to-tr from-indigo-500/10 to-transparent animate-pulse rounded-2xl"></div>
+                </div>
 
-              <div>
-                {cert.link ? (
-                  <a
-                    href={cert.link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="font-semibold text-lg text-primary group-hover:text-indigo-500 transition-colors duration-200"
-                  >
-                    {cert.name}
-                  </a>
-                ) : (
-                  <p className="font-semibold text-lg text-primary ">
-                    {cert.name}
-                  </p>
-                )}
-                <p className="text-sm text-muted-foreground mt-1">
-                  Issued by {cert.issuer}
-                </p>
-              </div>
-            </div>
-          </div>
-        ))}
+                {/* Card Content */}
+                <div className="relative z-10 flex items-center space-x-4">
+                  <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-full bg-indigo-600/10 text-indigo-600">
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+
+                  <div className="flex-1">
+                    <p className="font-semibold text-lg text-primary group-hover:text-indigo-600 transition-colors duration-200">
+                      {cert.name}
+                    </p>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Issued by {cert.issuer}
+                    </p>
+                  </div>
+                </div>
+              </Wrapper>
+            );
+          })}
+        </div>
       </div>
-    </div>
     </section>
   );
 };

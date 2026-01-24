@@ -59,12 +59,9 @@ const Footer = () => {
           <Link href="/projects" className="relative cursor-pointer transition-colors hover:text-primary">
             Projects
           </Link>
-          <button
-            onClick={() => scrollToSection("contact")}
-            className="relative cursor-pointer transition-colors hover:text-primary"
-          >
+          <Link href="/contact" className="relative cursor-pointer transition-colors hover:text-primary">
             Contact
-          </button>
+          </Link>
         </div>
 
         {/* Buttons & Email */}
