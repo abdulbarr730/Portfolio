@@ -92,12 +92,7 @@ const HeroSection = () => {
         '>-0.02'
       );
 
-      /**
-       * MOBILE AVATAR: CURVE ENTRY (NO BOUNCE)
-       * We fake a curve using keyframes:
-       * - first it comes in fast + goes slightly up
-       * - then settles down into final position
-       */
+      // MOBILE AVATAR: CURVE ENTRY (NO BOUNCE)
       tl.to(
         '.mobile-avatar',
         {
@@ -204,7 +199,13 @@ const HeroSection = () => {
   };
 
   return (
-    <section ref={component} className="relative w-full h-screen overflow-hidden bg-background">
+    <section
+      ref={component}
+      className="
+        relative w-full overflow-hidden bg-background
+        min-h-[100svh] md:h-screen
+      "
+    >
       {/* INTRO OVERLAY */}
       <div className="intro-svg-container fixed inset-0 z-[9999] bg-black flex items-center justify-center pointer-events-auto">
         <svg viewBox="0 0 800 600" className="w-full h-full" preserveAspectRatio="xMidYMid slice">
@@ -231,12 +232,19 @@ const HeroSection = () => {
       </div>
 
       {/* MAIN CONTENT */}
-      <div className="hero-container relative w-full h-full">
+      <div className="hero-container relative w-full min-h-[100svh] md:h-full">
         <RightSidebar ref={sidebarRef} />
 
-        <div className="relative z-10 w-full h-screen overflow-hidden">
+        <div className="relative z-10 w-full min-h-[100svh] md:h-screen overflow-hidden">
           {/* MOBILE */}
-          <div className="md:hidden flex flex-col items-center justify-center h-full px-4 pb-40 pt-10">
+          <div
+            className="
+              md:hidden flex flex-col items-center justify-center
+              min-h-[100svh]
+              px-4 pt-10
+              pb-[140px]
+            "
+          >
             {/* Mobile avatar (curved entry) */}
             <div className="mobile-avatar image-container mb-6 relative z-10">
               <div className="w-48 h-48 rounded-full overflow-hidden border-4 border-primary/10">
@@ -283,7 +291,16 @@ const HeroSection = () => {
               <div className="hero-content-layer bio-line text-lg text-secondary mb-4 min-h-[30px]">
                 — I&apos;m a{' '}
                 <TypeAnimation
-                  sequence={['Full-Stack Developer', 2000, 'System Architect', 2000, 'Problem Solver', 2000, 'ML Enthusiast', 2000]}
+                  sequence={[
+                    'Full-Stack Developer',
+                    2000,
+                    'System Architect',
+                    2000,
+                    'Problem Solver',
+                    2000,
+                    'ML Enthusiast',
+                    2000,
+                  ]}
                   wrapper="span"
                   speed={50}
                   className="text-primary font-bold"
@@ -356,7 +373,16 @@ const HeroSection = () => {
               <div className="bio-line mt-4 text-lg text-secondary">
                 — I&apos;m a{' '}
                 <TypeAnimation
-                  sequence={['Full-Stack Developer', 2000, 'System Architect', 2000, 'Problem Solver', 2000, 'ML Enthusiast', 2000]}
+                  sequence={[
+                    'Full-Stack Developer',
+                    2000,
+                    'System Architect',
+                    2000,
+                    'Problem Solver',
+                    2000,
+                    'ML Enthusiast',
+                    2000,
+                  ]}
                   wrapper="span"
                   speed={50}
                   className="text-primary font-semibold"
@@ -383,25 +409,38 @@ const HeroSection = () => {
           {/* MARQUEE */}
           <Link
             href="/projects"
-            className="absolute bottom-0 w-full h-24 bg-primary/5 border-t border-primary/10 z-40 overflow-hidden cursor-pointer backdrop-blur-sm group"
+            className="
+              absolute bottom-0 w-full
+              h-16 md:h-24
+              bg-primary/5 border-t border-primary/10
+              z-40 overflow-hidden cursor-pointer backdrop-blur-sm group
+              pb-[max(env(safe-area-inset-bottom),14px)]
+            "
             onMouseEnter={handleMarqueeEnter}
             onMouseLeave={handleMarqueeLeave}
             ref={marqueeRef}
           >
-            <div className="marquee-track absolute flex whitespace-nowrap w-max opacity-40 group-hover:opacity-70 transition-opacity duration-300 z-0">
+            <div className="marquee-track absolute inset-0 flex items-center whitespace-nowrap w-max opacity-40 group-hover:opacity-70 transition-opacity duration-300 z-0">
               {[...allProjectsData, ...allProjectsData].map((project, i) => (
-                <div key={i} className="flex items-center mx-8">
-                  <span className="text-xl md:text-2xl font-black text-primary/80 uppercase tracking-widest">
+                <div key={i} className="flex items-center mx-6 md:mx-8">
+                  <span className="text-base md:text-2xl font-black text-primary/80 uppercase tracking-widest">
                     {project.title}
                   </span>
-                  <span className="ml-8 text-secondary/30 text-xl">•</span>
+                  <span className="ml-6 md:ml-8 text-secondary/30 text-base md:text-xl">•</span>
                 </div>
               ))}
             </div>
 
             <div
               ref={slamTextRef}
-              className="absolute top-2 left-1/2 -translate-x-1/2 z-10 bg-primary text-background px-6 py-2 rounded-full font-bold text-xs md:text-sm uppercase tracking-widest shadow-xl border border-background/20 opacity-0 whitespace-nowrap"
+              className="
+                absolute top-1 md:top-2 left-1/2 -translate-x-1/2
+                z-10 bg-primary text-background
+                px-5 md:px-6 py-2
+                rounded-full font-bold text-[10px] md:text-sm
+                uppercase tracking-widest shadow-xl
+                border border-background/20 opacity-0 whitespace-nowrap
+              "
             >
               View All Projects &rarr;
             </div>
