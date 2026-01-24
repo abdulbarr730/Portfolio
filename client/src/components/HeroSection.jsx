@@ -2,11 +2,14 @@
 
 import { useLayoutEffect, useRef } from 'react';
 import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Image from 'next/image';
 import { TypeAnimation } from 'react-type-animation';
 import Link from 'next/link';
 import RightSidebar from '@/components/RightSidebar';
 import { allProjectsData } from '@/app/data/projectData';
+
+gsap.registerPlugin(ScrollTrigger);
 
 const HeroSection = () => {
   // --- WATERMARK ---
@@ -16,7 +19,7 @@ const HeroSection = () => {
 
   const component = useRef(null);
   const sidebarRef = useRef(null);
-  const marqueeRef = useRef(null);
+
   const marqueeTween = useRef(null);
   const slamTextRef = useRef(null);
 
@@ -40,7 +43,7 @@ const HeroSection = () => {
 
       gsap.set('.hero-content-layer', { y: 35, opacity: 0, willChange: 'transform, opacity' });
 
-      // Mobile avatar initial state (off-screen left)
+      // Mobile avatar initial state
       gsap.set('.mobile-avatar', {
         x: '-60vw',
         y: 120,
@@ -91,7 +94,7 @@ const HeroSection = () => {
         '>-0.02'
       );
 
-      // MOBILE AVATAR: CURVE ENTRY
+      // MOBILE AVATAR: CURVE ENTRY (NO BOUNCE)
       tl.to(
         '.mobile-avatar',
         {
@@ -126,8 +129,8 @@ const HeroSection = () => {
         );
       }
 
-      // Sidebar scroll exit
-      if (sidebarRef.current) {
+      // Sidebar scroll exit (guarded)
+      if (sidebarRef.current && component.current) {
         gsap.to(sidebarRef.current, {
           x: '100%',
           opacity: 0,
@@ -142,12 +145,25 @@ const HeroSection = () => {
       }
 
       // Marquee loop
-      if (marqueeRef.current) {
-        marqueeTween.current = gsap.to('.marquee-track', {
-          xPercent: -50,
-          repeat: -1,
-          duration: 30,
-          ease: 'linear',
+      marqueeTween.current = gsap.to('.marquee-track', {
+        xPercent: -50,
+        repeat: -1,
+        duration: 28,
+        ease: 'linear',
+      });
+
+      // =========================
+      // MOBILE MARQUEE: HIDE AFTER HERO SCROLL
+      // =========================
+      const mobileMarquee = document.querySelector('.mobile-marquee');
+      if (mobileMarquee && component.current) {
+        gsap.set(mobileMarquee, { y: 0, opacity: 1 });
+
+        ScrollTrigger.create({
+          trigger: component.current,
+          start: 'bottom bottom', // when hero ends
+          onEnter: () => gsap.to(mobileMarquee, { y: 30, opacity: 0, duration: 0.25, ease: 'power2.out' }),
+          onLeaveBack: () => gsap.to(mobileMarquee, { y: 0, opacity: 1, duration: 0.25, ease: 'power2.out' }),
         });
       }
 
@@ -188,22 +204,12 @@ const HeroSection = () => {
     return () => {
       if (removeMouseMove) removeMouseMove();
       ctx.revert();
+      if (marqueeTween.current) marqueeTween.current.kill();
     };
   }, []);
 
-  const handleMarqueeEnter = () => {
-    if (marqueeTween.current) gsap.to(marqueeTween.current, { timeScale: 0, duration: 0.3 });
-  };
-
-  const handleMarqueeLeave = () => {
-    if (marqueeTween.current) gsap.to(marqueeTween.current, { timeScale: 1, duration: 0.3 });
-  };
-
   return (
-    <section
-      ref={component}
-      className="relative w-full bg-background overflow-hidden min-h-[100svh] md:h-screen"
-    >
+    <section ref={component} className="relative w-full bg-background overflow-hidden min-h-[100svh]">
       {/* INTRO OVERLAY */}
       <div className="intro-svg-container fixed inset-0 z-[9999] bg-black flex items-center justify-center pointer-events-auto">
         <svg viewBox="0 0 800 600" className="w-full h-full" preserveAspectRatio="xMidYMid slice">
@@ -230,33 +236,35 @@ const HeroSection = () => {
       </div>
 
       {/* MAIN CONTENT */}
-      <div className="hero-container relative w-full h-full">
+      <div className="hero-container relative w-full min-h-[100svh]">
         <RightSidebar ref={sidebarRef} />
 
-        <div className="relative z-10 w-full min-h-[100svh] md:h-screen overflow-hidden">
+        {/* content area */}
+        <div className="relative z-10 w-full min-h-[100svh] pb-24 md:pb-20">
           {/* MOBILE */}
-          <div className="md:hidden flex flex-col items-center justify-center h-full px-4 pt-10 pb-[180px]">
-            {/* Mobile avatar */}
+          <div className="md:hidden flex flex-col items-center justify-center min-h-[100svh] px-4 pt-10 pb-20">
+            {/* Bigger avatar */}
             <div className="mobile-avatar image-container mb-6 relative z-10">
-              <div className="w-48 h-48 rounded-full overflow-hidden border-4 border-primary/10">
+              <div className="w-60 h-60 rounded-full overflow-hidden border-4 border-primary/10">
                 <Image
                   src="/profile.png"
                   alt="Abdul Barr"
-                  width={192}
-                  height={192}
+                  width={224}
+                  height={224}
                   className="w-full h-full object-cover"
                   priority
                 />
               </div>
             </div>
 
-            <div className="flex justify-center space-x-12 mb-8 relative z-20">
+            {/* Bigger stats */}
+            <div className="flex justify-center space-x-14 mb-8 relative z-20">
               <Link
                 href="/experience"
                 className="hero-content-layer stat-item text-center cursor-pointer active:scale-95 transition-transform"
               >
-                <h3 className="text-4xl font-bold text-primary">2+</h3>
-                <p className="text-secondary text-sm font-medium">
+                <h3 className="text-5xl font-bold text-primary">2+</h3>
+                <p className="text-secondary text-sm font-medium leading-tight">
                   Years of <br />
                   Experience
                 </p>
@@ -266,8 +274,8 @@ const HeroSection = () => {
                 href="/projects"
                 className="hero-content-layer stat-item text-center cursor-pointer active:scale-95 transition-transform"
               >
-                <h3 className="text-4xl font-bold text-primary">{allProjectsData.length}+</h3>
-                <p className="text-secondary text-sm font-medium">
+                <h3 className="text-5xl font-bold text-primary">{allProjectsData.length}+</h3>
+                <p className="text-secondary text-sm font-medium leading-tight">
                   Projects <br />
                   Completed
                 </p>
@@ -275,11 +283,11 @@ const HeroSection = () => {
             </div>
 
             <div className="text-center relative z-10">
-              <h1 className="hero-content-layer text-6xl font-thin tracking-tighter text-primary mb-4">
+              <h1 className="hero-content-layer text-7xl font-thin tracking-tighter text-primary mb-4">
                 Hello
               </h1>
 
-              <div className="hero-content-layer bio-line text-lg text-secondary mb-4 min-h-[30px]">
+              <div className="hero-content-layer bio-line text-xl text-secondary mb-4 min-h-[34px]">
                 — I&apos;m a{' '}
                 <TypeAnimation
                   sequence={[
@@ -289,7 +297,7 @@ const HeroSection = () => {
                     2000,
                     'Problem Solver',
                     2000,
-                    'ML Enthusiast',
+                    'Machine Learning Enthusiast',
                     2000,
                   ]}
                   wrapper="span"
@@ -371,7 +379,7 @@ const HeroSection = () => {
                     2000,
                     'Problem Solver',
                     2000,
-                    'ML Enthusiast',
+                    'Machine Learning Enthusiast',
                     2000,
                   ]}
                   wrapper="span"
@@ -395,47 +403,65 @@ const HeroSection = () => {
                 </Link>
               </div>
             </div>
-          </div>
 
-          {/* MARQUEE (FIXED on mobile, absolute on desktop) */}
-          <Link
-            href="/projects"
-            className="
-              fixed bottom-0 left-0 w-full z-50
-              h-16 md:h-24
-              bg-primary/5 border-t border-primary/10
-              overflow-hidden cursor-pointer backdrop-blur-sm group
-              md:absolute md:bottom-0
-              pb-[max(env(safe-area-inset-bottom),12px)]
-            "
-            onMouseEnter={handleMarqueeEnter}
-            onMouseLeave={handleMarqueeLeave}
-            ref={marqueeRef}
-          >
-            {/* Center marquee text vertically */}
-            <div className="absolute inset-0 flex items-center">
-              <div className="marquee-track flex whitespace-nowrap w-max opacity-40 group-hover:opacity-70 transition-opacity duration-300">
+            {/* Desktop marquee inside hero */}
+            <Link
+              href="/projects"
+              className="absolute bottom-4 left-0 w-full h-16 md:h-20 bg-primary/5 border-t border-primary/10 z-30 overflow-hidden cursor-pointer backdrop-blur-sm group m-0"
+            >
+              <div className="marquee-track absolute left-0 top-1/2 -translate-y-1/2 flex whitespace-nowrap w-max opacity-40 group-hover:opacity-70 transition-opacity duration-300">
                 {[...allProjectsData, ...allProjectsData].map((project, i) => (
                   <div key={i} className="flex items-center mx-8">
-                    <span className="text-lg md:text-2xl font-black text-primary/80 uppercase tracking-widest">
+                    <span className="text-base md:text-xl font-black text-primary/80 uppercase tracking-widest">
                       {project.title}
                     </span>
-                    <span className="ml-8 text-secondary/30 text-lg md:text-xl">•</span>
+                    <span className="ml-8 text-secondary/30 text-xl">•</span>
                   </div>
                 ))}
               </div>
-            </div>
 
-            {/* Slam button */}
-            <div
-              ref={slamTextRef}
-              className="absolute top-1 left-1/2 -translate-x-1/2 z-10 bg-primary text-background px-6 py-2 rounded-full font-bold text-[10px] md:text-sm uppercase tracking-widest shadow-xl border border-background/20 opacity-0 whitespace-nowrap"
-            >
-              View All Projects &rarr;
-            </div>
-          </Link>
+              <div
+                ref={slamTextRef}
+                className="absolute top-2 left-1/2 -translate-x-1/2 z-10 bg-primary text-background px-6 py-2 rounded-full font-bold text-[10px] md:text-xs uppercase tracking-widest shadow-xl border border-background/20 opacity-0 whitespace-nowrap"
+              >
+                View All Projects &rarr;
+              </div>
+            </Link>
+          </div>
         </div>
       </div>
+
+      {/* ✅ MOBILE MARQUEE FIXED (PERFECT BOTTOM) + HIDES AFTER HERO */}
+      <Link
+        href="/projects"
+        className="
+          mobile-marquee
+          md:hidden
+          fixed left-0 w-full
+          h-16
+          bg-primary/5 border-t border-primary/10
+          overflow-hidden cursor-pointer backdrop-blur-sm group
+          z-[500]
+        "
+        style={{
+          bottom: `calc(env(safe-area-inset-bottom) + 0px)`,
+        }}
+      >
+        <div className="marquee-track absolute left-0 top-1/2 -translate-y-1/2 flex whitespace-nowrap w-max opacity-40 group-hover:opacity-70 transition-opacity duration-300">
+          {[...allProjectsData, ...allProjectsData].map((project, i) => (
+            <div key={i} className="flex items-center mx-8">
+              <span className="text-base font-black text-primary/80 uppercase tracking-widest">
+                {project.title}
+              </span>
+              <span className="ml-8 text-secondary/30 text-xl">•</span>
+            </div>
+          ))}
+        </div>
+
+        <div className="absolute top-2 left-1/2 -translate-x-1/2 z-20 bg-primary text-background px-6 py-2 rounded-full font-bold text-[10px] uppercase tracking-widest shadow-xl border border-background/20 whitespace-nowrap">
+          View All Projects &rarr;
+        </div>
+      </Link>
     </section>
   );
 };
