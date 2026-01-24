@@ -263,7 +263,7 @@ const HeroSection = () => {
                 href="/experience"
                 className="hero-content-layer stat-item text-center cursor-pointer active:scale-95 transition-transform"
               >
-                <h3 className="text-5xl font-bold text-primary">2+</h3>
+                <h3 className="text-3xl font-bold text-primary">2+</h3>
                 <p className="text-secondary text-sm font-medium leading-tight">
                   Years of <br />
                   Experience
@@ -274,7 +274,7 @@ const HeroSection = () => {
                 href="/projects"
                 className="hero-content-layer stat-item text-center cursor-pointer active:scale-95 transition-transform"
               >
-                <h3 className="text-5xl font-bold text-primary">{allProjectsData.length}+</h3>
+                <h3 className="text-3xl font-bold text-primary">{allProjectsData.length}+</h3>
                 <p className="text-secondary text-sm font-medium leading-tight">
                   Projects <br />
                   Completed
@@ -287,7 +287,7 @@ const HeroSection = () => {
                 Hello
               </h1>
 
-              <div className="hero-content-layer bio-line text-xl text-secondary mb-4 min-h-[34px]">
+              <div className="hero-content-layer bio-line text-xl text-secondary mb-4 min-h-[32px]">
                 — I&apos;m a{' '}
                 <TypeAnimation
                   sequence={[
