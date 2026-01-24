@@ -242,10 +242,10 @@ const HeroSection = () => {
         {/* content area */}
         <div className="relative z-10 w-full min-h-[100svh] pb-24 md:pb-20">
           {/* MOBILE */}
-          <div className="md:hidden flex flex-col items-center justify-center min-h-[100svh] px-4 pt-8 pb-16">
+          <div className="md:hidden flex flex-col items-center justify-start min-h-[100svh] px-4 pt-9 pb-22">
             {/* Bigger avatar */}
             <div className="mobile-avatar image-container mb-6 relative z-10">
-              <div className="w-60 h-60 rounded-full overflow-hidden border-4 border-primary/10">
+              <div className="w-52 h-52 rounded-full overflow-hidden border-4 border-primary/10">
                 <Image
                   src="/profile.png"
                   alt="Abdul Barr"
@@ -283,7 +283,7 @@ const HeroSection = () => {
             </div>
 
             <div className="text-center relative z-10">
-              <h1 className="hero-content-layer text-7xl font-thin tracking-tighter text-primary mb-4">
+              <h1 className="hero-content-layer text-7xl font-thin tracking-tighter text-primary mb-5">
                 Hello
               </h1>
 
