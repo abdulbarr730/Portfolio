@@ -49,14 +49,14 @@ const StatCounter = ({ metric, label, animateOnScroll, isModal = false }) => {
   }, [parsedValue, metricSuffix, animateOnScroll, isNumber]);
 
   return (
-    <div className={isModal ? "text-center bg-gray-50 p-6 rounded-xl my-6 border border-gray-100" : "mb-3"}>
+    <div className={isModal ? "text-center bg-gray-50 p-4 rounded-xl my-4 border border-gray-100" : "mb-2"}>
       <h3
         ref={numberRef}
-        className={isModal ? "text-5xl font-bold text-primary" : "text-2xl font-bold text-primary"}
+        className={isModal ? "text-3xl sm:text-5xl font-bold text-primary" : "text-xl sm:text-2xl font-bold text-primary"}
       >
         {isNumber ? `0${metricSuffix}` : safeMetric}
       </h3>
-      <p className={isModal ? "text-lg text-gray-600 mt-1" : "text-sm text-gray-500"}>
+      <p className={isModal ? "text-sm sm:text-lg text-gray-600 mt-1" : "text-xs text-gray-500"}>
         {label}
       </p>
     </div>
@@ -74,7 +74,10 @@ const ProjectCard = ({ project, onClick }) => (
     tabIndex={0}
     aria-label={`View details for ${project.title}`}
   >
-    <div className="w-full h-64 relative overflow-hidden">
+    {/* MOBILE: aspect-video (16:9 Rectangle) 
+       DESKTOP: h-64 
+    */}
+    <div className="w-full aspect-video md:h-64 relative overflow-hidden">
       {project.snapshotUrl ? (
         <Image
           src={project.snapshotUrl}
@@ -84,23 +87,24 @@ const ProjectCard = ({ project, onClick }) => (
         />
       ) : (
         <div className="w-full h-full flex items-center justify-center bg-gray-100">
-          <p className="text-gray-400 text-sm">No Preview Available</p>
+          <p className="text-gray-400 text-xs">No Preview</p>
         </div>
       )}
       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-500" />
     </div>
 
-    <div className="p-8 flex flex-col flex-grow">
-      <h3 className="text-2xl font-bold text-primary mb-3 group-hover:text-primary/80 transition">
+    {/* Content: Reduced padding & Font sizes for Mobile */}
+    <div className="p-5 md:p-8 flex flex-col flex-grow">
+      <h3 className="text-lg md:text-2xl font-bold text-primary mb-2 md:mb-3 group-hover:text-primary/80 transition line-clamp-1">
         {project.title}
       </h3>
 
-      <p className="text-gray-600 mb-6 text-base leading-relaxed line-clamp-3">
+      <p className="text-gray-600 mb-4 text-xs md:text-base leading-relaxed line-clamp-3">
         {project.detailedDescription?.slice(0, 120) || "No description available."}...
       </p>
 
       {project.impact && (
-        <div className="mb-6">
+        <div className="mb-4">
             <StatCounter
             metric={project.impact.metric}
             label={project.impact.label}
@@ -109,27 +113,27 @@ const ProjectCard = ({ project, onClick }) => (
         </div>
       )}
 
-      <div className="flex flex-wrap gap-2 mt-auto mb-6">
+      <div className="flex flex-wrap gap-1.5 md:gap-2 mt-auto mb-4 md:mb-6">
         {project.technologies?.map((tech, i) => (
           <span
             key={i}
-            className="bg-gray-100 text-gray-700 text-xs font-bold px-3 py-1.5 rounded-full uppercase tracking-wide border border-gray-200"
+            className="bg-gray-100 text-gray-700 text-[10px] md:text-xs font-bold px-2 py-1 rounded-full uppercase tracking-wide border border-gray-200"
           >
             {tech}
           </span>
         ))}
       </div>
 
-      <div className="flex items-center justify-between text-sm pt-6 border-t border-gray-100">
+      <div className="flex items-center justify-between text-xs md:text-sm pt-4 md:pt-6 border-t border-gray-100">
         {project.liveUrl && (
           <Link
             href={project.liveUrl}
             onClick={(e) => e.stopPropagation()}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-2 text-primary font-bold hover:underline"
+            className="flex items-center gap-1.5 text-primary font-bold hover:underline"
           >
-            <ExternalLink size={16} /> Live Demo
+            <ExternalLink size={14} className="md:w-4 md:h-4" /> Live Demo
           </Link>
         )}
         {project.githubUrl && (
@@ -138,12 +142,19 @@ const ProjectCard = ({ project, onClick }) => (
             onClick={(e) => e.stopPropagation()}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-2 text-gray-600 font-medium hover:text-black"
+            className="flex items-center gap-1.5 text-gray-600 font-medium hover:text-black"
           >
-            <Github size={16} /> Source Code
+            <Github size={14} className="md:w-4 md:h-4" /> Source Code
           </Link>
         )}
       </div>
+    </div>
+
+    {/* View Details: Always Visible on Mobile */}
+    <div className="absolute bottom-3 md:bottom-4 left-1/2 -translate-x-1/2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-300 pointer-events-none">
+      <p className="text-[10px] md:text-xs text-primary font-semibold bg-white/95 backdrop-blur px-3 py-1 rounded-full shadow-sm whitespace-nowrap border border-primary/10">
+        View Details
+      </p>
     </div>
   </div>
 );
@@ -189,21 +200,22 @@ const ProjectModal = ({ project, onClose }) => {
     >
       <div
         ref={modalRef}
-        className="relative bg-white rounded-3xl shadow-2xl max-w-3xl w-full flex flex-col max-h-[90vh] overflow-hidden"
+        className="relative bg-white rounded-3xl shadow-2xl max-w-3xl w-full flex flex-col max-h-[85vh] overflow-hidden"
       >
-        <div className="p-8 border-b border-gray-100 flex justify-between items-start bg-white z-10">
-          <h3 className="text-3xl font-bold text-primary pr-8">{project.title}</h3>
+        <div className="p-5 md:p-8 border-b border-gray-100 flex justify-between items-start bg-white z-10">
+          <h3 className="text-xl md:text-3xl font-bold text-primary pr-8 leading-tight">{project.title}</h3>
           <button
             onClick={onClose}
             aria-label="Close modal"
-            className="p-2 bg-gray-100 hover:bg-red-50 hover:text-red-500 rounded-full transition-colors"
+            className="p-1.5 md:p-2 bg-gray-100 hover:bg-red-50 hover:text-red-500 rounded-full transition-colors"
           >
-            <X size={24} />
+            <X size={20} className="md:w-6 md:h-6" />
           </button>
         </div>
 
-        <div className="overflow-y-auto p-8 space-y-10 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
-          <div className="relative w-full h-80 sm:h-96 rounded-2xl overflow-hidden shadow-md border border-gray-100">
+        <div className="overflow-y-auto p-5 md:p-8 space-y-6 md:space-y-10 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
+          {/* Modal Image: Rectangle on Mobile */}
+          <div className="relative w-full aspect-video md:h-96 rounded-2xl overflow-hidden shadow-md border border-gray-100">
              {project.snapshotUrl ? (
                 <Image
                 src={project.snapshotUrl}
@@ -213,7 +225,7 @@ const ProjectModal = ({ project, onClose }) => {
                 priority
                 />
              ) : (
-                <div className="w-full h-full bg-gray-100 flex items-center justify-center">No Image</div>
+                <div className="w-full h-full bg-gray-100 flex items-center justify-center text-xs">No Image</div>
              )}
           </div>
 
@@ -226,7 +238,7 @@ const ProjectModal = ({ project, onClose }) => {
             />
           )}
 
-          <div className="space-y-8">
+          <div className="space-y-6 md:space-y-8">
             {[
               ["The Problem", project.problemSolved],
               ["The Solution & Process", project.detailedDescription],
@@ -234,12 +246,12 @@ const ProjectModal = ({ project, onClose }) => {
               ["Future Scope", project.futureScope],
             ].map(([title, text], i) => (
                 text ? (
-                    <div key={i} className="bg-gray-50 p-6 rounded-2xl border border-gray-100">
-                        <h4 className="text-xl font-bold text-primary mb-3 flex items-center gap-3">
-                            <span className="w-2 h-2 rounded-full bg-primary"></span>
+                    <div key={i} className="bg-gray-50 p-4 md:p-6 rounded-2xl border border-gray-100">
+                        <h4 className="text-base md:text-xl font-bold text-primary mb-2 md:mb-3 flex items-center gap-2 md:gap-3">
+                            <span className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-primary"></span>
                             {title}
                         </h4>
-                        <p className="text-gray-700 leading-relaxed text-base whitespace-pre-line">
+                        <p className="text-gray-700 leading-relaxed text-xs md:text-base whitespace-pre-line">
                             {text}
                         </p>
                     </div>
@@ -247,13 +259,13 @@ const ProjectModal = ({ project, onClose }) => {
             ))}
           </div>
 
-          <div className="space-y-4">
-             <h4 className="text-sm font-bold text-gray-400 uppercase tracking-wider">Technologies Used</h4>
-             <div className="flex flex-wrap gap-3">
+          <div className="space-y-3 md:space-y-4">
+             <h4 className="text-xs md:text-sm font-bold text-gray-400 uppercase tracking-wider">Technologies Used</h4>
+             <div className="flex flex-wrap gap-2 md:gap-3">
                 {project.technologies?.map((tech, i) => (
                 <span
                     key={i}
-                    className="bg-white text-primary text-sm font-bold px-4 py-2 rounded-lg border border-primary/20 shadow-sm"
+                    className="bg-white text-primary text-[10px] md:text-sm font-bold px-3 py-1.5 md:px-4 md:py-2 rounded-lg border border-primary/20 shadow-sm"
                 >
                     {tech}
                 </span>
@@ -262,15 +274,16 @@ const ProjectModal = ({ project, onClose }) => {
           </div>
         </div>
 
-        <div className="p-6 border-t border-gray-100 bg-gray-50 flex justify-end gap-4">
+        {/* Modal Footer */}
+        <div className="p-4 md:p-6 border-t border-gray-100 bg-gray-50 flex justify-end gap-3">
           {project.githubUrl && (
             <Link
                 href={project.githubUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 px-6 py-3 rounded-xl bg-white border border-gray-300 text-gray-700 font-bold hover:bg-gray-100 transition-all shadow-sm"
+                className="flex items-center gap-2 px-3 py-2 md:px-4 md:py-2 rounded-lg bg-white border border-gray-300 text-gray-700 text-xs md:text-sm font-bold hover:bg-gray-100 transition-all shadow-sm"
             >
-                <Github size={20} /> Code
+                <Github size={14} className="md:w-4 md:h-4" /> Code
             </Link>
           )}
           {project.liveUrl && (
@@ -278,9 +291,9 @@ const ProjectModal = ({ project, onClose }) => {
                 href={project.liveUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-white font-bold hover:bg-primary/90 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all"
+                className="flex items-center gap-2 px-3 py-2 md:px-4 md:py-2 rounded-lg bg-primary text-white text-xs md:text-sm font-bold hover:bg-primary/90 shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all"
              >
-                <ExternalLink size={20} /> Live Demo
+                <ExternalLink size={14} className="md:w-4 md:h-4" /> Live Demo
              </Link>
           )}
         </div>
@@ -329,16 +342,16 @@ const ProjectsSection = () => {
     <section
       ref={component}
       id="portfolio"
-      // ✅ FULL WIDTH CONTAINER (max-w-7xl)
-      className="max-w-7xl mx-auto py-32 px-6 lg:px-12 relative"
+      // ✅ FULL WIDTH CONTAINER (w-full + max-w-none for desktop)
+      className="w-full px-4 sm:px-8 lg:px-16 py-20 md:py-32 relative"
     >
       
       {/* HEADER SECTION */}
-      <div className="text-center mb-20">
-        <h2 className="text-5xl font-bold tracking-tighter text-primary mb-6">
+      <div className="text-center mb-12 md:mb-20">
+        <h2 className="text-3xl md:text-5xl font-bold tracking-tighter text-primary mb-4 md:mb-6">
           All Projects
         </h2>
-        <div className="text-gray-600 text-lg md:text-xl max-w-4xl mx-auto space-y-4 leading-relaxed font-light">
+        <div className="text-gray-600 text-sm md:text-xl max-w-4xl mx-auto space-y-4 leading-relaxed font-light">
           <p>
             Welcome to my digital workshop. Here lies a collection of my journey through code—ranging from robust 
             full-stack web applications to experimental AI integrations and system architectures.
@@ -351,31 +364,31 @@ const ProjectsSection = () => {
         </div>
       </div>
 
-      {/* ✅ FULL WIDTH CTA SECTION */}
-      <div className="w-full mb-20">
+      {/* FULL WIDTH CTA SECTION */}
+      <div className="w-full mb-16 md:mb-20">
         <Link
           href="/services"
-          className="group block relative w-full bg-gradient-to-r from-gray-50 via-white to-gray-50 border border-gray-200 rounded-[2.5rem] p-10 md:p-14 text-center hover:shadow-2xl transition-all duration-500 overflow-hidden"
+          className="group block relative w-full bg-gradient-to-r from-gray-50 via-white to-gray-50 border border-gray-200 rounded-[2rem] md:rounded-[2.5rem] p-8 md:p-14 text-center hover:shadow-2xl transition-all duration-500 overflow-hidden"
         >
           {/* Animated Background Effect */}
           <div className="absolute inset-0 bg-primary/5 translate-y-full group-hover:translate-y-0 transition-transform duration-700 ease-in-out" />
           
           <div className="relative z-10 flex flex-col items-center justify-center">
-            <h3 className="text-3xl md:text-4xl font-bold text-primary mb-4 group-hover:scale-105 transition-transform duration-300">
+            <h3 className="text-xl md:text-4xl font-bold text-primary mb-3 md:mb-4 group-hover:scale-105 transition-transform duration-300">
               Need Custom Development?
             </h3>
-            <p className="text-lg text-gray-600 group-hover:text-gray-900 transition-colors mb-6">
+            <p className="text-sm md:text-lg text-gray-600 group-hover:text-gray-900 transition-colors mb-4 md:mb-6">
               Explore my web development, debugging, and consulting services.
             </p>
-            <div className="inline-block bg-white border border-primary/20 text-primary px-8 py-3 rounded-full shadow-sm group-hover:shadow-md transition-all">
-               <span className="font-bold text-lg"> First consultancy is free!</span>
+            <div className="inline-block bg-white border border-primary/20 text-primary px-5 py-2 md:px-8 md:py-3 rounded-full shadow-sm group-hover:shadow-md transition-all">
+               <span className="font-bold text-xs md:text-lg">First consultancy is free!</span>
             </div>
           </div>
         </Link>
       </div>
 
       {/* PROJECT GRID */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-10">
         {allProjectsData.map((project, index) => (
           <div key={index} className="project-card h-full">
             <ProjectCard project={project} onClick={() => setSelectedProject(project)} />
@@ -387,10 +400,10 @@ const ProjectsSection = () => {
       <Link
         href="/services"
         ref={buttonRef}
-        className="fixed bottom-8 right-8 bg-primary text-white px-8 py-4 rounded-full shadow-xl hover:bg-primary/90 transition-colors z-40 flex items-center gap-3 font-bold text-lg"
+        className="fixed bottom-6 right-6 md:bottom-8 md:right-8 bg-primary text-white px-5 py-3 md:px-8 md:py-4 rounded-full shadow-xl hover:bg-primary/90 transition-colors z-40 flex items-center gap-2 md:gap-3 font-bold text-sm md:text-lg"
       >
         <span>Book a Service</span>
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="md:w-5 md:h-5"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
       </Link>
 
       {/* MODAL */}

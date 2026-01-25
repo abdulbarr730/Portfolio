@@ -12,51 +12,349 @@ gsap.registerPlugin(ScrollTrigger);
 
 const codeSnippets = [
   {
-    id: 'login',
-    title: 'Secure Login & Error Handling',
+    id: 'auth-middleware',
+    title: 'Dual-Strategy Authentication',
     description:
-      'A production-ready login route with explicit errors, bcrypt, and httpOnly cookie-based session tokens.',
+      'A flexible middleware that secures routes by checking httpOnly cookies first, then falling back to Bearer headers. This supports both browser sessions and mobile/API clients seamlessly.',
     language: 'javascript',
-    code: `router.post('/login', async (req, res) => {
-  const { email, password } = req.body;
-  try {
-    const user = await User.findOne({ email });
+    code: `module.exports = async function (req, res, next) {
+  // 1. Prioritize secure, httpOnly cookie
+  let token = req.cookies.token;
 
-    if (!user) return res.status(404).json({ msg: 'USER_NOT_FOUND' });
-    if (!user.isVerified) return res.status(403).json({ msg: 'ACCOUNT_NOT_VERIFIED' });
-
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(400).json({ msg: 'INVALID_PASSWORD' });
-
-    const payload = { user: { id: user.id, isAdmin: user.isAdmin } };
-    const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '5h' });
-
-    res.cookie('token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'none',
-      maxAge: 5 * 60 * 60 * 1000,
-    }).json({ msg: 'Login successful' });
-  } catch (err) {
-    res.status(500).json({ error: 'Server Error' });
+  // 2. Fallback to Authorization Header for API clients
+  if (!token && req.headers.authorization?.startsWith('Bearer ')) {
+    token = req.headers.authorization.split(' ')[1];
   }
-});`,
-    naiveCode: `// Naive/inexperienced approach — insecure and ambiguous errors
-router.post('/login', async (req, res) => {
-  const { email, password } = req.body;
-  const user = await User.findOne({ email });
-  if (!user) return res.send('Invalid credentials');
-  if (user.password !== password) return res.send('Wrong password');
 
-  const token = jwt.sign({ id: user._id }, 'secret');
-  res.json({ token });
-});`,
+  if (!token) {
+    return res.status(401).json({ msg: 'No token, authorization denied' });
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    // Support legacy and new payload structures
+    const userId = decoded.user?.id || decoded._id;
+    
+    const user = await User.findById(userId).select('-password');
+    if (!user) return res.status(401).json({ msg: 'User not found' });
+
+    req.user = user; // Attach full user object
+    next();
+  } catch (err) {
+    res.status(401).json({ msg: 'Token is not valid' });
+  }
+};`,
+    naiveCode: `// Naive Approach: Only checks headers, vulnerable to XSS if stored in localStorage
+module.exports = function (req, res, next) {
+  const token = req.header('x-auth-token');
+  
+  if (!token) return res.status(401).json({ msg: 'No token' });
+
+  try {
+    const decoded = jwt.verify(token, 'mysecret');
+    req.user = decoded.user;
+    next();
+  } catch (err) {
+    res.status(401).json({ msg: 'Token is not valid' });
+  }
+};`,
     bullets: [
-      'Uses bcrypt for secure password comparison instead of plain text.',
-      'Returns precise HTTP status codes so frontend can react correctly.',
-      'Stores token in httpOnly cookie (safer against XSS) and sets expiration.',
+      'Hybrid approach supports both Web (Cookies) and Mobile (Headers).',
+      'Prevents unauthorized access immediately if user is deleted from DB.',
+      'Centralized error handling for expired or malformed tokens.',
     ],
   },
+  {
+    id: 'business-logic',
+    title: 'Constraint-Based Team Formation',
+    description:
+      'Implementing strict hackathon business rules (e.g., gender diversity requirements) directly into the API logic to ensure compliance before database commits.',
+    language: 'javascript',
+    code: `// Helper: Enforce Diversity Rule
+function violatesFemaleRule(teamMembers, newUser) {
+  if (teamMembers.length === 5) {
+    const hasFemale = teamMembers.some(m => m.gender === 'Female');
+    // If team is full (5->6) and no female yet, new user MUST be female
+    if (!hasFemale && newUser.gender !== 'Female') {
+      return true;
+    }
+  }
+  return false;
+}
+
+// Route: Approve Join Request
+router.post('/:id/approve/:userId', auth, async (req, res) => {
+  const team = await Team.findById(teamId).populate('members');
+  
+  // 1. Check Capacity
+  if (team.members.length >= 6) {
+    return res.status(400).json({ msg: 'Team is full.' });
+  }
+
+  // 2. Run Diversity Check
+  if (violatesFemaleRule(team.members, userToApprove)) {
+    return res.status(400).json({ 
+      msg: 'A team of 6 must have at least one female member.' 
+    });
+  }
+
+  // 3. Atomic State Update
+  team.members.push(userId);
+  team.pendingRequests = team.pendingRequests.filter(id => id !== userId);
+  await team.save();
+});`,
+    naiveCode: `// Naive Approach: No validation, just pushing to array
+router.post('/join', async (req, res) => {
+  const team = await Team.findById(req.body.teamId);
+  
+  // Risk: Team could exceed max size
+  // Risk: Ignores diversity rules
+  team.members.push(req.body.userId);
+  
+  await team.save();
+  res.json(team);
+});`,
+    bullets: [
+      'Enforces complex business rules (Diversity/Gender checks) at the API level.',
+      'Prevents race conditions by validating capacity before updates.',
+      'Keeps database clean by filtering pending requests upon acceptance.',
+    ],
+  },
+  {
+    id: 'data-integrity',
+    title: 'Defensive Data Integrity',
+    description:
+      'Handling edge cases where referenced data (like a Team) might be deleted by a leader while an Invitation is still pending for a user.',
+    language: 'javascript',
+    code: `router.post('/:id/accept', requireAuth, async (req, res) => {
+  const invitation = await Invitation.findById(req.params.id);
+  
+  // Check if the referenced team still exists
+  const team = await Team.findById(invitation.teamId).populate('members');
+
+  // EDGE CASE: Team was deleted after invite was sent
+  if (!team) {
+    await invitation.deleteOne(); // Self-healing: remove stale data
+    return res.status(404).json({ 
+      message: 'Invitation invalid: Team no longer exists.' 
+    });
+  }
+
+  // Check concurrency: Did someone else fill the spot?
+  if (team.members.length >= 6) {
+    return res.status(400).json({ message: 'Team is now full.' });
+  }
+
+  // Transaction-like execution
+  team.members.push(req.user.id);
+  user.team = team._id;
+  invitation.status = 'accepted';
+
+  await Promise.all([team.save(), user.save(), invitation.save()]);
+});`,
+    naiveCode: `// Naive Approach: Assumes data exists
+router.post('/accept-invite', async (req, res) => {
+  const invite = await Invite.findById(req.params.id);
+  
+  // CRASHES if team was deleted
+  const team = await Team.findById(invite.teamId);
+  
+  team.members.push(req.user.id);
+  await team.save();
+});`,
+    bullets: [
+      'Self-healing system: automatically cleans up stale invitations.',
+      'Prevents server crashes by null-checking related documents.',
+      'Concurrency safe: checks limits again at the moment of acceptance.',
+    ],
+  },
+  {
+    id: 'admin-export',
+    title: 'Enterprise Data Export',
+    description:
+      'Advanced Admin feature allowing dynamic filtering and streaming of database records into downloadable Excel files using Streams.',
+    language: 'javascript',
+    code: `router.get('/users/export', adminAuth, async (req, res) => {
+  const { verified, role, q } = req.query;
+  
+  // Dynamic Filtering
+  const filters = {};
+  if (q) filters.$or = [{ name: new RegExp(q, 'i') }, { email: new RegExp(q, 'i') }];
+  if (verified) filters.isVerified = verified === 'true';
+
+  const users = await User.find(filters).populate('team').lean();
+
+  // Excel Stream Generation
+  const workbook = new ExcelJS.Workbook();
+  const worksheet = workbook.addWorksheet('Users');
+
+  worksheet.columns = [
+    { header: 'Name', key: 'Name', width: 30 },
+    { header: 'Role', key: 'Role', width: 15 },
+    { header: 'Team', key: 'Team', width: 25 },
+    { header: 'Verified', key: 'Verified', width: 10 },
+  ];
+
+  // Transform Data
+  users.forEach(u => worksheet.addRow({
+    Name: u.name,
+    Role: u.role,
+    Team: u.team?.teamName || 'N/A',
+    Verified: u.isVerified ? 'Yes' : 'No'
+  }));
+
+  // Stream response to client
+  res.setHeader('Content-Type', 'application/vnd.openxmlformats...');
+  res.setHeader('Content-Disposition', 'attachment; filename=users.xlsx');
+  
+  await workbook.xlsx.write(res);
+  res.end();
+});`,
+    naiveCode: `// Naive Approach: JSON dump
+router.get('/export', async (req, res) => {
+  const users = await User.find();
+  // Just sends raw JSON, hard for non-tech admins to read
+  res.json(users);
+});`,
+    bullets: [
+      'Generates professional .xlsx files suitable for stakeholders.',
+      'Uses Streams to handle large datasets without memory leaks.',
+      'Applies current dashboard filters to the exported data.',
+    ],
+  },
+  {
+    id: 'cloud-asset-management',
+    title: 'Atomic Asset Swapping',
+    description:
+      'Handling file uploads cleanly by wrapping stream-based cloud APIs in Promises and ensuring old assets are garbage-collected (deleted) before new ones are linked.',
+    language: 'javascript',
+    code: `// 1. Promisify the stream upload for clean async/await usage
+const uploadToCloudinary = (fileBuffer) => {
+  return new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      { resource_type: 'auto' }, 
+      (err, result) => (err ? reject(err) : resolve(result))
+    );
+    stream.end(fileBuffer);
+  });
+};
+
+// 2. Logic to swap team logos
+if (req.file) {
+  // Clean up storage: Remove old image first
+  if (team.logoPublicId) {
+    await cloudinary.uploader.destroy(team.logoPublicId);
+  }
+  
+  // Upload new image from memory buffer
+  const result = await uploadToCloudinary(req.file.buffer);
+  
+  // Update DB references
+  team.logoUrl = result.secure_url;
+  team.logoPublicId = result.public_id;
+}`,
+    naiveCode: `// Naive Approach: Storing locally / No cleanup
+router.post('/upload', upload.single('logo'), (req, res) => {
+  // Risk: Server disk fills up
+  // Risk: Old files remain forever (Orphaned files)
+  
+  team.logoUrl = '/uploads/' + req.file.filename;
+  team.save();
+});`,
+    bullets: [
+      'Prevents storage waste by deleting old assets (Garbage Collection).',
+      'Uses memory buffers (Multer) instead of temporary disk files for speed.',
+      'Wraps callback-based legacy APIs into modern Promises.',
+    ],
+  },
+  {
+    id: 'audit-logging',
+    title: 'Security Audit Trails',
+    description:
+      'A dedicated logging system that silently tracks critical administrative actions (like deleting users or changing roles) to ensure accountability and traceability.',
+    language: 'javascript',
+    code: `// Route: Delete User (Admin Only)
+router.delete('/users/:id', adminAuth, async (req, res) => {
+  const user = await User.findById(req.params.id);
+
+  // 1. Perform the critical action
+  await User.findByIdAndDelete(req.params.id);
+
+  // 2. Create an immutable audit log
+  await AdminLog.create({
+    actor: req.user.id, // Who did it?
+    action: 'USER_DELETE', // What did they do?
+    targetType: 'User',
+    targetId: user._id, // Who was affected?
+    meta: { 
+      email: user.email, 
+      reason: 'Admin Dashboard Action' 
+    },
+  });
+
+  res.json({ msg: 'User deleted and action logged.' });
+});`,
+    naiveCode: `// Naive Approach: Action without trace
+router.delete('/users/:id', async (req, res) => {
+  // If an admin goes rogue or makes a mistake, 
+  // there is NO RECORD of who did this.
+  await User.findByIdAndDelete(req.params.id);
+  res.json({ msg: 'User deleted' });
+});`,
+    bullets: [
+      'Creates a permanent record of "Who, What, When, and Whom".',
+      'Essential for enterprise compliance and debugging admin mistakes.',
+      'Stores snapshot metadata (email/name) even after the user is deleted.',
+    ],
+  },
+  {
+    id: 'advanced-search',
+    title: 'Multi-Field Regex Search',
+    description:
+      'A powerful, unified search API that allows admins to find users by Name, Email, or Roll Number simultaneously using regex patterns and logical OR operators.',
+    language: 'javascript',
+    code: `router.get('/users', adminAuth, async (req, res) => {
+  const { q } = req.query;
+  const filters = {};
+
+  // Dynamic Search Logic
+  if (q) {
+    // Escapes special characters automatically in real app
+    const regex = new RegExp(q, 'i'); // 'i' = case-insensitive
+    
+    // Searches across multiple fields at once
+    filters.$or = [
+      { name: regex },
+      { email: regex },
+      { rollNumber: regex }
+    ];
+  }
+
+  // Efficient Pagination
+  const users = await User.find(filters)
+    .select('-password') // Security: Exclude hashes
+    .skip((page - 1) * limit)
+    .limit(limit)
+    .lean(); // Performance: Plain JS objects
+
+  res.json(users);
+});`,
+    naiveCode: `// Naive Approach: Exact match only
+router.get('/users', (req, res) => {
+  const { email } = req.query;
+  
+  // Can't search by name
+  // Must type email exactly (case-sensitive)
+  User.find({ email: email }).then(users => {
+    res.json(users);
+  });
+});`,
+    bullets: [
+      'Provides a "Google-like" search experience (single box, multiple targets).',
+      'Uses `.lean()` for faster read performance on large datasets.',
+      'Excludes sensitive fields (password hash) at the database layer.',
+    ],
+  }
 ];
 
 const CodeCraftPage = () => {

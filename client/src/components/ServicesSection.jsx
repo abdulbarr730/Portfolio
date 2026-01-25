@@ -131,7 +131,7 @@ export default function ServicesSection() {
         </h2>
         <p className="text-secondary max-w-2xl mx-auto text-base mb-6">
           Over the years, I’ve worked with immense focus to create digital solutions that help people.
-          Click on any card below to see exactly how I work.
+          Click on any card below to see exactly how I work. I build with a security-first architecture. From encrypted databases to sanitized inputs, every layer of your application is engineered to protect user privacy and maintain absolute data integrity.
         </p>
 
         {/* Free Line (Top) */}
