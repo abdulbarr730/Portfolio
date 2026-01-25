@@ -21,7 +21,8 @@ const HeroSection = () => {
   const sidebarRef = useRef(null);
 
   const marqueeTween = useRef(null);
-  const slamTextRef = useRef(null);
+  const desktopSlamTextRef = useRef(null);
+  const mobileSlamTextRef = useRef(null); // ✅ NEW REF FOR MOBILE BUTTON
 
   useLayoutEffect(() => {
     let removeMouseMove = null;
@@ -119,10 +120,12 @@ const HeroSection = () => {
         '-=0.65'
       );
 
-      // Slam button
-      if (slamTextRef.current) {
+      // ✅ SLAM BUTTON ANIMATION (For both Desktop & Mobile)
+      const slamTargets = [desktopSlamTextRef.current, mobileSlamTextRef.current].filter(Boolean);
+      
+      if (slamTargets.length > 0) {
         tl.fromTo(
-          slamTextRef.current,
+          slamTargets,
           { y: '-25vh', scale: 8, rotate: 10, opacity: 0 },
           { y: 0, scale: 1, rotate: 0, opacity: 1, duration: 0.6, ease: 'expo.out' },
           '-=0.25'
@@ -421,7 +424,7 @@ const HeroSection = () => {
               </div>
 
               <div
-                ref={slamTextRef}
+                ref={desktopSlamTextRef}
                 className="absolute top-2 left-1/2 -translate-x-1/2 z-10 bg-primary text-background px-6 py-2 rounded-full font-bold text-[10px] md:text-xs uppercase tracking-widest shadow-xl border border-background/20 opacity-0 whitespace-nowrap"
               >
                 View All Projects &rarr;
@@ -458,7 +461,11 @@ const HeroSection = () => {
           ))}
         </div>
 
-        <div className="absolute top-2 left-1/2 -translate-x-1/2 z-20 bg-primary text-background px-6 py-2 rounded-full font-bold text-[10px] uppercase tracking-widest shadow-xl border border-background/20 whitespace-nowrap">
+        {/* ✅ ADDED SLAM REF HERE FOR MOBILE ANIMATION */}
+        <div 
+          ref={mobileSlamTextRef}
+          className="absolute top-2 left-1/2 -translate-x-1/2 z-20 bg-primary text-background px-6 py-2 rounded-full font-bold text-[10px] uppercase tracking-widest shadow-xl border border-background/20 whitespace-nowrap opacity-0"
+        >
           View All Projects &rarr;
         </div>
       </Link>
