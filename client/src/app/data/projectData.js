@@ -48,7 +48,7 @@ export const allProjectsData = [
       "Designing a database schema that efficiently maps thousands of students to multiple concurrent job drives without redundancy.",
     futureScope: "Integrating automated email notifications and WhatsApp alerts for new drives.",
     technologies: ["Next.js", "Node.js", "MongoDB", "ExcelJS"],
-    liveUrl: "abdulbarr.in/jobs",
+    liveUrl: "/jobs",
     githubUrl: "https://github.com/abdulbarr730/Portfolio",
     snapshotUrl: "/snapshots/placement-tracker.png", 
     impact: { metric: "100%", label: "Data Visibility" },
