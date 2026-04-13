@@ -1,4 +1,5 @@
 // index.js
+require("./cron/mediumCron");
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
@@ -30,6 +31,7 @@ const StudentRoutes = require('./routes/StudentRoutes');
 const adminAuth = require('./middleware/adminAuth_jobs');
 const adminAuthRoutes = require('./routes/adminAuthRoutes');
 const adminApiRoutes = require('./routes/adminApiRoutes');
+const subscriberRoutes = require("./routes/subscriberRoutes");
 
 
 
@@ -64,6 +66,7 @@ app.use('/api/student', StudentRoutes);
 app.use("/api/jobs", JobRoutes);
 app.use("/api/admin/auth", adminAuthRoutes); // <-- Login/Logout (NOT protected)
 app.use("/api/admin", adminAuth, adminApiRoutes);
+app.use("/api/", subscriberRoutes);
 
 
 app.listen(PORT, () => {

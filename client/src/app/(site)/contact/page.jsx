@@ -231,7 +231,7 @@ export default function ContactPage() {
               <div className="space-y-4">
                 {/* Email */}
                 <a 
-                  href="mailto:abdulbarr730@gmail.com" 
+                  href="mailto:hello@abdulbarr.in"
                   className="flex items-center gap-5 p-4 rounded-2xl bg-gray-50 border border-transparent hover:bg-white hover:border-black transition-all duration-300 group"
                 >
                   <div className="w-12 h-12 bg-white border border-gray-200 text-black rounded-xl flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
@@ -239,7 +239,7 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <p className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-0.5">Email</p>
-                    <p className="text-black font-bold break-all transition-colors">abdulbarr730@gmail.com</p>
+                    <p className="text-black font-bold break-all transition-colors">hello@abdulbarr.in</p>
                   </div>
                 </a>
 

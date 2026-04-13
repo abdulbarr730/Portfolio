@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { scroller } from "react-scroll";
@@ -9,9 +10,13 @@ const Footer = () => {
   const pathname = usePathname();
   const router = useRouter();
   const year = new Date().getFullYear();
-  const email = "abdulbarr730@gmail.com";
 
-  // This function remains the same, it handles scrolling to sections
+  const contactEmail = "hello@abdulbarr.in";
+
+  const [subscriberEmail, setSubscriberEmail] = useState("");
+  const [status, setStatus] = useState("");
+  const [message, setMessage] = useState("");
+
   const scrollToSection = (id) => {
     if (pathname !== '/') {
       router.push('/');
@@ -31,95 +36,190 @@ const Footer = () => {
     }
   };
 
+  const handleSubscribe = async (e) => {
+    e.preventDefault();
+
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/subscribe`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email: subscriberEmail }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (data.success) {
+        setStatus("success");
+        setMessage("Subscribed successfully 🎉");
+        setSubscriberEmail("");
+      } else {
+        setStatus("error");
+        setMessage(data.message || "Something went wrong");
+      }
+
+    } catch (error) {
+      setStatus("error");
+      setMessage("Server error");
+    }
+  };
+
   return (
     <motion.footer
-      className="bg-background text-secondary py-12 border-t border-muted relative z-40"
+      className="bg-background text-secondary py-16 border-t border-muted relative z-40"
       initial={{ opacity: 0, y: 50 }}
       whileInView={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.8 }}
       viewport={{ once: true }}
     >
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6">
-        {/* Name & Role */}
-        <div>
-          <h1 className="text-3xl font-bold text-primary">Abdul Barr</h1>
-          <p className="text-sm text-secondary mt-1">
-            Full Stack Developer & ML Enthusiast
-          </p>
-        </div>
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
 
-        {/* Navigation */}
-        <div className="flex justify-center space-x-8">
-          <button
-            onClick={() => scrollToSection("about")}
-            className="relative cursor-pointer transition-colors hover:text-primary"
-          >
-            About
-          </button>
-          <Link href="/projects" className="relative cursor-pointer transition-colors hover:text-primary">
-            Projects
-          </Link>
-          <Link href="/contact" className="relative cursor-pointer transition-colors hover:text-primary">
-            Contact
-          </Link>
-        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 mb-12">
 
-        {/* Buttons & Email */}
-        <div className="flex flex-col md:flex-row justify-center items-center gap-4 mt-4">
-          <motion.div
-            className="inline-block"
-            animate={{ scale: [1, 1.05, 1], opacity: [1, 0.9, 1] }}
-            transition={{ duration: 1.5, repeat: Infinity }}
-          >
-            <Link
-              href="/services"
-              className="inline-block bg-primary text-white font-bold py-3 px-8 rounded-lg text-lg transition-transform hover:scale-105 hover:opacity-90"
+          {/* Brand */}
+          <div>
+            <h1 className="text-2xl font-bold text-primary">
+              Abdul Barr
+            </h1>
+            <p className="text-sm mt-2">
+              Full Stack Developer & ML Enthusiast building scalable digital products.
+            </p>
+
+            <motion.a
+              href={`mailto:${contactEmail}`}
+              className="inline-block mt-4 font-semibold text-primary underline hover:opacity-80"
+              whileHover={{ scale: 1.05 }}
             >
-              Book a Service
+              {contactEmail}
+            </motion.a>
+          </div>
+
+          {/* Navigation */}
+          <div>
+            <h3 className="font-semibold text-primary mb-4">
+              Navigation
+            </h3>
+
+            <ul className="space-y-2 text-sm">
+              <li>
+                <button onClick={() => scrollToSection("about")} className="hover:text-primary">
+                  About
+                </button>
+              </li>
+              <li>
+                <Link href="/projects" className="hover:text-primary">
+                  Projects
+                </Link>
+              </li>
+              <li>
+                <Link href="/services" className="hover:text-primary">
+                  Services
+                </Link>
+              </li>
+              <li>
+                <Link href="/contact" className="hover:text-primary">
+                  Contact
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Services */}
+          <div>
+            <h3 className="font-semibold text-primary mb-4">
+              Services
+            </h3>
+
+            <ul className="space-y-2 text-sm">
+              {[
+                "Full Stack Development",
+                "AI Integration",
+                "Website Optimisation",
+                "Consulting"
+              ].map((service) => (
+                <li key={service}>
+                  <Link 
+                    href="/services"
+                    className="hover:text-primary transition-colors flex items-center gap-2 group"
+                  >
+                    {service}
+                    <span className="opacity-0 group-hover:opacity-100 transition-opacity">
+                      →
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Newsletter */}
+          <div>
+            <h3 className="font-semibold text-primary mb-4">
+              Newsletter
+            </h3>
+
+            <p className="text-sm mb-4">
+              Get notified when I publish new blogs & projects.
+            </p>
+
+            <form onSubmit={handleSubscribe} className="flex flex-col gap-2">
+              <input
+                type="email"
+                value={subscriberEmail}
+                onChange={(e) => setSubscriberEmail(e.target.value)}
+                placeholder="Enter your email"
+                className="px-4 py-2 rounded-md border border-muted bg-transparent"
+                required
+              />
+
+              <button
+                className="bg-primary text-white py-2 rounded-md hover:opacity-90"
+              >
+                Subscribe
+              </button>
+
+              {status && (
+                <p
+                  className={`text-sm ${
+                    status === "success"
+                      ? "text-green-500"
+                      : "text-red-500"
+                  }`}
+                >
+                  {message}
+                </p>
+              )}
+            </form>
+          </div>
+
+        </div>
+
+        <div className="border-t border-muted pt-6 flex flex-col md:flex-row justify-between items-center text-sm">
+
+          <p>
+            © {year} Abdul Barr. All Rights Reserved.
+          </p>
+
+          <div className="flex gap-6 mt-3 md:mt-0">
+            <Link href="/privacy" className="hover:text-primary">
+              Privacy Policy
             </Link>
-          </motion.div>
 
-          <motion.a
-            href={`mailto:${email}`}
-            className="inline-block font-semibold text-primary underline hover:opacity-80 transition-transform hover:scale-105"
-            whileHover={{ scale: 1.05 }}
-          >
-            {email}
-          </motion.a>
+            <Link href="/terms" className="hover:text-primary">
+              Terms
+            </Link>
+
+            <Link href="/contact" className="hover:text-primary">
+              Contact
+            </Link>
+          </div>
+
         </div>
 
-        {/* Socials */}
-        <div className="flex justify-center space-x-6 mt-6">
-          <motion.a
-            href="https://github.com/abdulbarr730"
-            target="_blank"
-            whileHover={{ scale: 1.2, y: -4 }}
-            className="transition-transform text-secondary hover:text-primary"
-            aria-label="GitHub"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/>
-            </svg>
-          </motion.a>
-
-          <motion.a
-            href="https://www.linkedin.com/in/abdul-barr-9092a4251"
-            target="_blank"
-            whileHover={{ scale: 1.2, y: -4 }}
-            className="transition-transform text-secondary hover:text-primary"
-            aria-label="LinkedIn"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/>
-              <rect width="4" height="12" x="2" y="9"/>
-              <circle cx="4" cy="4" r="2"/>
-            </svg>
-          </motion.a>
-        </div>
-
-        <p className="text-sm mt-4">
-          © {year} Abdul Barr. All Rights Reserved.
-        </p>
       </div>
     </motion.footer>
   );
