@@ -16,6 +16,7 @@ const Footer = () => {
   const [subscriberEmail, setSubscriberEmail] = useState("");
   const [status, setStatus] = useState("");
   const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const scrollToSection = (id) => {
     if (pathname !== '/') {
@@ -39,6 +40,10 @@ const Footer = () => {
   const handleSubscribe = async (e) => {
     e.preventDefault();
 
+    setLoading(true);
+    setStatus("");
+    setMessage("");
+
     try {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/subscribe`,
@@ -55,16 +60,18 @@ const Footer = () => {
 
       if (data.success) {
         setStatus("success");
-        setMessage("Subscribed successfully 🎉");
+        setMessage("You're subscribed 🎉");
         setSubscriberEmail("");
       } else {
         setStatus("error");
-        setMessage(data.message || "Something went wrong");
+        setMessage(data.message);
       }
 
     } catch (error) {
       setStatus("error");
-      setMessage("Server error");
+      setMessage("Something went wrong");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -177,9 +184,17 @@ const Footer = () => {
               />
 
               <button
-                className="bg-primary text-white py-2 rounded-md hover:opacity-90"
+                disabled={loading}
+                className="bg-primary text-white py-2 rounded-md hover:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
-                Subscribe
+                {loading ? (
+                  <>
+                    <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                    Subscribing...
+                  </>
+                ) : (
+                  "Subscribe"
+                )}
               </button>
 
               {status && (
