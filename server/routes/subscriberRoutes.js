@@ -61,17 +61,43 @@ router.post("/subscribe", async (req, res) => {
       to: email,
       subject: "Confirm your subscription",
       html: `
-        <h2>Confirm your subscription</h2>
+    <div style="font-family: system-ui, sans-serif; max-width:600px; margin:auto; line-height:1.6; padding:20px;">
 
-        <p>Please confirm your email to complete subscription</p>
+    <p>Hi,</p>
 
-        <a href="${confirmUrl}"
-        style="background:black;color:white;padding:10px 14px;text-decoration:none;">
-        Confirm Email
-        </a>
+    <p>You requested to subscribe to updates from <strong>abdulbarr.in</strong>.</p>
 
-        <p>If you didn't request this, ignore this email.</p>
-      `
+    <p>Please confirm your email to start receiving updates on projects, blogs, and development insights.</p>
+
+    <p>
+    <a href="${confirmUrl}"
+    style="display:inline-block;background:#000;color:#fff;padding:10px 16px;text-decoration:none;border-radius:6px;">
+    Confirm Subscription
+    </a>
+    </p>
+
+    <p>If you didn’t request this, you can safely ignore this email.</p>
+
+    <hr style="margin:20px 0;" />
+
+    <p style="font-size:12px;color:#666;">
+    Sent from abdulbarr.in • Reply anytime to hello@abdulbarr.in
+    </p>
+
+    </div>
+    `,
+    text: `
+    Hi,
+
+    You requested to subscribe to updates from abdulbarr.in.
+
+    Confirm here:
+    ${confirmUrl}
+
+    If this wasn't you, ignore this email.
+
+    — Abdul Barr
+    `
     });
 
     return res.json({
