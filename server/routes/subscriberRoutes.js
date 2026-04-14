@@ -21,41 +21,25 @@ router.post("/subscribe", async (req, res) => {
 
     email = email.trim().toLowerCase();
 
-    const exists = await Subscriber.findOne({ email });
-
-    if (exists) {
-      return res.status(400).json({
-        success:false,
-        message:"Already subscribed"
-      });
-    }
-
     const token = crypto.randomBytes(32).toString("hex");
 
-    const subscriber = new Subscriber({
-      email,
-      token,
-      isVerified:false
-    });
-
-    await subscriber.save();
-
-    const confirmUrl = `https://portfolio-backend-omega-khaki.vercel.app/api/confirm/${token}`;
+    const confirmUrl =
+    `https://portfolio-backend-omega-khaki.vercel.app/api/confirm?email=${email}&token=${token}`;
 
     await resend.emails.send({
       from: "Abdul Barr <newsletter@abdulbarr.in>",
       to: email,
       subject: "Confirm your subscription",
       html: `
-        <h2>Confirm your subscription</h2>
+        <h2>Confirm Subscription</h2>
+
         <p>Click below to confirm your email</p>
 
         <a href="${confirmUrl}"
-        style="background:black;color:white;padding:10px 16px;text-decoration:none;">
-        Confirm Subscription
+        style="background:black;color:white;padding:10px 14px;text-decoration:none;">
+        Confirm Email
         </a>
 
-        <p>If you didn't request this, ignore.</p>
       `
     });
 
@@ -65,14 +49,36 @@ router.post("/subscribe", async (req, res) => {
     });
 
   } catch (error) {
-
     console.error(error);
+    res.status(500).json({ success:false });
+  }
+});
 
-    res.status(500).json({
-      success:false
-    });
+router.get("/confirm", async (req, res) => {
+
+  try {
+
+    const { email } = req.query;
+
+    const exists = await Subscriber.findOne({ email });
+
+    if (!exists) {
+
+      await Subscriber.create({
+        email,
+        isVerified:true
+      });
+
+    }
+
+    res.send("Subscription confirmed");
+
+  } catch (error) {
+
+    res.send("Something went wrong");
 
   }
+
 });
 
 router.get("/confirm/:token", async (req, res) => {
