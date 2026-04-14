@@ -1,18 +1,20 @@
 const express = require("express");
 const Subscriber = require("../models/subscriber.model");
 const { Resend } = require("resend");
-
+const validateEmail = require("../utils/validateEmail");
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 const router = express.Router();
 
 // Email validation
-const validateEmail = (email) => {
-  const regex =
-    /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@(([^<>()[\]\\.,;:\s@"]+\.)+[^<>()[\]\\.,;:\s@"]{2,})$/i;
+const validation = await validateEmail(email);
 
-  return regex.test(email);
-};
+if (!validation.valid) {
+  return res.status(400).json({
+    success: false,
+    message: validation.message
+  });
+}
 
 
 // Subscribe
