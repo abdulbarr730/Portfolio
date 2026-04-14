@@ -2,10 +2,14 @@ const express = require("express");
 const Subscriber = require("../models/subscriber.model");
 const { Resend } = require("resend");
 const validateEmail = require("../utils/validateEmail");
+const Parser = require("rss-parser");
 
 const resend = new Resend(process.env.RESEND_API_KEY);
+const parser = new Parser();
 
 const router = express.Router();
+
+const MEDIUM_RSS_URL = "https://medium.com/feed/@abdulbarr730";
 
 
 // Subscribe
@@ -23,7 +27,7 @@ router.post("/subscribe", async (req, res) => {
 
     email = email.trim().toLowerCase();
 
-    // ✅ Validate Email
+    // Validate Email
     const validation = await validateEmail(email);
 
     if (!validation.valid) {
@@ -46,38 +50,51 @@ router.post("/subscribe", async (req, res) => {
     const subscriber = new Subscriber({ email });
     await subscriber.save();
 
+
+    // Fetch Medium Blogs
+    const feed = await parser.parseURL(MEDIUM_RSS_URL);
+
+    const topBlogs = feed.items.slice(0, 3);
+
+    const blogHtml = topBlogs.map(blog => `
+      <li>
+        <a href="${blog.link}" style="color:#000;text-decoration:underline;">
+          ${blog.title}
+        </a>
+      </li>
+    `).join("");
+
+
     // Send Welcome Email
     await resend.emails.send({
       from: "Abdul Barr <newsletter@abdulbarr.in>",
       to: email,
-      subject: "You're subscribed ",
+      subject: "You're in",
       html: `
-        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: auto; line-height: 1.6; padding: 20px;">
+      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: auto; line-height: 1.6; padding: 20px;">
 
-        <h2 style="margin-bottom: 10px;">You're in </h2>
+        <h2>You're in</h2>
 
         <p>Hey,</p>
 
-        <p>Glad you subscribed. I only send useful stuff — no spam.</p>
+        <p>Glad you subscribed. I only send useful stuff.</p>
 
         <p>Here's what you'll get:</p>
 
         <ul>
             <li>Real projects I'm building</li>
-            <li>How I build them (architecture & decisions)</li>
+            <li>How I build them</li>
             <li>Useful dev + AI insights</li>
         </ul>
 
         <hr style="margin: 25px 0;" />
 
-        <h3> Latest Project</h3>
+        <h3>Latest Project</h3>
 
         <p><strong>College Hackathon Management Platform</strong></p>
 
-        <p>A multi-college SaaS platform to manage hackathons, teams, judging, and submissions.</p>
-
         <p>
-            <a href="https://abdulbarr.in/projects" 
+            <a href="https://abdulbarr.in/projects"
             style="background:#000;color:#fff;padding:10px 16px;text-decoration:none;border-radius:6px;">
             View Project
             </a>
@@ -85,33 +102,15 @@ router.post("/subscribe", async (req, res) => {
 
         <hr style="margin: 25px 0;" />
 
-        <h3>📚 Top Blogs</h3>
+        <h3>Top Blogs</h3>
 
         <ul>
-            <li>
-            <a href="https://abdulbarr.in/blog">
-                Building a Multi-Tenant SaaS from Scratch
-            </a>
-            </li>
-            <li>
-            <a href="https://abdulbarr.in/blog">
-                JWT Auth Done Right (With Real Example)
-            </a>
-            </li>
-            <li>
-            <a href="https://abdulbarr.in/blog">
-                How I Built My Portfolio (Architecture)
-            </a>
-            </li>
+        ${blogHtml}
         </ul>
 
         <hr style="margin: 25px 0;" />
 
-        <h3>💻 Check My Code</h3>
-
-        <p>
-            I share real projects and architecture decisions on GitHub.
-        </p>
+        <h3>GitHub</h3>
 
         <p>
             <a href="https://github.com/abdulbarr730"
@@ -122,16 +121,12 @@ router.post("/subscribe", async (req, res) => {
 
         <hr style="margin: 25px 0;" />
 
-        <h3>📬 What to Expect</h3>
-
-        <p>
-            I'll email you when:
-        </p>
+        <h3>What to Expect</h3>
 
         <ul>
-            <li>I launch a new project</li>
-            <li>I publish a new blog</li>
-            <li>I learn something useful worth sharing</li>
+            <li>New projects</li>
+            <li>New blogs</li>
+            <li>AI engineering insights</li>
         </ul>
 
         <br/>
@@ -142,8 +137,8 @@ router.post("/subscribe", async (req, res) => {
             You’re receiving this because you subscribed at abdulbarr.in
         </p>
 
-        </div>
-        `
+      </div>
+      `
     });
 
     res.status(201).json({
