@@ -58,18 +58,24 @@ const Footer = () => {
 
       const data = await response.json();
 
-      if (data.success) {
+      if (response.ok) {
         setStatus("success");
-        setMessage("You're subscribed 🎉");
+        setMessage(
+          data.message ||
+          "Please check your email and confirm your subscription"
+        );
         setSubscriberEmail("");
       } else {
         setStatus("error");
-        setMessage(data.message);
+        setMessage(
+          data.message ||
+          "Unable to subscribe. Please try again."
+        );
       }
 
     } catch (error) {
       setStatus("error");
-      setMessage("Something went wrong");
+      setMessage("Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -113,7 +119,10 @@ const Footer = () => {
 
             <ul className="space-y-2 text-sm">
               <li>
-                <button onClick={() => scrollToSection("about")} className="hover:text-primary">
+                <button
+                  onClick={() => scrollToSection("about")}
+                  className="hover:text-primary"
+                >
                   About
                 </button>
               </li>
@@ -149,7 +158,7 @@ const Footer = () => {
                 "Consulting"
               ].map((service) => (
                 <li key={service}>
-                  <Link 
+                  <Link
                     href="/services"
                     className="hover:text-primary transition-colors flex items-center gap-2 group"
                   >
@@ -170,10 +179,13 @@ const Footer = () => {
             </h3>
 
             <p className="text-sm mb-4">
-              Get notified when I publish new blogs & projects.
+              Get notified when I publish new blogs and projects.
             </p>
 
-            <form onSubmit={handleSubscribe} className="flex flex-col gap-2">
+            <form
+              onSubmit={handleSubscribe}
+              className="flex flex-col gap-2"
+            >
               <input
                 type="email"
                 value={subscriberEmail}
