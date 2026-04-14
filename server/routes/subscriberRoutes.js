@@ -164,7 +164,10 @@ router.get("/confirm/:token", async (req, res) => {
       return res.redirect(`${base}/newsletter/confirmed?status=error`);
     }
 
-    if (subscriber.isVerified) {
+    if (
+      subscriber.isVerified &&
+      subscriber.consentVersion === CURRENT_CONSENT_VERSION
+    ) {
       return res.redirect(`${base}/newsletter/confirmed?status=success`);
     }
 

@@ -15,12 +15,12 @@ function Content() {
       <div className="max-w-md w-full border rounded-xl p-8 text-center shadow-sm">
 
         <h1 className="text-2xl font-semibold mb-3">
-          {success ? "You're subscribed" : "Confirmation failed"}
+          {success ? "Subscription Confirmed" : "Confirmation failed"}
         </h1>
 
         <p className="text-sm text-neutral-600 mb-6">
           {success
-            ? "You've successfully confirmed your email."
+            ? "You're now subscribed and will receive updates when new blogs or projects are published."
             : "Invalid or expired confirmation link."
           }
         </p>
