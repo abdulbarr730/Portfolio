@@ -6,6 +6,13 @@ const subscriberSchema = new mongoose.Schema({
     required: true,
     unique: true
   },
+  isVerified: {
+    type: Boolean,
+    default: false
+  },
+  token: {
+    type: String
+  },
   subscribedAt: {
     type: Date,
     default: Date.now
