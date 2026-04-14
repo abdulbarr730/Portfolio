@@ -4,6 +4,8 @@ const { Resend } = require("resend");
 const Parser = require("rss-parser");
 const crypto = require("crypto");
 
+const CURRENT_CONSENT_VERSION = 2;
+
 const resend = new Resend(process.env.RESEND_API_KEY);
 const parser = new Parser();
 
@@ -12,11 +14,13 @@ const router = express.Router();
 const MEDIUM_RSS_URL = "https://medium.com/feed/@abdulbarr730";
 
 
-// Subscribe
+// =========================
+// SUBSCRIBE
+// =========================
 router.post("/subscribe", async (req, res) => {
   try {
 
-    let { email } = req.body;
+    let { email, consent } = req.body;
 
     if (!email) {
       return res.status(400).json({
@@ -25,31 +29,62 @@ router.post("/subscribe", async (req, res) => {
       });
     }
 
+    if (!consent) {
+      return res.status(400).json({
+        success: false,
+        message: "Consent is required"
+      });
+    }
+
     email = email.trim().toLowerCase();
 
     const existing = await Subscriber.findOne({ email });
 
-    if (existing && existing.isVerified) {
-      return res.status(400).json({
-        success: false,
-        message: "You're already subscribed"
-      });
-    }
-
     let token;
 
-    if (existing && !existing.isVerified) {
-      token = crypto.randomBytes(32).toString("hex");
-      existing.token = token;
-      await existing.save();
+    if (existing) {
+
+      if (existing.isVerified) {
+
+        // ✅ already subscribed → upgrade consent
+        existing.consent = true;
+        existing.consentAt = new Date();
+        existing.consentVersion = CURRENT_CONSENT_VERSION;
+
+        await existing.save();
+
+        return res.json({
+          success: true,
+          message: "You're already subscribed. Your consent has been updated — you're all set to receive emails."
+        });
+
+      } else {
+
+        // ✅ unverified → resend confirmation
+        token = crypto.randomBytes(32).toString("hex");
+
+        existing.token = token;
+        existing.consent = true;
+        existing.consentAt = new Date();
+        existing.consentVersion = CURRENT_CONSENT_VERSION;
+
+        await existing.save();
+      }
+
     } else {
+
+      // ✅ new user
       token = crypto.randomBytes(32).toString("hex");
 
       await Subscriber.create({
         email,
         token,
-        isVerified: false
+        isVerified: false,
+        consent: true,
+        consentAt: new Date(),
+        consentVersion: CURRENT_CONSENT_VERSION
       });
+
     }
 
     const base = (process.env.CLIENT_ORIGIN || "http://localhost:3000").replace(/\/$/, "");
@@ -61,43 +96,42 @@ router.post("/subscribe", async (req, res) => {
       to: email,
       subject: "Confirm your subscription",
       html: `
-    <div style="font-family: system-ui, sans-serif; max-width:600px; margin:auto; line-height:1.6; padding:20px;">
+      <div style="font-family: system-ui, sans-serif; max-width:600px; margin:auto; line-height:1.6; padding:20px;">
 
-    <p>Hi,</p>
+      <p>Hi,</p>
 
-    <p>You requested to subscribe to updates from <strong>abdulbarr.in</strong>.</p>
+      <p>You requested to subscribe to updates from <strong>abdulbarr.in</strong>.</p>
 
-    <p>Please confirm your email to start receiving updates on projects, blogs, and development insights.</p>
+      <p>Please confirm your email to start receiving updates on projects, blogs, and development insights.</p>
 
-    <p>
-    <a href="${confirmUrl}"
-    style="display:inline-block;background:#000;color:#fff;padding:10px 16px;text-decoration:none;border-radius:6px;">
-    Confirm Subscription
-    </a>
-    </p>
+      <p>
+      <a href="${confirmUrl}"
+      style="display:inline-block;background:#000;color:#fff;padding:10px 16px;text-decoration:none;border-radius:6px;">
+      Confirm Subscription
+      </a>
+      </p>
 
-    <p>If you didn’t request this, you can safely ignore this email.</p>
+      <p>If you didn’t request this, you can safely ignore this email.</p>
 
-    <hr style="margin:20px 0;" />
+      <hr style="margin:20px 0;" />
 
-    <p style="font-size:12px;color:#666;">
-    Sent from abdulbarr.in • Reply anytime to hello@abdulbarr.in
-    </p>
+      <p style="font-size:12px;color:#666;">
+      This email is not monitored. For any queries, contact: hello@abdulbarr.in
+      </p>
 
-    </div>
-    `,
-    text: `
-    Hi,
+      </div>
+      `,
+      text: `
+        Hi,
 
-    You requested to subscribe to updates from abdulbarr.in.
+        You requested to subscribe to updates from abdulbarr.in.
 
-    Confirm here:
-    ${confirmUrl}
+        Confirm here:
+        ${confirmUrl}
 
-    If this wasn't you, ignore this email.
+        If this wasn't you, ignore this email.
 
-    — Abdul Barr
-    `
+        — Abdul Barr `
     });
 
     return res.json({
@@ -105,7 +139,7 @@ router.post("/subscribe", async (req, res) => {
       message: "Please check your email to confirm subscription"
     });
 
-  } catch (error) {
+  } catch {
     return res.status(500).json({
       success: false,
       message: "Server error"
@@ -114,7 +148,9 @@ router.post("/subscribe", async (req, res) => {
 });
 
 
-// Confirm
+// =========================
+// CONFIRM
+// =========================
 router.get("/confirm/:token", async (req, res) => {
   try {
 
@@ -136,9 +172,12 @@ router.get("/confirm/:token", async (req, res) => {
     subscriber.token = null;
     subscriber.expiresAt = null;
 
-    await subscriber.save();
+    subscriber.consent = true;
+    subscriber.consentAt = new Date();
+    subscriber.consentVersion = CURRENT_CONSENT_VERSION;
 
-    // SAFE blog fetch
+    await subscriber.save();
+    // ===== Fetch blogs safely =====
     let blogHtml = "<li>Check latest blogs on the website</li>";
 
     try {
@@ -154,11 +193,10 @@ router.get("/confirm/:token", async (req, res) => {
       `).join("");
     } catch {}
 
-    // unsubscribe link
     const unsubscribeUrl =
       `${base}/api/unsubscribe?email=${encodeURIComponent(subscriber.email)}`;
 
-    // FULL welcome email (not shortened)
+    // ===== Welcome Email =====
     try {
       await resend.emails.send({
         from: "Abdul Barr <newsletter@abdulbarr.in>",
@@ -218,6 +256,9 @@ router.get("/confirm/:token", async (req, res) => {
         </ul>
 
         <br/>
+        <p style="font-size:12px;color:#666;">
+         This email is not monitored. For any queries, contact: hello@abdulbarr.in
+        </p>
 
         <p>— Abdul Barr</p>
 
@@ -238,22 +279,22 @@ router.get("/confirm/:token", async (req, res) => {
 
     return res.redirect(`${base}/newsletter/confirmed?status=success`);
 
-  } catch (error) {
+  } catch {
     const base = (process.env.CLIENT_ORIGIN || "http://localhost:3000").replace(/\/$/, "");
     return res.redirect(`${base}/newsletter/confirmed?status=error`);
   }
 });
 
 
-// Unsubscribe
+// =========================
+// UNSUBSCRIBE
+// =========================
 router.get("/unsubscribe", async (req, res) => {
   try {
 
     const { email } = req.query;
 
-    if (!email) {
-      return res.send("Invalid request");
-    }
+    if (!email) return res.send("Invalid request");
 
     await Subscriber.deleteOne({ email });
 
@@ -267,12 +308,15 @@ router.get("/unsubscribe", async (req, res) => {
 });
 
 
-// Get verified subscribers
+// =========================
+// GET SUBSCRIBERS
+// =========================
 router.get("/subscribers", async (req, res) => {
   try {
 
     const subscribers = await Subscriber.find({
-      isVerified: true
+      isVerified: true,
+      consentVersion: CURRENT_CONSENT_VERSION
     }).sort({ subscribedAt: -1 });
 
     return res.json({

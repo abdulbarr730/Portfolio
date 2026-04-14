@@ -22,6 +22,17 @@ const subscriberSchema = new mongoose.Schema({
     default: function () {
       return new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
     }
+  },
+  consent: {
+    type: Boolean,
+    default: false
+  },
+  consentAt: {
+    type: Date
+  },
+  consentVersion: {
+    type: Number,
+    default: 1
   }
 });
 

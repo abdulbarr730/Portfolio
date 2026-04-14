@@ -17,6 +17,7 @@ const Footer = () => {
   const [status, setStatus] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const [agreed, setAgreed] = useState(false);
 
   const scrollToSection = (id) => {
     if (pathname !== '/') {
@@ -37,24 +38,33 @@ const Footer = () => {
     }
   };
 
-  const handleSubscribe = async (e) => {
-    e.preventDefault();
+const handleSubscribe = async (e) => {
+  e.preventDefault();
 
-    setLoading(true);
-    setStatus("");
-    setMessage("");
+  if (!agreed) {
+    setStatus("error");
+    setMessage("Please accept Privacy Policy & Terms & Conditions");
+    return;
+  }
 
-    try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/subscribe`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ email: subscriberEmail }),
-        }
-      );
+  setLoading(true);
+  setStatus("");
+  setMessage("");
+
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/subscribe`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: subscriberEmail,
+          consent: agreed
+        }),
+      }
+    );
 
       const data = await response.json();
 
@@ -182,10 +192,8 @@ const Footer = () => {
               Get notified when I publish new blogs and projects.
             </p>
 
-            <form
-              onSubmit={handleSubscribe}
-              className="flex flex-col gap-2"
-            >
+            <form onSubmit={handleSubscribe} className="flex flex-col gap-2">
+
               <input
                 type="email"
                 value={subscriberEmail}
@@ -195,8 +203,29 @@ const Footer = () => {
                 required
               />
 
+              {/* ✅ CONSENT CHECKBOX */}
+              <div className="flex items-start gap-2 text-xs text-neutral-600">
+                <input
+                  type="checkbox"
+                  checked={agreed}
+                  onChange={(e) => setAgreed(e.target.checked)}
+                  className="mt-1"
+                />
+
+                <span>
+                  I agree to the{" "}
+                  <Link href="/privacy" className="underline">
+                    Privacy Policy
+                  </Link>{" "}
+                  and{" "}
+                  <Link href="/terms" className="underline">
+                    Terms & Conditions
+                  </Link>
+                </span>
+              </div>
+
               <button
-                disabled={loading}
+                disabled={loading || !agreed}
                 className="bg-primary text-white py-2 rounded-md hover:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {loading ? (
@@ -212,9 +241,7 @@ const Footer = () => {
               {status && (
                 <p
                   className={`text-sm ${
-                    status === "success"
-                      ? "text-green-500"
-                      : "text-red-500"
+                    status === "success" ? "text-green-500" : "text-red-500"
                   }`}
                 >
                   {message}
@@ -237,7 +264,7 @@ const Footer = () => {
             </Link>
 
             <Link href="/terms" className="hover:text-primary">
-              Terms
+              Terms & Conditions
             </Link>
 
             <Link href="/contact" className="hover:text-primary">

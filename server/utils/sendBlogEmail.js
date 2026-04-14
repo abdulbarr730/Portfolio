@@ -44,6 +44,10 @@ const sendBlogEmail = async (title, link, description) => {
           <hr style="margin:20px 0;" />
 
           <p style="font-size:12px;color:#666;">
+           This email is not monitored. For any queries, contact: hello@abdulbarr.in
+          </p>
+
+          <p style="font-size:12px;color:#666;">
             You're receiving this because you subscribed at abdulbarr.in
           </p>
 
