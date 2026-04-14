@@ -12,7 +12,7 @@ const router = express.Router();
 const MEDIUM_RSS_URL = "https://medium.com/feed/@abdulbarr730";
 
 
-// Subscribe (Double Opt-in)
+// Subscribe
 router.post("/subscribe", async (req, res) => {
   try {
 
@@ -27,32 +27,37 @@ router.post("/subscribe", async (req, res) => {
 
     email = email.trim().toLowerCase();
 
-    const exists = await Subscriber.findOne({ email });
+    const existing = await Subscriber.findOne({ email });
 
-    if (exists && exists.isVerified) {
+    // Already verified
+    if (existing && existing.isVerified) {
       return res.status(400).json({
         success: false,
         message: "You're already subscribed"
       });
     }
 
-    if (exists && !exists.isVerified) {
-      return res.status(400).json({
-        success: false,
-        message: "Please confirm your email first"
+    // Already pending → resend token
+    let token;
+
+    if (existing && !existing.isVerified) {
+      token = crypto.randomBytes(32).toString("hex");
+
+      existing.token = token;
+      await existing.save();
+    } else {
+      token = crypto.randomBytes(32).toString("hex");
+
+      await Subscriber.create({
+        email,
+        token,
+        isVerified: false
       });
     }
 
-    const token = crypto.randomBytes(32).toString("hex");
+    const base = process.env.CLIENT_ORIGIN?.replace(/\/$/, "");
 
-    await Subscriber.create({
-      email,
-      token,
-      isVerified: false
-    });
-
-    const confirmUrl =
-      `${process.env.CLIENT_ORIGIN}/api/confirm/${token}`;
+    const confirmUrl = `${base}/api/confirm/${token}`;
 
     await resend.emails.send({
       from: "Abdul Barr <newsletter@abdulbarr.in>",
@@ -72,15 +77,13 @@ router.post("/subscribe", async (req, res) => {
       `
     });
 
-    res.json({
+    return res.json({
       success: true,
       message: "Please check your email to confirm subscription"
     });
 
   } catch (error) {
-    console.error(error);
-
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: "Server error"
     });
@@ -88,20 +91,23 @@ router.post("/subscribe", async (req, res) => {
 });
 
 
-// Confirm Email
+// Confirm
 router.get("/confirm/:token", async (req, res) => {
   try {
 
-    const clientOrigin = process.env.CLIENT_ORIGIN;
+    const base = process.env.CLIENT_ORIGIN?.replace(/\/$/, "");
 
     const subscriber = await Subscriber.findOne({
       token: req.params.token
     });
 
     if (!subscriber) {
-      return res.redirect(
-        `${clientOrigin}/newsletter/confirmed?status=error`
-      );
+      return res.redirect(`${base}/newsletter/confirmed?status=error`);
+    }
+
+    // Already verified → still success
+    if (subscriber.isVerified) {
+      return res.redirect(`${base}/newsletter/confirmed?status=success`);
     }
 
     subscriber.isVerified = true;
@@ -110,6 +116,7 @@ router.get("/confirm/:token", async (req, res) => {
 
     await subscriber.save();
 
+    // Fetch blogs
     const feed = await parser.parseURL(MEDIUM_RSS_URL);
     const topBlogs = feed.items.slice(0, 3);
 
@@ -121,6 +128,7 @@ router.get("/confirm/:token", async (req, res) => {
       </li>
     `).join("");
 
+    // Welcome email
     await resend.emails.send({
       from: "Abdul Barr <newsletter@abdulbarr.in>",
       to: subscriber.email,
@@ -132,8 +140,6 @@ router.get("/confirm/:token", async (req, res) => {
 
       <p>You are now subscribed.</p>
 
-      <p>Here's what you'll get:</p>
-
       <ul>
         <li>Real projects I'm building</li>
         <li>Architecture breakdowns</li>
@@ -144,11 +150,6 @@ router.get("/confirm/:token", async (req, res) => {
 
       <h3>Latest Project</h3>
 
-      <p>
-      College Hackathon Management Platform  
-      Multi-college SaaS platform
-      </p>
-
       <a href="https://abdulbarr.in/projects"
       style="background:black;color:white;padding:10px 14px;text-decoration:none;">
       View Project
@@ -158,65 +159,34 @@ router.get("/confirm/:token", async (req, res) => {
 
       <h3>Top Blogs</h3>
 
-      <ul>
-        ${blogHtml}
-      </ul>
-
-      <hr/>
-
-      <h3>GitHub</h3>
-
-      <p>
-        <a href="https://github.com/abdulbarr730">
-          github.com/abdulbarr730
-        </a>
-      </p>
-
-      <hr/>
-
-      <h3>Website</h3>
-
-      <p>
-        <a href="https://abdulbarr.in">
-          abdulbarr.in
-        </a>
-      </p>
+      <ul>${blogHtml}</ul>
 
       <hr/>
 
       <p>
-      You'll hear from me when I:
+        <a href="https://github.com/abdulbarr730">GitHub</a>
       </p>
-
-      <ul>
-        <li>Ship something new</li>
-        <li>Publish a new blog</li>
-        <li>Share something useful</li>
-      </ul>
 
       <p>
-      — Abdul Barr
+        <a href="https://abdulbarr.in">Website</a>
       </p>
+
+      <p>— Abdul Barr</p>
 
       </div>
       `
     });
 
-    return res.redirect(
-      `${clientOrigin}/newsletter/confirmed?status=success`
-    );
+    return res.redirect(`${base}/newsletter/confirmed?status=success`);
 
   } catch (error) {
-    console.error(error);
-
-    return res.redirect(
-      `${process.env.CLIENT_ORIGIN}/newsletter/confirmed?status=error`
-    );
+    const base = process.env.CLIENT_ORIGIN?.replace(/\/$/, "");
+    return res.redirect(`${base}/newsletter/confirmed?status=error`);
   }
 });
 
 
-// Get Only Verified Subscribers
+// Get Verified Subscribers
 router.get("/subscribers", async (req, res) => {
   try {
 
@@ -224,13 +194,13 @@ router.get("/subscribers", async (req, res) => {
       isVerified: true
     }).sort({ subscribedAt: -1 });
 
-    res.json({
+    return res.json({
       success: true,
       subscribers
     });
 
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false
     });
   }

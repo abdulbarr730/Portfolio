@@ -5,7 +5,7 @@ const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
 const cookieParser = require('cookie-parser');
-const Subscriber = require("./models/subscriber.model");
+
 
 
 
@@ -76,16 +76,3 @@ app.listen(PORT, () => {
   console.log(`Server is running on port: ${PORT}`);
 });
 
-(async () => {
-  await Subscriber.updateMany(
-    { isVerified: { $exists: false } },
-    {
-      $set: {
-        isVerified: true,
-        expiresAt: null
-      }
-    }
-  );
-
-  console.log("Migration completed");
-})();

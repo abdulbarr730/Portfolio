@@ -90,10 +90,12 @@ const TimeAgo = ({ date }) => {
 
 // 🏆 Reviews Section
 export default function ReviewsSection() {
-  const { data: reviews = [], mutate } = useSWR(
+  const { data, mutate } = useSWR(
     `${process.env.NEXT_PUBLIC_API_URL}/api/reviews`,
     fetcher
   );
+
+  const reviews = Array.isArray(data) ? data : data?.reviews || [];
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isAllReviewsModalOpen, setIsAllReviewsModalOpen] = useState(false);
