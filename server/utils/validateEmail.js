@@ -49,7 +49,7 @@ const validateEmail = async (email) => {
       }
 
     } catch (error) {
-      console.log("Abstract API skipped");
+    console.log("Abstract error:", error.response?.status);
     }
   }
 
