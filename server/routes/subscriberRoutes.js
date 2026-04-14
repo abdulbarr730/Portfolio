@@ -2,24 +2,16 @@ const express = require("express");
 const Subscriber = require("../models/subscriber.model");
 const { Resend } = require("resend");
 const validateEmail = require("../utils/validateEmail");
+
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 const router = express.Router();
-
-// Email validation
-const validation = await validateEmail(email);
-
-if (!validation.valid) {
-  return res.status(400).json({
-    success: false,
-    message: validation.message
-  });
-}
 
 
 // Subscribe
 router.post("/subscribe", async (req, res) => {
   try {
+
     let { email } = req.body;
 
     if (!email) {
@@ -31,6 +23,17 @@ router.post("/subscribe", async (req, res) => {
 
     email = email.trim().toLowerCase();
 
+    // ✅ Validate Email
+    const validation = await validateEmail(email);
+
+    if (!validation.valid) {
+      return res.status(400).json({
+        success: false,
+        message: validation.message
+      });
+    }
+
+    // Check duplicate
     const exists = await Subscriber.findOne({ email });
 
     if (exists) {
@@ -47,11 +50,11 @@ router.post("/subscribe", async (req, res) => {
     await resend.emails.send({
       from: "Abdul Barr <newsletter@abdulbarr.in>",
       to: email,
-      subject: "You're subscribed 🎉",
+      subject: "You're subscribed ",
       html: `
         <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: auto; line-height: 1.6; padding: 20px;">
 
-        <h2 style="margin-bottom: 10px;">You're in 🚀</h2>
+        <h2 style="margin-bottom: 10px;">You're in </h2>
 
         <p>Hey,</p>
 
@@ -67,7 +70,7 @@ router.post("/subscribe", async (req, res) => {
 
         <hr style="margin: 25px 0;" />
 
-        <h3>🔥 Latest Project</h3>
+        <h3> Latest Project</h3>
 
         <p><strong>College Hackathon Management Platform</strong></p>
 
@@ -176,6 +179,5 @@ router.get("/subscribers", async (req, res) => {
     });
   }
 });
-
 
 module.exports = router;
