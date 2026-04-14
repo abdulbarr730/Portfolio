@@ -173,6 +173,8 @@ router.get("/confirm/:token", async (req, res) => {
 
       <p>— Abdul Barr</p>
 
+      <a href="${unsubscribeUrl}">Unsubscribe</a>
+
       </div>
       `
     });
@@ -182,6 +184,26 @@ router.get("/confirm/:token", async (req, res) => {
   } catch (error) {
     const base = process.env.CLIENT_ORIGIN?.replace(/\/$/, "");
     return res.redirect(`${base}/newsletter/confirmed?status=error`);
+  }
+});
+
+router.get("/unsubscribe", async (req, res) => {
+  try {
+
+    const { email } = req.query;
+
+    if (!email) {
+      return res.send("Invalid request");
+    }
+
+    await Subscriber.deleteOne({ email });
+
+    return res.redirect(
+      `${process.env.CLIENT_ORIGIN}/newsletter/unsubscribed`
+    );
+
+  } catch (error) {
+    return res.send("Something went wrong");
   }
 });
 
