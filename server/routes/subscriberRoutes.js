@@ -52,7 +52,7 @@ router.post("/subscribe", async (req, res) => {
     });
 
     const confirmUrl =
-      `https://portfolio-backend-omega-khaki.vercel.app/api/confirm/${token}`;
+      `${process.env.CLIENT_ORIGIN}/api/confirm/${token}`;
 
     await resend.emails.send({
       from: "Abdul Barr <newsletter@abdulbarr.in>",
@@ -92,12 +92,16 @@ router.post("/subscribe", async (req, res) => {
 router.get("/confirm/:token", async (req, res) => {
   try {
 
+    const clientOrigin = process.env.CLIENT_ORIGIN;
+
     const subscriber = await Subscriber.findOne({
       token: req.params.token
     });
 
     if (!subscriber) {
-      return res.send("Invalid or expired confirmation link");
+      return res.redirect(
+        `${clientOrigin}/newsletter/confirmed?status=error`
+      );
     }
 
     subscriber.isVerified = true;
@@ -106,7 +110,6 @@ router.get("/confirm/:token", async (req, res) => {
 
     await subscriber.save();
 
-    // Fetch latest Medium blogs
     const feed = await parser.parseURL(MEDIUM_RSS_URL);
     const topBlogs = feed.items.slice(0, 3);
 
@@ -118,8 +121,6 @@ router.get("/confirm/:token", async (req, res) => {
       </li>
     `).join("");
 
-
-    // Send Welcome Email
     await resend.emails.send({
       from: "Abdul Barr <newsletter@abdulbarr.in>",
       to: subscriber.email,
@@ -201,11 +202,16 @@ router.get("/confirm/:token", async (req, res) => {
       `
     });
 
-    res.send("Email confirmed successfully");
+    return res.redirect(
+      `${clientOrigin}/newsletter/confirmed?status=success`
+    );
 
   } catch (error) {
     console.error(error);
-    res.send("Something went wrong");
+
+    return res.redirect(
+      `${process.env.CLIENT_ORIGIN}/newsletter/confirmed?status=error`
+    );
   }
 });
 
