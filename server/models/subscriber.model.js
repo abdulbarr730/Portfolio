@@ -16,7 +16,19 @@ const subscriberSchema = new mongoose.Schema({
   subscribedAt: {
     type: Date,
     default: Date.now
+  },
+  expiresAt: {
+    type: Date,
+    default: function () {
+      return new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+    }
   }
 });
+
+// TTL index
+subscriberSchema.index(
+  { expiresAt: 1 },
+  { expireAfterSeconds: 0 }
+);
 
 module.exports = mongoose.model("Subscriber", subscriberSchema);

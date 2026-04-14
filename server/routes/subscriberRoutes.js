@@ -102,6 +102,7 @@ router.get("/confirm/:token", async (req, res) => {
 
     subscriber.isVerified = true;
     subscriber.token = null;
+    subscriber.expiresAt = null;
 
     await subscriber.save();
 
