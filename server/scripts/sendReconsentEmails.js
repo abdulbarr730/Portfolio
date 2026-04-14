@@ -18,8 +18,11 @@ const run = async () => {
 
   const outdatedUsers = await Subscriber.find({
     isVerified: true,
-    consentVersion: { $lt: CURRENT_CONSENT_VERSION }
-  });
+    $or: [
+        { consentVersion: { $lt: CURRENT_CONSENT_VERSION } },
+        { consentVersion: { $exists: false } }
+    ]
+    });
 
   console.log("Users needing re-consent:", outdatedUsers.length);
 
