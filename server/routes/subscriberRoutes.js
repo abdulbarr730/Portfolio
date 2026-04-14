@@ -29,7 +29,6 @@ router.post("/subscribe", async (req, res) => {
 
     const existing = await Subscriber.findOne({ email });
 
-    // Already verified
     if (existing && existing.isVerified) {
       return res.status(400).json({
         success: false,
@@ -37,12 +36,10 @@ router.post("/subscribe", async (req, res) => {
       });
     }
 
-    // Already pending → resend token
     let token;
 
     if (existing && !existing.isVerified) {
       token = crypto.randomBytes(32).toString("hex");
-
       existing.token = token;
       await existing.save();
     } else {
@@ -55,7 +52,7 @@ router.post("/subscribe", async (req, res) => {
       });
     }
 
-    const base = process.env.CLIENT_ORIGIN?.replace(/\/$/, "");
+    const base = (process.env.CLIENT_ORIGIN || "http://localhost:3000").replace(/\/$/, "");
 
     const confirmUrl = `${base}/api/confirm/${token}`;
 
@@ -95,7 +92,7 @@ router.post("/subscribe", async (req, res) => {
 router.get("/confirm/:token", async (req, res) => {
   try {
 
-    const base = process.env.CLIENT_ORIGIN?.replace(/\/$/, "");
+    const base = (process.env.CLIENT_ORIGIN || "http://localhost:3000").replace(/\/$/, "");
 
     const subscriber = await Subscriber.findOne({
       token: req.params.token
@@ -105,7 +102,6 @@ router.get("/confirm/:token", async (req, res) => {
       return res.redirect(`${base}/newsletter/confirmed?status=error`);
     }
 
-    // Already verified → still success
     if (subscriber.isVerified) {
       return res.redirect(`${base}/newsletter/confirmed?status=success`);
     }
@@ -116,77 +112,114 @@ router.get("/confirm/:token", async (req, res) => {
 
     await subscriber.save();
 
-    // Fetch blogs
-    const feed = await parser.parseURL(MEDIUM_RSS_URL);
-    const topBlogs = feed.items.slice(0, 3);
+    // SAFE blog fetch
+    let blogHtml = "<li>Check latest blogs on the website</li>";
 
-    const blogHtml = topBlogs.map(blog => `
-      <li>
-        <a href="${blog.link}">
-          ${blog.title}
+    try {
+      const feed = await parser.parseURL(MEDIUM_RSS_URL);
+      const topBlogs = feed.items.slice(0, 3);
+
+      blogHtml = topBlogs.map(blog => `
+        <li>
+          <a href="${blog.link}">
+            ${blog.title}
+          </a>
+        </li>
+      `).join("");
+    } catch {}
+
+    // unsubscribe link
+    const unsubscribeUrl =
+      `${base}/api/unsubscribe?email=${encodeURIComponent(subscriber.email)}`;
+
+    // FULL welcome email (not shortened)
+    try {
+      await resend.emails.send({
+        from: "Abdul Barr <newsletter@abdulbarr.in>",
+        to: subscriber.email,
+        subject: "Welcome to Abdul Barr Newsletter",
+        html: `
+        <div style="font-family: system-ui, sans-serif; max-width:600px; margin:auto; line-height:1.6; padding:20px;">
+
+        <h2>You're in</h2>
+
+        <p>Thanks for subscribing. I only send useful stuff.</p>
+
+        <ul>
+          <li>Real projects I'm building</li>
+          <li>Architecture decisions and breakdowns</li>
+          <li>Useful AI + dev insights</li>
+        </ul>
+
+        <hr style="margin:25px 0;" />
+
+        <h3>Latest Project</h3>
+
+        <p><strong>College Hackathon Management Platform</strong></p>
+
+        <p>Multi-college SaaS system to manage hackathons, teams, judging and submissions.</p>
+
+        <a href="https://abdulbarr.in/projects"
+        style="background:black;color:white;padding:10px 14px;text-decoration:none;border-radius:6px;">
+        View Project
         </a>
-      </li>
-    `).join("");
 
-    // Welcome email
-    await resend.emails.send({
-      from: "Abdul Barr <newsletter@abdulbarr.in>",
-      to: subscriber.email,
-      subject: "Welcome to Abdul Barr Newsletter",
-      html: `
-      <div style="font-family: system-ui, sans-serif; max-width:600px; margin:auto; line-height:1.6;">
+        <hr style="margin:25px 0;" />
 
-      <h2>Welcome</h2>
+        <h3>Top Blogs</h3>
 
-      <p>You are now subscribed.</p>
+        <ul>
+          ${blogHtml}
+        </ul>
 
-      <ul>
-        <li>Real projects I'm building</li>
-        <li>Architecture breakdowns</li>
-        <li>AI engineering insights</li>
-      </ul>
+        <hr style="margin:25px 0;" />
 
-      <hr/>
+        <h3>Explore More</h3>
 
-      <h3>Latest Project</h3>
+        <p>
+          <a href="https://github.com/abdulbarr730">GitHub</a><br/>
+          <a href="https://abdulbarr.in">Website</a>
+        </p>
 
-      <a href="https://abdulbarr.in/projects"
-      style="background:black;color:white;padding:10px 14px;text-decoration:none;">
-      View Project
-      </a>
+        <hr style="margin:25px 0;" />
 
-      <hr/>
+        <p>You'll hear from me when:</p>
 
-      <h3>Top Blogs</h3>
+        <ul>
+          <li>I ship something new</li>
+          <li>I publish a blog</li>
+          <li>I learn something worth sharing</li>
+        </ul>
 
-      <ul>${blogHtml}</ul>
+        <br/>
 
-      <hr/>
+        <p>— Abdul Barr</p>
 
-      <p>
-        <a href="https://github.com/abdulbarr730">GitHub</a>
-      </p>
+        <p style="font-size:12px;color:#666;">
+          You're receiving this because you subscribed at abdulbarr.in
+        </p>
 
-      <p>
-        <a href="https://abdulbarr.in">Website</a>
-      </p>
+        <p style="font-size:12px;">
+          <a href="${unsubscribeUrl}" style="color:#666;text-decoration:underline;">
+            Unsubscribe
+          </a>
+        </p>
 
-      <p>— Abdul Barr</p>
-
-      <a href="${unsubscribeUrl}">Unsubscribe</a>
-
-      </div>
-      `
-    });
+        </div>
+        `
+      });
+    } catch {}
 
     return res.redirect(`${base}/newsletter/confirmed?status=success`);
 
   } catch (error) {
-    const base = process.env.CLIENT_ORIGIN?.replace(/\/$/, "");
+    const base = (process.env.CLIENT_ORIGIN || "http://localhost:3000").replace(/\/$/, "");
     return res.redirect(`${base}/newsletter/confirmed?status=error`);
   }
 });
 
+
+// Unsubscribe
 router.get("/unsubscribe", async (req, res) => {
   try {
 
@@ -198,17 +231,17 @@ router.get("/unsubscribe", async (req, res) => {
 
     await Subscriber.deleteOne({ email });
 
-    return res.redirect(
-      `${process.env.CLIENT_ORIGIN}/newsletter/unsubscribed`
-    );
+    const base = (process.env.CLIENT_ORIGIN || "http://localhost:3000").replace(/\/$/, "");
 
-  } catch (error) {
+    return res.redirect(`${base}/newsletter/unsubscribed`);
+
+  } catch {
     return res.send("Something went wrong");
   }
 });
 
 
-// Get Verified Subscribers
+// Get verified subscribers
 router.get("/subscribers", async (req, res) => {
   try {
 
@@ -221,7 +254,7 @@ router.get("/subscribers", async (req, res) => {
       subscribers
     });
 
-  } catch (error) {
+  } catch {
     return res.status(500).json({
       success: false
     });
