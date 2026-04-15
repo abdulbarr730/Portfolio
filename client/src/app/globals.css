@@ -35,3 +35,7 @@ html.modal-open,
 html.modal-open body {
   overflow: hidden;
 }
+
+.dock-item {
+  @apply p-2 rounded-lg transition hover:bg-black/10 active:scale-90;
+}

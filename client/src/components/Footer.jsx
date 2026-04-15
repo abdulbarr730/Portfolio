@@ -142,6 +142,11 @@ const handleSubscribe = async (e) => {
                 </Link>
               </li>
               <li>
+                <Link href="/codecraft" className="hover:text-primary">
+                  Codecraft
+                </Link>
+              </li>
+              <li>
                 <Link href="/services" className="hover:text-primary">
                   Services
                 </Link>
@@ -164,6 +169,7 @@ const handleSubscribe = async (e) => {
               {[
                 "Full Stack Development",
                 "AI Integration",
+                "SaaS Development",
                 "Website Optimisation",
                 "Consulting"
               ].map((service) => (
