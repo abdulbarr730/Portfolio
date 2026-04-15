@@ -4,7 +4,7 @@ import { useRef, useLayoutEffect, useState, useEffect } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Link from 'next/link';
-import { Mail, Globe, Wrench, X, CheckCircle2 } from 'lucide-react';
+import { Mail, Globe, Wrench, Server, Database, Cloud, Layers, X, CheckCircle2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -15,44 +15,168 @@ const servicesData = [
     title: "Website Development",
     icon: Globe,
     description:
-      "I design and develop fully responsive, fast, and SEO-optimized websites using modern technologies like Next.js and Tailwind CSS.",
-    details: "Whether you need a landing page, a portfolio, or a full business site, I build digital experiences that convert visitors into customers.",
+      "High-performance, SEO-optimized websites built with complete ownership, security, and scalability in mind.",
+    details:
+      "I deliver production-ready websites where you fully own the code, hosting, and infrastructure. No lock-in, no dependency on my accounts.",
     workflow: [
-      "Discovery Call: Understanding your brand, goals, and target audience.",
-      "Design & Wireframing: Creating a visual blueprint of the site.",
-      "Development: Coding the site using Next.js for speed and SEO.",
-      "Review & Refine: Tweaking details based on your feedback.",
-      "Launch & Support: Deploying to the live server and ensuring stability."
+      "NDA Signing: Before discussing any project details, we sign a non-disclosure agreement to protect your idea and data.",
+      "Requirement Discussion: We define goals, target audience, features, and expected outcomes.",
+      "Proposal: You receive a structured proposal including scope, timeline, deliverables, and pricing.",
+      "Contract Agreement: Covers ownership, deliverables, payment terms, timeline, and confidentiality clauses.",
+      "Account Setup: Domain, hosting, Vercel/AWS, and email services are created in YOUR name and YOUR email.",
+      "Development Setup: Codebase initialized in your GitHub (or preferred repo). No personal accounts used.",
+      "UI + Frontend Development: Responsive, fast, SEO-friendly interface using modern frameworks.",
+      "Backend Integration (if needed): APIs, forms, database, and authentication setup.",
+      "Security Implementation: Input validation, environment protection, and best practices applied.",
+      "Testing Phase: Cross-device testing, performance optimization, SEO checks.",
+      "Deployment: Production deployment in your infrastructure.",
+      "Documentation: Complete explanation of structure, APIs, and usage.",
+      "Handover: Full access, credentials, and source code transferred.",
+      "Post-Completion: Code removed from my local systems after delivery.",
+      "Final Invoice + Closure: Payment confirmation and optional NDA continuation."
     ]
   },
+
+  {
+    title: "SaaS Development",
+    icon: Layers,
+    description:
+      "Complete SaaS platforms with authentication, dashboards, multi-tenant systems, and scalable architecture.",
+    details:
+      "From idea to production SaaS — including backend architecture, frontend, auth, and deployment under your ownership.",
+    workflow: [
+      "NDA Signing before idea discussion.",
+      "Product Discovery: Define user roles, features, and business model.",
+      "System Architecture Design: Database, API structure, and scalability planning.",
+      "Proposal + Pricing Breakdown.",
+      "Contract Agreement (includes IP ownership and licensing clarity).",
+      "Infrastructure Setup: Database, storage, hosting — all in your account.",
+      "Auth System: Login, roles, permissions, and session handling.",
+      "Core Development: Backend services, APIs, dashboards, admin panels.",
+      "Security Layer: Authentication, authorization, data protection.",
+      "Testing: Multi-user testing, edge cases, performance checks.",
+      "Deployment: Production setup with monitoring.",
+      "Documentation: APIs, architecture, and workflows explained.",
+      "Handover: Full code + credentials + infrastructure control.",
+      "Post-Completion: No code retention on my side.",
+      "Final Closure: Invoice + optional maintenance plan."
+    ]
+  },
+
+  {
+    title: "Web App Development",
+    icon: Globe,
+    description:
+      "Custom web applications tailored to your exact business logic and workflows.",
+    details:
+      "I build full-stack applications with structured architecture and long-term maintainability.",
+    workflow: [
+      "NDA + Requirement Gathering.",
+      "Feature Mapping + User Flow Design.",
+      "Proposal with scope and cost.",
+      "Contract finalization.",
+      "Environment Setup (your GitHub + hosting).",
+      "Frontend + Backend Development in modular structure.",
+      "API integrations and real-time features (if required).",
+      "Testing cycles and iterative improvements.",
+      "Deployment in your infrastructure.",
+      "Documentation + handover."
+    ]
+  },
+
+  {
+    title: "Backend & API Development",
+    icon: Database,
+    description:
+      "Secure, scalable backend systems with clean architecture and well-documented APIs.",
+    details:
+      "Backend systems designed for performance, security, and scalability with clear documentation.",
+    workflow: [
+      "NDA before discussing architecture.",
+      "Requirement Analysis (data flow, load expectations).",
+      "Database Schema Design.",
+      "API Planning and structure definition.",
+      "Proposal + Contract.",
+      "Backend Development (modular architecture).",
+      "Security Implementation (auth, validation, rate limiting).",
+      "API Documentation (Postman / Swagger).",
+      "Testing and performance tuning.",
+      "Deployment in your environment.",
+      "Full code + documentation handover."
+    ]
+  },
+
+  {
+    title: "Hosting & Deployment",
+    icon: Cloud,
+    description:
+      "Production-ready deployment using modern cloud platforms with full ownership and control.",
+    details:
+      "Your application is deployed securely and optimized, fully under your control — not mine.",
+    workflow: [
+      "Project assessment and hosting requirement analysis.",
+      "Cloud account setup (AWS / Vercel / etc in your name).",
+      "Environment configuration (variables, secrets).",
+      "CI/CD pipeline setup.",
+      "Domain + SSL configuration.",
+      "Performance optimization.",
+      "Monitoring and logging setup.",
+      "Deployment verification.",
+      "Access transfer and documentation."
+    ]
+  },
+
+  {
+    title: "Email Configuration",
+    icon: Mail,
+    description:
+      "Professional email systems with domain-based emails and high deliverability.",
+    details:
+      "Complete email setup for business communication and transactional systems.",
+    workflow: [
+      "Domain verification.",
+      "Business email setup (Google Workspace / SMTP).",
+      "DNS configuration (SPF, DKIM, DMARC).",
+      "Transactional email setup (Resend, etc).",
+      "Testing deliverability.",
+      "Spam prevention optimization.",
+      "Documentation and access handover."
+    ]
+  },
+
   {
     title: "Consultancy",
     icon: Mail,
     description:
-      "Get personalized digital consultancy on your online presence, website optimization, or project ideas.",
-    details: "Not sure which tech stack to use? Need a code review? Or just want advice on how to start? Let's have a chat.",
+      "Direct, practical advice on architecture, product, and technical decisions.",
+    details:
+      "Focused sessions with clear outcomes — no vague theory.",
     workflow: [
-      "Booking: You schedule a time via the Contact page.",
-      "Problem Analysis: I review your current situation or questions.",
-      "Strategy Session: We discuss actionable solutions (1-on-1 call).",
-      "Roadmap: I provide a clear path forward for your project.",
-      "Follow-up: Check-ins to ensure you're on the right track."
+      "Optional NDA.",
+      "Problem discussion.",
+      "Deep analysis.",
+      "Solution strategy.",
+      "Actionable roadmap.",
+      "Follow-up support."
     ]
   },
+
   {
     title: "Software Issue Fixing",
     icon: Wrench,
     description:
-      "I troubleshoot and resolve software-related issues on laptops and computers, including system errors and slow performance.",
-    details: "Don't let a slow computer or weird error messages slow you down. I diagnose specific OS level issues, driver conflicts, and software bugs.",
+      "Debugging and fixing system issues, performance problems, and software errors.",
+    details:
+      "Fast diagnosis and precise fixes for real-world issues.",
     workflow: [
-      "Diagnosis: You describe the issue (or share screenshots).",
-      "Assessment: I identify the root cause (remote or guided).",
-      "Troubleshooting: Applying specific fixes to the software/OS.",
-      "Optimization: Cleaning up residual files to prevent recurrence.",
-      "Verification: Ensuring the system runs smoothly before signing off."
+      "Issue reporting.",
+      "Diagnosis.",
+      "Root cause analysis.",
+      "Fix implementation.",
+      "System optimization.",
+      "Verification and testing."
     ]
-  },
+  }
 ];
 
 export default function ServicesSection() {
@@ -65,17 +189,19 @@ export default function ServicesSection() {
     const ctx = gsap.context(() => {
       gsap.fromTo(
         '.service-card',
-        { opacity: 0, y: 80 },
+        { opacity: 0, y: 90 },
         {
           opacity: 1,
-          y: 0,
-          stagger: 0.15,
-          duration: 0.6,
+          y: -10,
+          stagger: 0.5,
+          duration: 0.9,
           ease: 'power3.out',
+          immediateRender: false,
           scrollTrigger: {
             trigger: sectionRef.current,
-            start: 'top 80%',
+            start: 'top 100%',
             toggleActions: 'play none none none',
+            once: true,
           },
         }
       );
@@ -95,7 +221,7 @@ export default function ServicesSection() {
         {
           opacity: 1,
           y: 0,
-          duration: 0.8,
+          duration: 0.1,
           ease: 'power3.out',
           scrollTrigger: {
             trigger: ctaRef.current,
@@ -122,25 +248,29 @@ export default function ServicesSection() {
   }, [selectedService]);
 
   return (
-    <section ref={sectionRef} className="container mx-auto py-32 px-4 sm:px-6 lg:px-8 relative">
+    <section
+      ref={sectionRef}
+      className="w-full px-4 sm:px-8 lg:px-16 py-20 md:py-24 relative"
+    >
       
       {/* Heading */}
-      <div className="text-center mb-16">
-        <h2 className="text-4xl font-bold text-primary mb-4">
+      <div className="text-center mb-16 space-y-6">
+        <h2 className="text-6xl md:text-7xl font-bold text-black tracking-tighter">
           My Services
         </h2>
-        <p className="text-secondary max-w-2xl mx-auto text-base mb-6">
-          Over the years, I’ve worked with immense focus to create digital solutions that help people.
-          Click on any card below to see exactly how I work. I build with a security-first architecture. From encrypted databases to sanitized inputs, every layer of your application is engineered to protect user privacy and maintain absolute data integrity.
-        </p>
 
-        {/* Free Line (Top) */}
-        <div className="inline-block bg-primary/5 border border-primary/20 rounded-full px-6 py-2">
-          <span className="text-primary font-bold text-sm sm:text-base">
-            Your first consultancy session is absolutely free.
-          </span>
+        <div className="max-w-1xl mx-auto space-y-6">
+          <p className="text-xl md:text-2xl text-gray-600 font-light leading-relaxed">
+            Over the years, I’ve focused on building digital solutions that are reliable, secure, and scalable.
+          </p>
+
+          <p className="text-xl md:text-2xl text-gray-600 font-light leading-relaxed">
+            Each service reflects a structured approach—from planning and development to deployment and ownership—so you get 
+            systems that are built to last, not just to launch.
+          </p>
         </div>
       </div>
+
 
       {/* Services Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-10">

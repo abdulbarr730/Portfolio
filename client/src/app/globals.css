@@ -31,3 +31,7 @@
 .animate-gradientMove {
   animation: gradientMove 6s ease-in-out infinite;
 }
+html.modal-open,
+html.modal-open body {
+  overflow: hidden;
+}

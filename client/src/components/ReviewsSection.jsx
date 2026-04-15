@@ -7,11 +7,47 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { formatDistanceToNow } from 'date-fns';
 import useEmblaCarousel from 'embla-carousel-react';
 import useSWR from 'swr';
+import Link from 'next/link';
 
 gsap.registerPlugin(ScrollTrigger);
 const fetcher = url => fetch(url).then(r => r.json());
 
+// ─────────────────────────────────────────────
+// 🛡️ INPUT SANITIZATION UTILS
+// ─────────────────────────────────────────────
+
+/**
+ * Strips all HTML tags, trims whitespace, and collapses multiple spaces.
+ * Prevents XSS / HTML injection from reaching the DB.
+ */
+const stripTags = (str) =>
+  str
+    .replace(/<[^>]*>/g, '')          // remove all HTML tags
+    .replace(/[<>'"`;]/g, '')         // remove dangerous chars
+    .replace(/\s+/g, ' ')            // collapse whitespace
+    .trim();
+
+const LIMITS = {
+  name: 60,
+  review: 800,
+};
+
+const sanitizeForm = ({ name, review, rating }) => ({
+  name: stripTags(name).slice(0, LIMITS.name),
+  review: stripTags(review).slice(0, LIMITS.review),
+  rating: Math.min(5, Math.max(1, Math.round(Number(rating)))), // always 1–5 integer
+});
+
+const validateForm = ({ name, review, rating }) => {
+  if (!name || name.trim().length < 2) return 'Name must be at least 2 characters.';
+  if (!review || review.trim().length < 5) return 'Review must be at least 5 characters.';
+  if (!rating || rating < 1 || rating > 5) return 'Please select a star rating.';
+  return null; // null = valid
+};
+
+// ─────────────────────────────────────────────
 // ⭐ Star Component
+// ─────────────────────────────────────────────
 const Star = memo(({ filled, isRatingStar }) => (
   <svg
     className={`w-5 h-5 ${isRatingStar ? 'text-yellow-400' : 'text-gray-300'}`}
@@ -27,58 +63,58 @@ const Star = memo(({ filled, isRatingStar }) => (
     />
   </svg>
 ));
+Star.displayName = 'Star';
 
-// ⭐ FlowingStars Component (Enhanced)
+// ─────────────────────────────────────────────
+// ⭐ FlowingStars Component
+// ─────────────────────────────────────────────
 const FlowingStars = ({ rating }) => {
   const fillRef = useRef(null);
   const componentRef = useRef(null);
 
-  useLayoutEffect(() => {
-    const scrollerEl = componentRef.current?.closest('.reviews-scroll-container');
+  useEffect(() => {
+    const el = componentRef.current;
+    const fill = fillRef.current;
+    if (!el || !fill) return;
 
-    const ctx = gsap.context(() => {
-      // Fade-in + slide
-      gsap.fromTo(
-        componentRef.current,
-        { opacity: 0, y: 10 },
-        { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out' }
-      );
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          // stars are visible — animate immediately
+          gsap.fromTo(fill,
+            { width: '0%' },
+            { width: `${rating * 20}%`, duration: 1.2, ease: 'power2.out' }
+          );
+          gsap.fromTo(el,
+            { opacity: 0, y: 10 },
+            { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out' }
+          );
+          observer.disconnect(); // run once
+        }
+      },
+      { threshold: 0.1 } // fires as soon as 10% of stars are visible
+    );
 
-      // Gold fill animation
-      gsap.to(fillRef.current, {
-        width: `${rating * 20}%`,
-        ease: 'power2.out',
-        duration: 1.2,
-        scrollTrigger: {
-          trigger: componentRef.current,
-          start: 'top 85%',
-          scroller: scrollerEl || window,
-          invalidateOnRefresh: true,
-        },
-      });
-    }, componentRef);
-
-    return () => ctx.revert();
+    observer.observe(el);
+    return () => observer.disconnect();
   }, [rating]);
 
   return (
-    <div ref={componentRef} className="relative flex items-center">
-      {/* Empty stars */}
+    <div ref={componentRef} className="relative flex items-center" style={{ opacity: 0 }}>
       <div className="flex">{[...Array(5)].map((_, i) => <Star key={i} />)}</div>
-
-      {/* Shimmer gold fill */}
       <div ref={fillRef} className="absolute top-0 left-0 h-full overflow-hidden w-0">
         <div className="flex w-max star-fill">
           {[...Array(5)].map((_, i) => <Star key={i} filled isRatingStar />)}
         </div>
       </div>
-
       <span className="sr-only">Rated {rating.toFixed(1)} out of 5 stars</span>
     </div>
   );
 };
 
-// ⏱️ TimeAgo (safe for hydration)
+// ─────────────────────────────────────────────
+// ⏱️ TimeAgo
+// ─────────────────────────────────────────────
 const TimeAgo = ({ date }) => {
   const [text, setText] = useState('');
   useEffect(() => {
@@ -88,7 +124,36 @@ const TimeAgo = ({ date }) => {
   return <p className="text-xs text-gray-500">{text}</p>;
 };
 
+// ─────────────────────────────────────────────
+// 🔒 useBodyScrollLock — locks bg scroll when any modal is open
+// ─────────────────────────────────────────────
+const useBodyScrollLock = (isLocked) => {
+  useEffect(() => {
+    if (isLocked) {
+      const scrollY = window.scrollY;
+      document.documentElement.style.setProperty('--scroll-y', `${scrollY}px`);
+      document.documentElement.classList.add('modal-open');
+    } else {
+      const scrollY = getComputedStyle(document.documentElement)
+        .getPropertyValue('--scroll-y')
+        .trim();
+      document.documentElement.classList.remove('modal-open');
+      window.scrollTo({ top: parseInt(scrollY || '0', 10), behavior: 'instant' });
+    }
+
+    return () => {
+      const scrollY = getComputedStyle(document.documentElement)
+        .getPropertyValue('--scroll-y')
+        .trim();
+      document.documentElement.classList.remove('modal-open');
+      if (scrollY) window.scrollTo({ top: parseInt(scrollY, 10), behavior: 'instant' });
+    };
+  }, [isLocked]);
+};
+
+// ─────────────────────────────────────────────
 // 🏆 Reviews Section
+// ─────────────────────────────────────────────
 export default function ReviewsSection() {
   const { data, mutate } = useSWR(
     `${process.env.NEXT_PUBLIC_API_URL}/api/reviews`,
@@ -102,30 +167,52 @@ export default function ReviewsSection() {
   const [selectedReview, setSelectedReview] = useState(null);
   const [formState, setFormState] = useState({ name: '', review: '', rating: 0 });
   const [hoverRating, setHoverRating] = useState(0);
+  const [agreedToPolicy, setAgreedToPolicy] = useState(false);
   const [message, setMessage] = useState('');
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true });
 
   const scrollPrev = useCallback(() => emblaApi?.scrollPrev(), [emblaApi]);
   const scrollNext = useCallback(() => emblaApi?.scrollNext(), [emblaApi]);
 
+  // 🔒 Lock body scroll whenever any modal is open
+  const anyModalOpen = isAddModalOpen || isAllReviewsModalOpen || !!selectedReview;
+  useBodyScrollLock(anyModalOpen);
+
   const handleSubmit = async e => {
     e.preventDefault();
-    if (!formState.rating) {
-      setMessage('Please select a star rating.');
+
+    // Must agree to policy
+    if (!agreedToPolicy) {
+      setMessage('Please agree to the Privacy Policy and Terms & Conditions.');
       return;
     }
+
+    // Client-side validation first
+    const validationError = validateForm(formState);
+    if (validationError) {
+      setMessage(validationError);
+      return;
+    }
+
+    // Sanitize before sending
+    const cleanData = sanitizeForm(formState);
+
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/reviews/add`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formState),
+        body: JSON.stringify(cleanData),
       });
       if (res.ok) {
         setMessage('Thank you! Your review has been posted.');
         setIsAddModalOpen(false);
         setFormState({ name: '', review: '', rating: 0 });
+        setAgreedToPolicy(false);
         mutate();
-      } else throw new Error();
+      } else {
+        const errData = await res.json().catch(() => ({}));
+        setMessage(errData?.message || 'Sorry, there was an error. Please try again.');
+      }
     } catch {
       setMessage('Sorry, there was an error. Please try again.');
     }
@@ -162,7 +249,7 @@ export default function ReviewsSection() {
                         <TimeAgo date={r.createdAt} />
                       </div>
                       <p className="text-secondary my-4 flex-grow italic">
-                        "{text}"
+                        &ldquo;{text}&rdquo;
                       </p>
                       {long && (
                         <button
@@ -216,8 +303,9 @@ export default function ReviewsSection() {
         {message && <p className="mt-4 text-secondary">{message}</p>}
       </div>
 
-      {/* Modals */}
+      {/* ─── MODALS ─── */}
       <AnimatePresence>
+
         {/* ➕ Add Review Modal */}
         {isAddModalOpen && (
           <motion.div
@@ -235,25 +323,50 @@ export default function ReviewsSection() {
               onClick={e => e.stopPropagation()}
             >
               <form onSubmit={handleSubmit} className="p-8 space-y-4">
-                <h3 className="text-2xl font-bold text-primary mb-4">
-                  Write a Review
-                </h3>
-                <input
-                  type="text"
-                  placeholder="Your Name"
-                  value={formState.name}
-                  onChange={e => setFormState({ ...formState, name: e.target.value })}
-                  required
-                  className="w-full p-2 bg-background border rounded"
-                />
-                <textarea
-                  placeholder="Your review..."
-                  rows="4"
-                  value={formState.review}
-                  onChange={e => setFormState({ ...formState, review: e.target.value })}
-                  required
-                  className="w-full p-2 bg-background border rounded"
-                />
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-2xl font-bold text-primary">Write a Review</h3>
+                  <button
+                    type="button"
+                    onClick={() => { setIsAddModalOpen(false); setMessage(''); setFormState({ name: '', review: '', rating: 0 }); setAgreedToPolicy(false); }}
+                    className="text-2xl text-gray-400 hover:text-primary transition-colors"
+                  >
+                    &times;
+                  </button>
+                </div>
+
+                {/* Name */}
+                <div>
+                  <input
+                    type="text"
+                    placeholder="Your Name"
+                    value={formState.name}
+                    onChange={e => setFormState({ ...formState, name: e.target.value })}
+                    maxLength={LIMITS.name}
+                    required
+                    className="w-full p-2 bg-background border rounded"
+                  />
+                  <p className="text-xs text-gray-400 text-right mt-0.5">
+                    {formState.name.length}/{LIMITS.name}
+                  </p>
+                </div>
+
+                {/* Review text */}
+                <div>
+                  <textarea
+                    placeholder="Your review..."
+                    rows="4"
+                    value={formState.review}
+                    onChange={e => setFormState({ ...formState, review: e.target.value })}
+                    maxLength={LIMITS.review}
+                    required
+                    className="w-full p-2 bg-background border rounded resize-none"
+                  />
+                  <p className="text-xs text-gray-400 text-right mt-0.5">
+                    {formState.review.length}/{LIMITS.review}
+                  </p>
+                </div>
+
+                {/* Star rating */}
                 <div className="flex items-center space-x-2 cursor-pointer">
                   {[...Array(5)].map((_, i) => (
                     <div
@@ -266,9 +379,49 @@ export default function ReviewsSection() {
                     </div>
                   ))}
                 </div>
+
+                {/* ✅ Privacy Policy + T&C Checkbox */}
+                <label className="flex items-start gap-3 cursor-pointer group">
+                  <input
+                    type="checkbox"
+                    checked={agreedToPolicy}
+                    onChange={e => setAgreedToPolicy(e.target.checked)}
+                    className="mt-1 w-4 h-4 accent-primary shrink-0 cursor-pointer"
+                  />
+                  <span className="text-xs text-gray-500 leading-relaxed">
+                    I agree to the{' '}
+                    <Link
+                      href="/privacy"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary underline hover:opacity-70 transition-opacity"
+                      onClick={e => e.stopPropagation()}
+                    >
+                      Privacy Policy
+                    </Link>
+                    {' '}and{' '}
+                    <Link
+                      href="/terms"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary underline hover:opacity-70 transition-opacity"
+                      onClick={e => e.stopPropagation()}
+                    >
+                      Terms & Conditions
+                    </Link>
+                    . My review may be publicly displayed on this site.
+                  </span>
+                </label>
+
+                {/* Error/success message inline */}
+                {message && (
+                  <p className="text-sm text-red-500">{message}</p>
+                )}
+
                 <button
                   type="submit"
-                  className="w-full px-4 py-2 font-semibold text-white bg-green-600 rounded-md hover:bg-green-700"
+                  disabled={!agreedToPolicy}
+                  className="w-full px-4 py-2 font-semibold text-white bg-green-600 rounded-md hover:bg-green-700 disabled:opacity-40 disabled:cursor-not-allowed transition-opacity"
                 >
                   Submit Review
                 </button>
@@ -310,7 +463,7 @@ export default function ReviewsSection() {
                       <FlowingStars rating={r.rating} />
                       <TimeAgo date={r.createdAt} />
                     </div>
-                    <p className="text-gray-700 my-2 italic">"{r.review}"</p>
+                    <p className="text-gray-700 my-2 italic">&ldquo;{r.review}&rdquo;</p>
                     <p className="font-bold text-primary mt-2 self-end">- {r.name}</p>
                   </div>
                 ))}
@@ -336,12 +489,21 @@ export default function ReviewsSection() {
               onClick={e => e.stopPropagation()}
             >
               <div className="p-8">
+                <div className="flex justify-end mb-2">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedReview(null)}
+                    className="text-2xl text-gray-400 hover:text-primary transition-colors"
+                  >
+                    &times;
+                  </button>
+                </div>
                 <div className="flex justify-between items-center mb-4">
                   <FlowingStars rating={selectedReview.rating} />
                   <TimeAgo date={selectedReview.createdAt} />
                 </div>
                 <p className="text-lg text-gray-700 my-4 italic">
-                  "{selectedReview.review}"
+                  &ldquo;{selectedReview.review}&rdquo;
                 </p>
                 <p className="font-bold text-primary mt-4 text-right">
                   - {selectedReview.name}
@@ -350,6 +512,7 @@ export default function ReviewsSection() {
             </motion.div>
           </motion.div>
         )}
+
       </AnimatePresence>
     </section>
   );

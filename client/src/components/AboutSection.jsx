@@ -33,6 +33,11 @@ const milestones = [
 
 const certifications = [
   {
+    name: 'Building with the Claude API',
+    issuer: 'Claude Anthropic',
+    link: 'https://verify.skilljar.com/c/rsdbnkasqhb7'
+  },
+  {
     name: 'Prompt Design in Vertex AI',
     issuer: 'Google',
     link: 'https://www.cloudskillsboost.google/public_profiles/709def08-7018-4ba2-ada5-c38085efba66/badges/17305399'
@@ -128,14 +133,44 @@ const AboutSection = () => {
       {/* Grid Layout */}
       <div className="relative grid grid-cols-1 lg:grid-cols-3 gap-12 items-start justify-center">
 
-        {/* Column 1: About Me */}
         <div className="about-item order-1 text-center lg:text-left">
-          <h2 className="text-4xl font-bold tracking-tight text-primary mb-5">
+
+          <h2 className="text-4xl font-bold tracking-tight text-primary mb-6">
             About Me
           </h2>
+
+          {/* MAIN TEXT */}
           <p className="max-w-xl mx-auto lg:mx-0 text-lg text-secondary leading-relaxed">
-            A Computer Science Engineering student specializing in Full Stack (MERN) Development and Machine Learning. My expertise is strengthened by achievements like a <b>Google certification in Generative AI</b> and advanced training in <b>Low-Level Design (LLD) from Scaler</b>.
+            I’m a final-year B.Tech Computer Science Engineering student (AKTU, graduating June 2026), focused on building full-stack systems that solve real operational problems — not just demo projects.
+            <br /><br />
+            I build SaaS platforms, web applications, and backend systems with a strong focus on structure, scalability, and real-world usability.
           </p>
+
+          {/* 🔥 CREDIBILITY BLOCKS */}
+          <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-xl mx-auto lg:mx-0">
+
+            <div className="border border-primary/10 rounded-lg p-4 bg-white">
+              <p className="text-2xl font-bold text-primary">80+</p>
+              <p className="text-sm text-secondary">Users onboarded (Hackathon Platform)</p>
+            </div>
+
+            <div className="border border-primary/10 rounded-lg p-4 bg-white">
+              <p className="text-2xl font-bold text-primary">3+</p>
+              <p className="text-sm text-secondary">Internships completed</p>
+            </div>
+
+            <div className="border border-primary/10 rounded-lg p-4 bg-white">
+              <p className="text-2xl font-bold text-primary">2+ yrs</p>
+              <p className="text-sm text-secondary">Freelancing experience</p>
+            </div>
+
+            <div className="border border-primary/10 rounded-lg p-4 bg-white">
+              <p className="text-2xl font-bold text-primary">Full Stack + AI</p>
+              <p className="text-sm text-secondary">React, Next.js, Node, MongoDB, RAG, Models</p>
+            </div>
+
+          </div>
+
         </div>
 
         {/* Journey */}
@@ -151,6 +186,30 @@ const AboutSection = () => {
                 <p className="text-secondary ">{item.text}</p>
               </div>
             ))}
+            <br></br>
+            {/* EXPERIENCE CTA */}
+            <div className="mt-6 text-center lg:text-left">
+              <Link
+                href="/experience"
+                className="group inline-flex items-center text-primary font-semibold text-sm hover:underline"
+              >
+                View my work experience & education
+
+                <svg
+                  className="ml-2 w-4 h-4 transition-transform duration-300 group-hover:translate-x-1"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M17 8l4 4m0 0l-4 4m4-4H3"
+                  />
+                </svg>
+              </Link>
+            </div>
           </div>
         </div>
 
@@ -180,7 +239,7 @@ const AboutSection = () => {
         </div>
 
         {/* Desktop arrow */}
-        <div className="about-item hidden lg:block absolute top-[68%] left-[27%] w-48 h-24 pointer-events-none z-20">
+        {/* <div className="about-item hidden lg:block absolute top-[68%] left-[27%] w-48 h-24 pointer-events-none z-20">
           <Image
             src="/arrows.png"
             alt="Connecting arrow"
@@ -188,7 +247,7 @@ const AboutSection = () => {
             height={96}
             className="connecting-arrow"
           />
-        </div>
+        </div> */}
       </div>
 
       {/* Featured Projects */}
@@ -196,43 +255,60 @@ const AboutSection = () => {
         <h3 className="text-3xl font-bold text-primary mb-12">Featured Projects</h3>
         <ProjectPreview />
 
-        <div className="mt-8">
+        {/* PROJECT CTA (PRIMARY) */}
+        <div className="mt-12 max-w-3xl mx-auto">
+
           <Link
             href="/projects"
-            className="inline-flex items-center text-primary font-bold hover:underline group text-sm sm:text-base"
+            className="group flex items-center justify-between w-full bg-primary text-white px-6 py-4 rounded-xl shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-[1.02]"
           >
-            <span className="whitespace-nowrap">
-              To view details and to see all projects, click here
+            <span className="text-left text-sm sm:text-base font-medium leading-relaxed">
+              Explore all projects, case studies, and detailed breakdowns of how each system was built
             </span>
-            <svg className="ml-2 w-5 h-5 transition-transform duration-300 group-hover:translate-x-1 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+
+            <svg
+              className="w-5 h-5 flex-shrink-0 transition-transform duration-300 group-hover:translate-x-1"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M17 8l4 4m0 0l-4 4m4-4H3"
+              />
             </svg>
           </Link>
+
         </div>
 
-        {/* CTA: Book a Service */}
-        <div className="mt-12">
+
+        {/* SEPARATOR */}
+        <div className="mt-10 border-t border-primary/20 max-w-xl mx-auto"></div>
+
+
+        {/* SERVICES CTA (WITH LOOP — FIXED) */}
+        <div className="mt-12 flex justify-center">
+
           <Link
             href="/services"
             ref={(el) => {
-              if (el) {
-                gsap.fromTo(
-                  el,
-                  { scale: 1 },
-                  {
-                    scale: 1.05,
-                    repeat: -1,
-                    yoyo: true,
-                    duration: 1.2,
-                    ease: 'power1.inOut',
-                  }
-                );
-              }
+              if (!el) return;
+
+              gsap.to(el, {
+                scale: 1.03,            // ↓ reduced from 1.05 (less jumpy)
+                duration: 1.8,          // ↑ slower = smoother
+                ease: 'power1.inOut',
+                yoyo: true,
+                repeat: -1,
+              });
             }}
-            className="inline-block bg-primary text-white px-6 py-3 rounded-xl shadow-lg hover:bg-primary/90 transition-all duration-300"
+            className="inline-block bg-primary text-white px-6 py-3 rounded-xl shadow-lg hover:bg-primary/90 transition-all duration-300 hover:scale-[1.05]"
           >
             Book a Service / Learn More
           </Link>
+
         </div>
       </div>
 

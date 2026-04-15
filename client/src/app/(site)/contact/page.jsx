@@ -79,7 +79,7 @@ export default function ContactPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50/30 pt-32 pb-20 px-6 sm:px-10 lg:px-16">
+    <div className="min-h-screen bg-gray-50/30 pt-28 pb-20 px-6 sm:px-10 lg:px-16">
       
       <div className="max-w-7xl mx-auto">
         
@@ -94,7 +94,7 @@ export default function ContactPage() {
             Let's Make it Happen.
           </h1>
           
-          <div className="max-w-4xl mx-auto space-y-6">
+          <div className="max-w-1xl mx-auto space-y-6">
             <p className="text-xl md:text-2xl text-gray-600 font-light leading-relaxed">
               Whether you need a full-stack overhaul, a quick technical fix, or just advice on where to start—I’m here. 
               I treat every project with the same focus and passion I put into my own.

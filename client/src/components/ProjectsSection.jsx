@@ -342,24 +342,24 @@ const ProjectsSection = () => {
     <section
       ref={component}
       id="portfolio"
-      // ✅ FULL WIDTH CONTAINER (w-full + max-w-none for desktop)
-      className="w-full px-4 sm:px-8 lg:px-16 py-20 md:py-32 relative"
+      className="w-full px-4 sm:px-8 lg:px-16 py-20 md:py-24"
     >
       
       {/* HEADER SECTION */}
-      <div className="text-center mb-12 md:mb-20">
-        <h2 className="text-3xl md:text-5xl font-bold tracking-tighter text-primary mb-4 md:mb-6">
+      <div className="text-center mb-16 space-y-6">
+        <h2 className="text-6xl md:text-7xl font-bold text-black tracking-tighter">
           All Projects
         </h2>
-        <div className="text-gray-600 text-sm md:text-xl max-w-4xl mx-auto space-y-4 leading-relaxed font-light">
-          <p>
+
+        <div className="max-w-1xl mx-auto space-y-6">
+          <p className="text-xl md:text-2xl text-gray-600 font-light leading-relaxed">
             Welcome to my digital workshop. Here lies a collection of my journey through code—ranging from robust 
-            full-stack web applications to experimental AI integrations and system architectures.
+            full-stack applications to experimental AI integrations and system architectures.
           </p>
-          <p>
-            Every project here represents a specific problem I aimed to solve or a new technology I mastered along the way. 
-            I believe in building software that isn't just functional, but also intuitive, scalable, and secure. 
-            Click on any card to dive deep into the technical details, challenges faced, and the impact of what I've built.
+
+          <p className="text-xl md:text-2xl text-gray-600 font-light leading-relaxed">
+            Every project represents a problem solved or a system built with intention. I focus on creating software 
+            that is not just functional, but intuitive, scalable, and secure.
           </p>
         </div>
       </div>
@@ -378,7 +378,7 @@ const ProjectsSection = () => {
               Need Custom Development?
             </h3>
             <p className="text-sm md:text-lg text-gray-600 group-hover:text-gray-900 transition-colors mb-4 md:mb-6">
-              Explore my web development, debugging, and consulting services.
+              Explore my services such as web development, SaaS development, and email configuration.
             </p>
             <div className="inline-block bg-white border border-primary/20 text-primary px-5 py-2 md:px-8 md:py-3 rounded-full shadow-sm group-hover:shadow-md transition-all">
                <span className="font-bold text-xs md:text-lg">First consultancy is free!</span>
