@@ -39,17 +39,34 @@ const BlogPage = () => {
   };
 
   return (
-    <div className="container mx-auto py-24 px-4 md:px-8">
+    <div className="container mx-auto py-20 px-4 md:px-8">
       {/* Heading */}
       <motion.h1
         initial={{ opacity: 0, y: -30 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.8, ease: 'easeOut' }}
-        className="text-4xl md:text-5xl font-extrabold mb-10 text-center text-primary"
+        className="text-4xl md:text-5xl font-extrabold mb-2 text-center text-primary"
       >
         My Blogs
       </motion.h1>
+      <div className="mt-20 max-w-1xl mx-auto pb-5 text-center">
+
+        <h2 className="text-2xl font-semibold mb-1">
+          What I Write About
+        </h2>
+
+        <p className="text-neutral-600 leading-relaxed text-sm md:text-base">
+          I write about real-world development — not theory. Most of my blogs come from things I’ve actually built, broken, or optimized while working on full-stack applications and systems.
+          <br /><br />
+          You’ll find content around system design, backend architecture, SaaS development, performance decisions, and practical implementation details that are usually skipped in tutorials.
+          <br /><br />
+          The goal is simple — to document how real products are built, how decisions are made, and how problems are solved in production environments.
+        </p>
+
+      </div>
+      {/* --- ABOUT MY WRITING --- */}
+      
 
       {/* Search */}
       <div className="max-w-md mx-auto mb-12">
