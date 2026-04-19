@@ -15,7 +15,7 @@ export const allProjectsData = [
       "Ready to scale into a SaaS where any college can host their own internal hackathon portal.",
     technologies: ["Next.js", "React", "Tailwind CSS", "Node.js", "MongoDB", "Supabase"],
     liveUrl: "https://hackathon-college-portal.vercel.app",
-    githubUrl: "https://github.com/abdulbarr730",
+    githubUrl: "https://github.com/abdulbarr730/hackathonCollegePortal",
     snapshotUrl: "/snapshots/sih-portal.png",
     impact: { metric: "80+", label: "Student Signups" },
   },
