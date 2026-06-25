@@ -11,16 +11,18 @@ const sections = [
     content: `By accessing and using abdulbarr.in (the "Site"), you agree to be bound by these Terms & Conditions. If you do not agree, please do not use this Site. These terms apply to all visitors, clients, and anyone who interacts with the Site or its owner.`,
   },
   {
-    title: '02 — Intellectual Property',
-    content: `All content on this Site — including but not limited to text, design, code, images, project work, and branding — is the intellectual property of Abdul Barr unless otherwise stated. You may not reproduce, distribute, or use any content from this Site without explicit written permission.`,
+    title: '02 — Intellectual Property & Disclosure',
+    content: `All content on this Site — including but not limited to text, design, code architecture, images, proprietary project work, and branding — is the exclusive intellectual property of Abdul Barr unless otherwise stated. 
+    
+    You are strictly prohibited from copying, reproducing, extracting, or publicly disclosing/publishing any proprietary case studies, code, or internal project details found on this Site on any external platform without explicit, prior written permission.`,
   },
   {
     title: '03 — Use of the Site',
     items: [
-      { text: 'You agree to use the Site only for lawful purposes.' },
-      { text: 'You must not attempt to gain unauthorized access to any part of the Site or its infrastructure.' },
+      { text: 'You agree to use the Site only for lawful purposes and standard browsing.' },
+      { text: 'You must not attempt to gain unauthorized access to any part of the Site, its backend, or its infrastructure.' },
       { text: 'You must not use the Site to transmit spam, malware, or any harmful content.' },
-      { text: 'Scraping or automated data collection from this Site is prohibited without prior permission.' },
+      { text: 'Automated data collection, scraping, or utilizing AI bots to crawl and extract information from this Site is strictly prohibited without prior written consent.' },
     ],
   },
   {
@@ -36,11 +38,11 @@ const sections = [
     content: `By submitting a review or testimonial on this Site, you grant Abdul Barr a non-exclusive, royalty-free license to display it publicly on the Site and in related promotional materials. You confirm the review is genuine and based on a real interaction or experience.`,
   },
   {
-  title: '07 — Content & Information',
+    title: '07 — Content & Information',
     content: `The content on this Site reflects my work, experience, and understanding at the time of writing. I strive to keep all information accurate and up to date.
 
     Some technical content, code examples, or project details are shared for informational purposes and may require adaptation for specific use cases. I am not liable for any issues arising from the use of information or code snippets provided on this Site. Always test and review any code before applying it to your projects.`,
-    },
+  },
   {
     title: '08 — Limitation of Liability',
     content: `To the fullest extent permitted by law, Abdul Barr shall not be liable for any indirect, incidental, or consequential damages arising from your use of this Site or its content. My total liability in any matter related to this Site is limited to zero, as this is a free personal portfolio.`,
@@ -59,7 +61,7 @@ const sections = [
   },
   {
     title: '12 — Contact',
-    content: `For any questions about these Terms, please contact hello@abdulbarr.in.`,
+    content: `For any questions about these Terms or to request permission to use site content, please contact hello@abdulbarr.in.`,
   },
 ];
 
@@ -73,7 +75,7 @@ export default function TermsPage() {
           Terms & Conditions
         </h1>
         <p className="text-secondary text-sm">
-          Last updated: <span className="text-primary/70">April 2026</span>
+          Last updated: <span className="text-primary/70">June 2026</span>
         </p>
       </div>
 
