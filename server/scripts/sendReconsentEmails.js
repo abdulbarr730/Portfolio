@@ -5,7 +5,7 @@ const Subscriber = require("../models/subscriber.model");
 const crypto = require("crypto");
 
 const resend = new Resend(process.env.RESEND_API_KEY);
-const CURRENT_CONSENT_VERSION = 2;
+const CURRENT_CONSENT_VERSION = 3;
 
 // Helper to pause execution
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
