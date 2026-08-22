@@ -28,7 +28,8 @@ const toolkit = [
 const milestones = [
   { year: '2021', text: 'Started my journey into web development, building foundational projects with React and Node.js.' },
   { year: '2023', text: 'Began taking on freelance work, successfully delivering e-commerce sites and portfolio pages for clients.' },
-  { year: '2023+', text: 'Secured internships annually, gaining hands-on experience in both Full-Stack and Machine Learning environments.' }
+  { year: '2023+', text: 'Secured internships annually, gaining hands-on experience in both Full-Stack and Machine Learning environments.' },
+  { year: '2026', text: 'Joined ProSync Infotech Private Limited as a Software Developer, building production systems used company-wide.' }
 ];
 
 const certifications = [
@@ -141,7 +142,7 @@ const AboutSection = () => {
 
           {/* MAIN TEXT */}
           <p className="max-w-xl mx-auto lg:mx-0 text-lg text-secondary leading-relaxed">
-            I’m a final-year B.Tech Computer Science Engineering student (AKTU, graduating June 2026), focused on building full-stack systems that solve real operational problems — not just demo projects.
+            I&apos;m a Software Developer at ProSync Infotech Private Limited, and a B.Tech Computer Science Engineering graduate (AKTU), focused on building full-stack systems that solve real operational problems — not just demo projects.
             <br /><br />
             I build SaaS platforms, web applications, and backend systems with a strong focus on structure, scalability, and real-world usability.
           </p>
@@ -150,8 +151,8 @@ const AboutSection = () => {
           <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-xl mx-auto lg:mx-0">
 
             <div className="border border-primary/10 rounded-lg p-4 bg-white">
-              <p className="text-2xl font-bold text-primary">80+</p>
-              <p className="text-sm text-secondary">Users onboarded (Hackathon Platform)</p>
+              <p className="text-2xl font-bold text-primary">4,000+</p>
+              <p className="text-sm text-secondary">Client records managed (ProSync CRM)</p>
             </div>
 
             <div className="border border-primary/10 rounded-lg p-4 bg-white">
