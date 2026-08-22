@@ -15,46 +15,36 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  // 1. TITLE: Simplified as requested
-  title: "Abdul Barr | Portfolio",
-
-  // 2. DESCRIPTION: Generalized for professional content
-  description: "Official Portfolio Website of Abdul Barr, Software Developer at ProSync Infotech. Showcasing production-ready Full Stack applications, projects, and professional work.",
-
-  // 3. KEYWORDS: Broadened for global and professional search
+  // 1. TITLE: Positions you as an expert immediately
+  title: "Abdul Barr | Full-Stack AI & Automation Engineer",
+  
+  // 2. DESCRIPTION: A strong hook focused on value and specific technologies
+  description: "Portfolio of Abdul Barr. Specializing in AI-driven automation, LLM integrations, web scraping, and production-ready Full-Stack applications using Next.js and the MERN stack.",
+  
+  // 3. KEYWORDS: Highly targeted terms that recruiters and ATS bots actually search for
   keywords: [
-    'Abdul Barr',
-    'Portfolio',
-    'Developer',
-    'Web Development',
-    'Professional Portfolio',
-    'Full Stack',
-    'Projects',
-    'ProSync Infotech',
+    'Abdul Barr', 
+    'AI Automation Engineer',
+    'Full-Stack Developer',
+    'LLM Integration',
+    'Agentic Workflows',
+    'Web Scraping',
+    'Process Automation',
+    'Next.js Developer',
     'MERN Stack',
-    'Next.js Developer'
+    'Django Developer',
+    'Cloudflare R2',
+    'Software Engineer India'
   ],
 
-  // 4. OPEN GRAPH: Standardized for global sharing
+  // 4. OPEN GRAPH: Standardized for global sharing on LinkedIn and Twitter
   openGraph: {
-    title: 'Abdul Barr | Portfolio',
-    description: 'Official Portfolio Website of Abdul Barr, Software Developer at ProSync Infotech, showcasing projects and professional work.',
-    url: 'https://abdulbarr.in',
+    title: 'Abdul Barr | Full-Stack AI & Automation Engineer',
+    description: 'Specializing in AI-driven automation, LLM integrations, and production-ready Full-Stack applications.',
+    url: 'https://abdulbarr.in', 
     siteName: 'Abdul Barr Portfolio',
-    locale: 'en_US', // Standard locale for worldwide audience
+    locale: 'en_US',
     type: 'website',
-  },
-
-  // 5. ALTERNATES: Medium RSS feed linked for SEO / feed discovery
-  alternates: {
-    types: {
-      'application/rss+xml': [
-        {
-          url: 'https://medium.com/feed/@abdulbarr730', // update this if your Medium handle differs
-          title: "Abdul Barr's Blog on Medium",
-        },
-      ],
-    },
   },
 };
 
