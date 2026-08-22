@@ -32,11 +32,7 @@ export const metadata = {
     'Projects',
     'ProSync Infotech',
     'MERN Stack',
-    'Next.js Developer',
-    'AI Engineer',
-    'Automation Engineer',
-    'AI Automation',
-    'LLM Integration'
+    'Next.js Developer'
   ],
 
   // 4. OPEN GRAPH: Standardized for global sharing
