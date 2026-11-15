@@ -79,6 +79,7 @@ const siteSettingsSchema = new mongoose.Schema(
           type: { type: String, enum: ['link', 'scroll'], default: 'link' },
           newTab: { type: Boolean, default: false },
           cta: String,
+          navbar: Boolean, // show in the desktop top bar (unset = default pages)
           hidden: { type: Boolean, default: false },
         },
         { _id: false }

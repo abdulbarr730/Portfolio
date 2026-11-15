@@ -3,7 +3,9 @@
 const inputCls =
   'w-full rounded-lg border border-primary/15 bg-surface px-3 py-2 text-sm text-primary placeholder:text-secondary/60 focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent';
 
-const BLANK = { text: '', id: '', type: 'link', newTab: false, cta: '', hidden: false };
+const BLANK = { text: '', id: '', type: 'link', newTab: false, cta: '', hidden: false, navbar: false };
+// Same fallback the navbar uses until any link has the switch set
+const DEFAULT_TOP = ['/projects', '/services', '/blog', '/experience'];
 
 const SECTIONS = [
   { value: 'hero', label: 'Home (top of page)' },
@@ -30,6 +32,11 @@ function Switch({ checked, onChange, label }) {
 export default function MenuEditor({ value = [], onChange }) {
   const items = Array.isArray(value) ? value : [];
   const update = (i, patch) => onChange(items.map((it, j) => (j === i ? { ...it, ...patch } : it)));
+  const hasTopFlags = items.some((m) => typeof m.navbar === 'boolean');
+  const inTopBar = (m) => m.type === 'link' && (hasTopFlags ? !!m.navbar : DEFAULT_TOP.includes(m.id));
+  // first toggle: write the current state onto every link so the others don't change
+  const setTopBar = (i, v) =>
+    onChange(items.map((it, j) => ({ ...it, navbar: j === i ? v : inTopBar(it) })));
   const move = (i, d) => {
     const j = i + d;
     if (j < 0 || j >= items.length) return;
@@ -108,6 +115,12 @@ export default function MenuEditor({ value = [], onChange }) {
                   <Switch checked={!item.hidden} onChange={(v) => update(i, { hidden: !v })} label="Show in menu" />
                   Show
                 </label>
+                {item.type !== 'scroll' && (
+                  <label className="flex items-center gap-2 text-sm text-primary">
+                    <Switch checked={inTopBar(item)} onChange={(v) => setTopBar(i, v)} label="Show in top bar" />
+                    Show in top bar (desktop)
+                  </label>
+                )}
                 {item.type !== 'scroll' && (
                   <label className="flex items-center gap-2 text-sm text-primary">
                     <Switch checked={!!item.newTab} onChange={(v) => update(i, { newTab: v })} label="Open in new tab" />

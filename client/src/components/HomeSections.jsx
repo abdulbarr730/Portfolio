@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useProjects, useServices } from '@/lib/content';
+import { useProjects, useServices, useSettings } from '@/lib/content';
 import SectionHeader, { Reveal } from '@/components/SectionHeader';
 
 const Arrow = ({ className = '' }) => (
@@ -215,6 +215,57 @@ export function LatestWriting({ index = '07' }) {
                 </span>
               </div>
             </a>
+          </Reveal>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+/* ---------------- EXPLORE (links to the other pages) ---------------- */
+const PAGE_BLURBS = {
+  '/projects': 'Case studies of systems I have designed, built and shipped.',
+  '/services': 'What I build for clients and the process from NDA to handover.',
+  '/blog': 'Notes on system design, backend architecture and SaaS.',
+  '/experience': 'Roles, internships and education, in one timeline.',
+  '/codecraft': 'Real code, side by side with the typical approach.',
+  '/contact': 'Book a call or send a message. First consultation is free.',
+};
+
+export function Explore({ index = '08' }) {
+  const { settings } = useSettings();
+  const pages = (settings.menu || []).filter(
+    (m) => !m.hidden && m.type === 'link' && m.id?.startsWith('/') && m.id !== '/' && m.id !== '/contact'
+  );
+  if (!pages.length) return null;
+
+  return (
+    <section className="page-container pb-24 md:pb-32">
+      <SectionHeader
+        index={index}
+        eyebrow="Explore"
+        title="There's more"
+        intro="This page is the overview. Each section of the site goes deeper."
+      />
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {pages.map((p, i) => (
+          <Reveal key={p.id} delay={0.05 * (i % 3)}>
+            <Link
+              href={p.id}
+              target={p.newTab ? '_blank' : undefined}
+              rel={p.newTab ? 'noopener noreferrer' : undefined}
+              className="card card-hover group relative flex h-full flex-col overflow-hidden p-7"
+            >
+              <span aria-hidden="true" className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-accent/0 blur-2xl transition-colors duration-500 group-hover:bg-accent/15" />
+              <div className="relative flex items-start justify-between">
+                <span className="text-sm font-semibold tabular-nums text-accent">{String(i + 1).padStart(2, '0')}</span>
+                <span className="grid h-10 w-10 place-items-center rounded-full border border-primary/15 text-primary transition-all duration-300 group-hover:border-accent group-hover:bg-accent group-hover:text-white group-hover:rotate-45">
+                  <Arrow className="h-4 w-4" />
+                </span>
+              </div>
+              <h3 className="relative mt-10 text-3xl font-bold tracking-tight text-primary transition-colors group-hover:text-accent">{p.text}</h3>
+              <p className="relative mt-2 text-secondary">{PAGE_BLURBS[p.id] || p.cta || `Visit ${p.text}.`}</p>
+            </Link>
           </Reveal>
         ))}
       </div>

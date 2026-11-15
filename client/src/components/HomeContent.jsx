@@ -4,7 +4,7 @@
 import { useSettings } from '@/lib/content';
 import { siteDefaults } from '@/app/data/siteDefaults';
 import { AboutIntro, Journey, Toolkit, Certifications } from '@/components/AboutSection';
-import { SelectedWork, WhatIDo, LatestWriting } from '@/components/HomeSections';
+import { SelectedWork, WhatIDo, LatestWriting, Explore } from '@/components/HomeSections';
 import ReviewsSection from '@/components/ReviewsSection';
 import ContactSection from '@/components/ContactSection';
 
@@ -17,16 +17,28 @@ export const HOME_SECTIONS = {
   certifications: { label: 'Certifications', Component: Certifications },
   writing: { label: 'Latest writing (blog)', Component: LatestWriting },
   testimonials: { label: 'Testimonials (reviews)', Component: ReviewsSection },
+  explore: { label: 'Explore (links to other pages)', Component: Explore },
   contact: { label: 'Contact', Component: ContactSection },
 };
+
+// Sections added in code after the admin saved an order go in just before Contact
+export function withNewSections(savedKeys) {
+  const keys = savedKeys.filter((k) => HOME_SECTIONS[k]);
+  for (const k of Object.keys(HOME_SECTIONS)) {
+    if (keys.includes(k)) continue;
+    const at = keys.indexOf('contact');
+    if (at === -1) keys.push(k);
+    else keys.splice(at, 0, k);
+  }
+  return keys;
+}
 
 export default function HomeContent() {
   const { settings } = useSettings();
   const saved = Array.isArray(settings.homeSections) && settings.homeSections.length ? settings.homeSections : siteDefaults.homeSections;
 
   // keep saved order, then append any sections added in code later
-  const keys = saved.map((s) => s.key).filter((k) => HOME_SECTIONS[k]);
-  for (const k of Object.keys(HOME_SECTIONS)) if (!keys.includes(k)) keys.push(k);
+  const keys = withNewSections(saved.map((s) => s.key));
   const hidden = new Set(saved.filter((s) => s.hidden).map((s) => s.key));
   const visible = keys.filter((k) => !hidden.has(k));
 
