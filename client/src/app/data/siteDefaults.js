@@ -101,6 +101,7 @@ export const siteDefaults = {
     { key: 'certifications', hidden: false },
     { key: 'writing', hidden: false },
     { key: 'testimonials', hidden: false },
+    { key: 'explore', hidden: false },
     { key: 'contact', hidden: false },
   ],
   blogCovers: [],

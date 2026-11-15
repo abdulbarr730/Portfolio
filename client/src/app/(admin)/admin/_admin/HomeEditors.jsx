@@ -1,7 +1,7 @@
 'use client';
 // Admin editors: landing page sections (order + visibility) and blog cover overrides.
 import { useEffect, useState } from 'react';
-import { HOME_SECTIONS } from '@/components/HomeContent';
+import { HOME_SECTIONS, withNewSections } from '@/components/HomeContent';
 import { siteDefaults } from '@/app/data/siteDefaults';
 import { ImageField } from './fields';
 
@@ -23,8 +23,8 @@ function Switch({ checked, onChange, label }) {
 /* ---------------- Landing page sections ---------------- */
 export function HomeSectionsEditor({ value, onChange }) {
   const saved = Array.isArray(value) && value.length ? value : siteDefaults.homeSections;
-  const items = [...saved.filter((s) => HOME_SECTIONS[s.key])];
-  for (const k of Object.keys(HOME_SECTIONS)) if (!items.some((s) => s.key === k)) items.push({ key: k, hidden: false });
+  const hiddenKeys = new Set(saved.filter((s) => s.hidden).map((s) => s.key));
+  const items = withNewSections(saved.map((s) => s.key)).map((key) => ({ key, hidden: hiddenKeys.has(key) }));
 
   const update = (i, patch) => onChange(items.map((it, j) => (j === i ? { ...it, ...patch } : it)));
   const move = (i, d) => {

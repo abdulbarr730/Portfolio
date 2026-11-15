@@ -18,6 +18,13 @@ const Navbar = () => {
   const { socials } = settings;
   // Menu links are managed in the admin panel (Menu tab); hidden ones are skipped
   const HAMBURGER_LINKS = (settings.menu || []).filter((m) => !m.hidden && m.text && m.id);
+  // Links shown directly in the top bar on desktop (admin → Menu → "Show in top bar").
+  // Until any link has that switch set, fall back to the main pages.
+  const DEFAULT_TOP = ['/projects', '/services', '/blog', '/experience'];
+  const hasTopFlags = HAMBURGER_LINKS.some((m) => typeof m.navbar === 'boolean');
+  const TOP_LINKS = HAMBURGER_LINKS.filter(
+    (m) => m.type === 'link' && (hasTopFlags ? m.navbar : DEFAULT_TOP.includes(m.id))
+  );
   const component = useRef(null);
   const mobileMenuRef = useRef(null);
   const bookRef = useRef(null);
@@ -151,8 +158,34 @@ const Navbar = () => {
               </Link>
             </div>
 
-            {/* Right section: Book + Hamburger */}
+            {/* Right section: top-bar links (desktop) + Book + Hamburger */}
             <div className="flex items-center flex-shrink-0 space-x-3 sm:space-x-4">
+              {TOP_LINKS.length > 0 && (
+                <nav aria-label="Main" className="hidden lg:flex items-center gap-1 mr-4">
+                  {TOP_LINKS.map((item) => {
+                    const active = pathname === item.id || (item.id !== '/' && pathname?.startsWith(`${item.id}/`));
+                    return (
+                      <Link
+                        key={item.id}
+                        href={item.id}
+                        target={item.newTab ? '_blank' : undefined}
+                        rel={item.newTab ? 'noopener noreferrer' : undefined}
+                        aria-current={active ? 'page' : undefined}
+                        className={`group relative rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors ${
+                          active ? 'text-accent' : 'text-primary/80 hover:text-primary'
+                        }`}
+                      >
+                        {item.text}
+                        <span
+                          className={`absolute inset-x-3.5 -bottom-0.5 h-[2px] origin-left rounded-full bg-accent transition-transform duration-300 ${
+                            active ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'
+                          }`}
+                        />
+                      </Link>
+                    );
+                  })}
+                </nav>
+              )}
               {/* DOMINANT CTA BUTTON */}
               <Link
                 href="/contact"
