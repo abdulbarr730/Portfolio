@@ -106,8 +106,8 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-6">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-8">
+    <div className="min-h-screen bg-muted/60 flex items-center justify-center p-6">
+      <div className="w-full max-w-md bg-surface rounded-2xl shadow-lg p-8">
         <h1 className="text-2xl font-bold mb-4 text-center">Student Login</h1>
 
         {/* Login form (hidden when in pending state) */}
@@ -133,7 +133,7 @@ export default function LoginPage() {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-gray-700"
+                className="absolute inset-y-0 right-0 flex items-center pr-3 text-secondary hover:text-secondary"
                 aria-label={showPassword ? "Hide password" : "Show password"}
               >
                 {showPassword ? (
@@ -157,15 +157,15 @@ export default function LoginPage() {
             <button
               onClick={handleLogin}
               disabled={loading}
-              className="w-full bg-blue-600 text-white py-3 rounded-md hover:bg-blue-700"
+              className="w-full bg-accent text-white py-3 rounded-md hover:bg-primary"
             >
               {loading ? "Logging in..." : "Login"}
             </button>
 
-            <p className="text-center mt-4 text-sm text-gray-600">
+            <p className="text-center mt-4 text-sm text-secondary">
               Don't have an account?{" "}
               {/* --- FIX: Use standard <a> tag --- */}
-              <a href="/jobs/register" className="text-blue-600 underline">
+              <a href="/jobs/register" className="text-accent underline">
                 Register
               </a>
             </p>
@@ -177,7 +177,7 @@ export default function LoginPage() {
           <div className="space-y-4">
             <div className="p-4 rounded-md bg-yellow-50 border border-yellow-200">
               <p className="font-semibold">Account pending approval</p>
-              <p className="text-sm text-gray-700 mt-1">
+              <p className="text-sm text-secondary mt-1">
                 Your registration is waiting for the admin to approve. You cannot log in until approved.
               </p>
             </div>
@@ -195,29 +195,29 @@ export default function LoginPage() {
                   setPending(false);
                   setMessage("");
                 }}
-                className="flex-1 bg-gray-200 text-gray-800 py-2 rounded-md hover:bg-gray-300"
+                className="flex-1 bg-muted text-primary py-2 rounded-md hover:bg-muted"
               >
                 Back
               </button>
             </div>
 
-            {message && <div className="mt-2 text-sm text-gray-700">{message}</div>}
+            {message && <div className="mt-2 text-sm text-secondary">{message}</div>}
             {cancelMessage && <div className="mt-2 text-sm text-red-600">{cancelMessage}</div>}
           </div>
         )}
 
         {/* Generic message */}
         {message && !pending && (
-          <div className="mt-4 p-3 rounded text-sm text-white bg-black text-center">{message}</div>
+          <div className="mt-4 p-3 rounded text-sm text-white bg-ink text-center">{message}</div>
         )}
       </div>
 
       {/* Confirm cancel modal */}
       {showConfirmCancel && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="w-full max-w-md bg-white rounded-lg p-6 shadow-lg">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-4">
+          <div className="w-full max-w-md bg-surface rounded-lg p-6 shadow-lg">
             <h3 className="text-lg font-semibold mb-2">Confirm cancellation</h3>
-            <p className="text-sm text-gray-600 mb-4">
+            <p className="text-sm text-secondary mb-4">
               Are you sure you want to cancel your pending registration? This will permanently delete your pending record.
             </p>
 
@@ -232,7 +232,7 @@ export default function LoginPage() {
 
               <button
                 onClick={() => setShowConfirmCancel(false)}
-                className="flex-1 bg-gray-200 py-2 rounded hover:bg-gray-300"
+                className="flex-1 bg-muted py-2 rounded hover:bg-muted"
               >
                 No, keep it
               </button>

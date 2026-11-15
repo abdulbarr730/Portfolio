@@ -1,274 +1,452 @@
 'use client';
-
-import PrivateRoute from '@/components/PrivateRoute';
-import { useRouter } from 'next/navigation';
+// Admin panel: everything on the public site is edited from here.
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import PrivateRoute from '@/components/PrivateRoute';
+import { adminFetch } from '../_admin/api';
+import { Card, Text, TextArea, Toggle, ColorField, StringList, RowList, ImageField } from '../_admin/fields';
+import CollectionEditor from '../_admin/CollectionEditor';
+import ReviewsModeration from '../_admin/ReviewsModeration';
+import MenuEditor from '../_admin/MenuEditor';
+import DockEditor from '../_admin/DockEditor';
+import { HomeSectionsEditor, BlogCoversEditor } from '../_admin/HomeEditors';
+import AccountSettings from '../_admin/AccountSettings';
+import { siteDefaults } from '@/app/data/siteDefaults';
+import { hexToRgbTriplet } from '@/lib/content';
 
-const DashboardPage = () => {
+const ACCENT_PRESETS = [
+  { name: 'Olive', hex: '#5E6B26' },
+  { name: 'Warm orange', hex: '#FF6A1A' },
+  { name: 'International orange', hex: '#FF4F1A' },
+  { name: 'Klein blue', hex: '#2337FF' },
+  { name: 'Acid lime', hex: '#C6F432' },
+  { name: 'Signal red', hex: '#E5322D' },
+  { name: 'Forest green', hex: '#1F6B4F' },
+  { name: 'Mustard', hex: '#E3A21A' },
+  { name: 'Ultraviolet', hex: '#6B3CFF' },
+  { name: 'Terracotta', hex: '#C4532F' },
+];
+
+const SERVICE_ICONS = ['Globe', 'Layers', 'Database', 'Cloud', 'Mail', 'Wrench', 'Server'];
+
+const TABS = [
+  { id: 'site', label: 'Site & hero' },
+  { id: 'home', label: 'Home' },
+  { id: 'about', label: 'About' },
+  { id: 'menu', label: 'Menu' },
+  { id: 'dock', label: 'Dock' },
+  { id: 'projects', label: 'Projects' },
+  { id: 'experience', label: 'Experience' },
+  { id: 'services', label: 'Services' },
+  { id: 'blog', label: 'Blog covers' },
+  { id: 'reviews', label: 'Reviews' },
+  { id: 'account', label: 'Account' },
+];
+
+const PROJECT_SCHEMA = [
+  { key: 'title', label: 'Title', wide: false },
+  { key: 'category', label: 'Category', wide: false },
+  { key: 'description', label: 'Short description', type: 'textarea', rows: 2 },
+  { key: 'snapshotUrl', label: 'Screenshot', type: 'image' },
+  { key: 'technologies', label: 'Technologies', type: 'list' },
+  { key: 'liveUrl', label: 'Live URL', wide: false },
+  { key: 'githubUrl', label: 'GitHub URL', wide: false },
+  { key: 'impact.metric', label: 'Impact number', hint: 'e.g. 80+', wide: false },
+  { key: 'impact.label', label: 'Impact label', hint: 'e.g. Student signups', wide: false },
+  { key: 'detailedDescription', label: 'Detailed description', type: 'textarea', rows: 5 },
+  { key: 'problemSolved', label: 'Problem solved', type: 'textarea' },
+  { key: 'challengesFaced', label: 'Challenges faced', type: 'textarea' },
+  { key: 'futureScope', label: 'Future scope', type: 'textarea', rows: 2 },
+  { key: 'featured', label: 'Featured', type: 'toggle' },
+];
+
+const EXPERIENCE_SCHEMA = [
+  { key: 'role', label: 'Role / degree', wide: false },
+  { key: 'company', label: 'Company / institution', wide: false },
+  { key: 'duration', label: 'Duration', hint: 'e.g. Apr 2026 - Present', wide: false },
+  { key: 'type', label: 'Type', type: 'select', options: ['professional', 'education'], wide: false },
+  { key: 'description', label: 'Bullet points', type: 'listMultiline' },
+];
+
+const SERVICE_SCHEMA = [
+  { key: 'title', label: 'Title', wide: false },
+  { key: 'icon', label: 'Icon', type: 'select', options: SERVICE_ICONS, wide: false },
+  { key: 'description', label: 'Card description', type: 'textarea', rows: 2 },
+  { key: 'details', label: 'Details (shown in the popup)', type: 'textarea', rows: 3 },
+  { key: 'workflow', label: 'Workflow steps', type: 'listMultiline' },
+];
+
+export default function DashboardPage() {
   const router = useRouter();
-  const [message, setMessage] = useState('');
+  const [tab, setTab] = useState('site');
+  const [settings, setSettings] = useState(null);
+  const [dirty, setDirty] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [toast, setToast] = useState(null);
 
-  // --- STATE MANAGEMENT ---
-  const [projects, setProjects] = useState([]);
-  const [addProjectForm, setAddProjectForm] = useState({ title: '', description: '', technologies: '', liveUrl: '', githubUrl: '', featured: false });
-  const [editingProject, setEditingProject] = useState(null);
-  const [addSnapshot, setAddSnapshot] = useState(null);
-  const [editSnapshot, setEditSnapshot] = useState(null);
+  const notify = (msg, isError = false) => {
+    setToast({ msg, isError });
+    setTimeout(() => setToast(null), 3000);
+  };
+  const onAuthError = (msg) => {
+    notify(msg, true);
+    setTimeout(() => router.push('/admin/login'), 1200);
+  };
 
-  const [experience, setExperience] = useState([]);
-  const [addExperienceForm, setAddExperienceForm] = useState({ role: '', company: '', duration: '', description: '', type: 'professional' });
-  const [editingExperience, setEditingExperience] = useState(null);
-
-  // --- DATA FETCHING ---
   useEffect(() => {
-    fetchProjects();
-    fetchExperience();
+    adminFetch('/api/settings')
+      .then((s) => setSettings(s || {}))
+      .catch((e) => notify(e.message, true));
   }, []);
 
-  const fetchProjects = async () => {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/projects`);
-    const data = await res.json();
-    setProjects(data);
-  };
+  // Live-preview the accent colour inside the admin panel too
+  useEffect(() => {
+    const rgb = hexToRgbTriplet(settings?.accentColor);
+    if (rgb) document.documentElement.style.setProperty('--accent-rgb', rgb);
+  }, [settings?.accentColor]);
 
-  const fetchExperience = async () => {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/experience`);
-    const data = await res.json();
-    setExperience(data);
-  };
+  // Warn before leaving with unsaved settings
+  useEffect(() => {
+    const h = (e) => {
+      if (dirty) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+    window.addEventListener('beforeunload', h);
+    return () => window.removeEventListener('beforeunload', h);
+  }, [dirty]);
 
-  // --- FORM CHANGE HANDLERS ---
-  const handleAddProjectChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setAddProjectForm({ ...addProjectForm, [name]: type === 'checkbox' ? checked : value });
-  };
-  const handleEditProjectChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setEditingProject({ ...editingProject, [name]: type === 'checkbox' ? checked : value });
-  };
-  const handleAddExperienceChange = (e) => setAddExperienceForm({ ...addExperienceForm, [e.target.name]: e.target.value });
-  const handleEditExperienceChange = (e) => setEditingExperience({ ...editingExperience, [e.target.name]: e.target.value });
-
-  // --- PROJECT CRUD FUNCTIONS ---
-  const handleAddProjectSubmit = async (e) => {
-    e.preventDefault();
-    const token = localStorage.getItem('token');
-    
-    const formData = new FormData();
-    formData.append('title', addProjectForm.title);
-    formData.append('description', addProjectForm.description);
-    formData.append('technologies', addProjectForm.technologies);
-    formData.append('liveUrl', addProjectForm.liveUrl);
-    formData.append('githubUrl', addProjectForm.githubUrl);
-    formData.append('featured', addProjectForm.featured);
-    if (addSnapshot) {
-      formData.append('snapshot', addSnapshot);
-    }
-
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/projects/add`, {
-      method: 'POST',
-      headers: { 'x-auth-token': token },
-      body: formData,
+  // set('hero.tagline', value)
+  const set = (path, value) => {
+    setDirty(true);
+    setSettings((prev) => {
+      const keys = path.split('.');
+      const next = { ...prev };
+      let o = next;
+      keys.slice(0, -1).forEach((k) => {
+        o[k] = { ...(o[k] || {}) };
+        o = o[k];
+      });
+      o[keys.at(-1)] = value;
+      return next;
     });
-    if (res.ok) {
-      setMessage('Project added successfully!');
-      setAddProjectForm({ title: '', description: '', technologies: '', liveUrl: '', githubUrl: '', featured: false });
-      setAddSnapshot(null);
-      document.getElementById('add-snapshot-file').value = ''; // Clear file input
-      fetchProjects();
-    } else {
-      setMessage('Failed to add project.');
+  };
+  const get = (path) => path.split('.').reduce((o, k) => (o == null ? o : o[k]), settings);
+
+  const saveSettings = async () => {
+    setSaving(true);
+    try {
+      setSettings(await adminFetch('/api/settings', { method: 'PUT', body: settings }));
+      setDirty(false);
+      notify('Settings saved');
+    } catch (e) {
+      if (/session expired/i.test(e.message)) onAuthError(e.message);
+      else notify(e.message, true);
+    } finally {
+      setSaving(false);
     }
   };
 
-  const handleUpdateProjectSubmit = async (e) => {
-    e.preventDefault();
-    const token = localStorage.getItem('token');
-    
-    const formData = new FormData();
-    formData.append('title', editingProject.title);
-    formData.append('description', editingProject.description);
-    formData.append('technologies', Array.isArray(editingProject.technologies) ? editingProject.technologies.join(', ') : editingProject.technologies);
-    formData.append('liveUrl', editingProject.liveUrl);
-    formData.append('githubUrl', editingProject.githubUrl);
-    formData.append('featured', editingProject.featured);
-    if (editSnapshot) {
-      formData.append('snapshot', editSnapshot);
-    }
-    
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/projects/update/${editingProject._id}`, {
-        method: 'POST',
-        headers: { 'x-auth-token': token },
-        body: formData,
-    });
-    if (res.ok) {
-        setMessage('Project updated successfully!');
-        setEditingProject(null);
-        setEditSnapshot(null);
-        fetchProjects();
-    } else {
-        setMessage('Failed to update project.');
-    }
-  };
-
-  const handleDeleteProject = async (projectId) => {
-    if (!window.confirm('Are you sure you want to delete this project?')) return;
-    const token = localStorage.getItem('token');
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/projects/${projectId}`, {
-      method: 'DELETE',
-      headers: { 'x-auth-token': token },
-    });
-    if (res.ok) {
-      setMessage('Project deleted successfully!');
-      fetchProjects();
-    } else {
-      setMessage('Failed to delete project.');
-    }
-  };
-
-  // --- EXPERIENCE CRUD FUNCTIONS ---
-  const handleAddExperienceSubmit = async (e) => { /* ... */ };
-  const handleUpdateExperienceSubmit = async (e) => { /* ... */ };
-  const handleDeleteExperience = async (experienceId) => { /* ... */ };
-  
-  // --- LOGOUT ---
-  const handleLogout = () => {
+  const logout = () => {
     localStorage.removeItem('token');
     router.push('/admin/login');
   };
 
+  const isSettingsTab = ['site', 'home', 'about', 'menu', 'dock', 'blog'].includes(tab);
+
   return (
     <PrivateRoute>
-      <div className="min-h-screen bg-background text-primary ">
-        <div className="container mx-auto p-4 md:p-8">
-          <div className="flex justify-between items-center mb-8">
-            <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-            <button onClick={handleLogout} className="px-4 py-2 font-semibold text-white bg-red-600 rounded-md hover:bg-red-700">Logout</button>
-          </div>
-          {message && <p className="mb-4 text-center">{message}</p>}
-
-          {/* PROJECTS MANAGEMENT */}
-          <div className="bg-white p-6 rounded-lg shadow-md mb-8">
-            <h2 className="text-2xl font-bold mb-4">Manage Projects</h2>
-            <form onSubmit={handleAddProjectSubmit} className="space-y-4">
-              <input name="title" value={addProjectForm.title} onChange={handleAddProjectChange} placeholder="Title" required className="w-full p-2 bg-background border rounded"/>
-              <textarea name="description" value={addProjectForm.description} onChange={handleAddProjectChange} placeholder="Description" required className="w-full p-2 bg-background border rounded"/>
-              <input name="technologies" value={addProjectForm.technologies} onChange={handleAddProjectChange} placeholder="Technologies (comma-separated)" required className="w-full p-2 bg-background border rounded"/>
-              <input name="liveUrl" value={addProjectForm.liveUrl} onChange={handleAddProjectChange} placeholder="Live URL" className="w-full p-2 bg-background border rounded"/>
-              <input name="githubUrl" value={addProjectForm.githubUrl} onChange={handleAddProjectChange} placeholder="GitHub URL" className="w-full p-2 bg-background border rounded"/>
-              
-              <div>
-                <label className="block text-sm font-medium mb-1">Snapshot Image</label>
-                <input id="add-snapshot-file" type="file" name="snapshot" onChange={(e) => setAddSnapshot(e.target.files[0])} className="w-full text-sm"/>
-              </div>
-
-              <div className="flex items-center">
-                <input type="checkbox" id="featured" name="featured" checked={addProjectForm.featured} onChange={handleAddProjectChange} className="h-4 w-4"/>
-                <label htmlFor="featured" className="ml-2 block text-sm">Mark as Featured</label>
-              </div>
-
-              <button type="submit" className="px-4 py-2 font-semibold text-white bg-green-600 rounded-md hover:bg-green-700">Add Project</button>
-            </form>
-            <div className="space-y-4 mt-8">
-              {projects.map(project => (
-                <div key={project._id} className="p-4 border rounded flex justify-between items-center">
-                  <p className="font-semibold">{project.title}</p>
-                  <div className="space-x-2">
-                    <button onClick={() => setEditingProject(project)} className="px-3 py-1 text-sm font-semibold text-white bg-blue-600 rounded-md hover:bg-blue-700">Edit</button>
-                    <button onClick={() => handleDeleteProject(project._id)} className="px-3 py-1 text-sm font-semibold text-white bg-red-600 rounded-md hover:bg-red-700">Delete</button>
-                  </div>
-                </div>
-              ))}
+      <div className="min-h-screen bg-background">
+        {/* Top bar */}
+        <header className="sticky top-0 z-40 border-b border-primary/10 bg-background/90 backdrop-blur">
+          <div className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-3">
+            <div className="flex items-center gap-3">
+              <span className="h-2.5 w-2.5 rounded-full bg-accent" />
+              <h1 className="text-lg font-bold text-primary">Site admin</h1>
+            </div>
+            <div className="flex items-center gap-4 text-sm font-semibold">
+              <Link href="/" target="_blank" className="inline-flex items-center gap-1 text-secondary hover:text-primary">
+                View site
+                <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M7 17 17 7M8 7h9v9" />
+                </svg>
+              </Link>
+              <button type="button" onClick={logout} className="text-secondary hover:text-primary">
+                Log out
+              </button>
             </div>
           </div>
+          <nav className="mx-auto flex max-w-5xl gap-1 overflow-x-auto px-4 pb-2">
+            {TABS.map((t) => (
+              <button
+                key={t.id}
+                type="button"
+                onClick={() => setTab(t.id)}
+                className={`whitespace-nowrap rounded-full px-4 py-1.5 text-sm font-semibold transition-colors ${
+                  tab === t.id ? 'bg-primary text-background' : 'text-secondary hover:text-primary'
+                }`}
+              >
+                {t.label}
+              </button>
+            ))}
+          </nav>
+        </header>
 
-          {/* EXPERIENCE MANAGEMENT */}
-          <div className="bg-white p-6 rounded-lg shadow-md">
-            <h2 className="text-2xl font-bold mb-4">Manage Experience & Education</h2>
-            <form onSubmit={handleAddExperienceSubmit} className="space-y-4 mb-8">
-              <input name="role" value={addExperienceForm.role} onChange={handleAddExperienceChange} placeholder="Role / Degree" required className="w-full p-2 bg-background border rounded"/>
-              <input name="company" value={addExperienceForm.company} onChange={handleAddExperienceChange} placeholder="Company / Institution" required className="w-full p-2 bg-background border rounded"/>
-              <input name="duration" value={addExperienceForm.duration} onChange={handleAddExperienceChange} placeholder="Duration (e.g., Jan 2020 - Present)" required className="w-full p-2 bg-background border rounded"/>
-              <input name="description" value={addExperienceForm.description} onChange={handleAddExperienceChange} placeholder="Description (comma-separated)" className="w-full p-2 bg-background border rounded"/>
-              <select name="type" value={addExperienceForm.type} onChange={handleAddExperienceChange} className="w-full p-2 bg-background border rounded">
-                <option value="professional">Professional</option>
-                <option value="education">Education</option>
-              </select>
-              <button type="submit" className="px-4 py-2 font-semibold text-white bg-green-600 rounded-md hover:bg-green-700">Add Experience</button>
-            </form>
-            <div className="space-y-4">
-              {experience.map(item => (
-                <div key={item._id} className="p-4 border rounded flex justify-between items-center">
-                  <div>
-                    <p className="font-semibold">{item.role}</p>
-                    <p className="text-sm text-secondary ">{item.company}</p>
-                  </div>
-                  <div className="space-x-2">
-                    <button onClick={() => setEditingExperience(item)} className="px-3 py-1 text-sm font-semibold text-white bg-blue-600 rounded-md hover:bg-blue-700">Edit</button>
-                    <button onClick={() => handleDeleteExperience(item._id)} className="px-3 py-1 text-sm font-semibold text-white bg-red-600 rounded-md hover:bg-red-700">Delete</button>
-                  </div>
+        <main className="mx-auto max-w-5xl space-y-6 px-4 py-8 pb-32">
+          {isSettingsTab && !settings && <p className="text-secondary">Loading…</p>}
+
+          {tab === 'site' && settings && (
+            <>
+              <Card title="Brand colour" description="The third colour used for highlights, the badge dot and hover states.">
+                <ColorField label="Accent" value={get('accentColor')} onChange={(v) => set('accentColor', v)} presets={ACCENT_PRESETS} />
+              </Card>
+
+              <Card title="Highlight badge" description="A short proof point shown above the greeting, e.g. what you've built or who uses it.">
+                <Toggle
+                  label="Show highlight badge"
+                  hint="Displays a pill with a pulsing accent dot in the hero."
+                  value={get('availability.enabled') ?? true}
+                  onChange={(v) => set('availability.enabled', v)}
+                />
+                <Text label="Badge text" hint="Keep it short so it fits on phones (about 40 characters)." value={get('availability.text')} onChange={(v) => set('availability.text', v)} />
+              </Card>
+
+              <Card title="Hero">
+                <div className="grid gap-5 md:grid-cols-2">
+                  <Text label="Greeting" value={get('hero.greeting')} onChange={(v) => set('hero.greeting', v)} />
+                  <Text
+                    label="Name behind the photo"
+                    hint="Revealed by the cursor glow."
+                    value={get('hero.outlineName')}
+                    onChange={(v) => set('hero.outlineName', v)}
+                  />
                 </div>
-              ))}
+                <Text
+                  label="Vertical sidebar text (desktop)"
+                  value={get('hero.sidebarText')}
+                  onChange={(v) => set('hero.sidebarText', v)}
+                />
+                <TextArea label="Tagline" rows={2} value={get('hero.tagline')} onChange={(v) => set('hero.tagline', v)} />
+                <div className="grid gap-5 md:grid-cols-2">
+                  <StringList label="Typed roles (desktop)" value={get('hero.rolesDesktop')} onChange={(v) => set('hero.rolesDesktop', v)} />
+                  <StringList label="Typed roles (mobile)" value={get('hero.rolesMobile')} onChange={(v) => set('hero.rolesMobile', v)} />
+                </div>
+                <div className="grid gap-5 md:grid-cols-3">
+                  <Text label="Button text (desktop)" value={get('hero.ctaTextDesktop')} onChange={(v) => set('hero.ctaTextDesktop', v)} />
+                  <Text label="Button text (mobile)" value={get('hero.ctaTextMobile')} onChange={(v) => set('hero.ctaTextMobile', v)} />
+                  <Text label="Button link" value={get('hero.ctaHref')} onChange={(v) => set('hero.ctaHref', v)} />
+                </div>
+                <RowList
+                  label="Stats"
+                  hint="Leave the value empty to show the live project count."
+                  value={get('hero.stats')}
+                  onChange={(v) => set('hero.stats', v)}
+                  fields={[
+                    { key: 'value', label: 'Value (e.g. 3+)' },
+                    { key: 'label', label: 'Label' },
+                    { key: 'href', label: 'Link' },
+                  ]}
+                />
+                <ImageField label="Hero photo" value={get('hero.photoUrl')} onChange={(v) => set('hero.photoUrl', v)} folder="site" />
+              </Card>
+
+              <Card title="Social links">
+                <div className="grid gap-5 md:grid-cols-3">
+                  <Text label="GitHub" value={get('socials.github')} onChange={(v) => set('socials.github', v)} />
+                  <Text label="LinkedIn" value={get('socials.linkedin')} onChange={(v) => set('socials.linkedin', v)} />
+                  <Text label="Email" value={get('socials.email')} onChange={(v) => set('socials.email', v)} />
+                </div>
+              </Card>
+            </>
+          )}
+
+          {tab === 'menu' && settings && (
+            <Card title="Slide-out menu" description="The links in the hamburger menu. Changes go live when you save.">
+              <MenuEditor
+                value={get('menu')?.length ? get('menu') : siteDefaults.menu}
+                onChange={(v) => set('menu', v)}
+              />
+            </Card>
+          )}
+
+          {tab === 'home' && settings && (
+            <Card title="Landing page sections" description="Choose which sections appear below the hero and in what order. Numbers update automatically.">
+              <HomeSectionsEditor value={get('homeSections')} onChange={(v) => set('homeSections', v)} />
+            </Card>
+          )}
+
+          {tab === 'blog' && settings && (
+            <Card title="Blog covers" description="Override the cover image for any Medium post.">
+              <BlogCoversEditor value={get('blogCovers')} onChange={(v) => set('blogCovers', v)} />
+            </Card>
+          )}
+
+          {tab === 'dock' && settings && (
+            <Card title="Floating dock" description="The bar of icons at the bottom of the screen. Changes go live when you save.">
+              <DockEditor
+                value={get('dock')?.length ? get('dock') : siteDefaults.dock}
+                onChange={(v) => set('dock', v)}
+              />
+            </Card>
+          )}
+
+          {tab === 'account' && <AccountSettings onAuthError={onAuthError} notify={notify} />}
+
+          {tab === 'about' && settings && (
+            <>
+              <Card title="About text">
+                <StringList label="Paragraphs" multiline value={get('about.paragraphs')} onChange={(v) => set('about.paragraphs', v)} />
+                <RowList
+                  label="Highlight cards"
+                  value={get('about.highlights')}
+                  onChange={(v) => set('about.highlights', v)}
+                  fields={[
+                    { key: 'value', label: 'Value (e.g. 4,000+)' },
+                    { key: 'label', label: 'Label' },
+                  ]}
+                />
+                <ImageField label="About photo" value={get('about.photoUrl')} onChange={(v) => set('about.photoUrl', v)} folder="site" />
+                <div className="grid gap-5 md:grid-cols-3">
+                  <label className="block">
+                    <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-secondary">Photo shape</span>
+                    <select className="w-full rounded-lg border border-primary/15 bg-surface px-3 py-2 text-sm text-primary focus:outline-none focus:ring-2 focus:ring-accent/40" value={get('about.photoAspect') || 'portrait'} onChange={(e) => set('about.photoAspect', e.target.value)}>
+                      <option value="portrait">Portrait (4:5)</option>
+                      <option value="tall">Tall (3:4)</option>
+                      <option value="square">Square</option>
+                      <option value="landscape">Landscape (4:3)</option>
+                    </select>
+                  </label>
+                  <label className="block">
+                    <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-secondary">Crop</span>
+                    <select className="w-full rounded-lg border border-primary/15 bg-surface px-3 py-2 text-sm text-primary focus:outline-none focus:ring-2 focus:ring-accent/40" value={get('about.photoFit') || 'cover'} onChange={(e) => set('about.photoFit', e.target.value)}>
+                      <option value="cover">Fill the frame (crop)</option>
+                      <option value="contain">Fit whole photo</option>
+                    </select>
+                  </label>
+                  <label className="block">
+                    <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-secondary">Focus point</span>
+                    <select className="w-full rounded-lg border border-primary/15 bg-surface px-3 py-2 text-sm text-primary focus:outline-none focus:ring-2 focus:ring-accent/40" value={get('about.photoPosition') || 'center'} onChange={(e) => set('about.photoPosition', e.target.value)}>
+                      <option value="top">Top (face)</option>
+                      <option value="center">Centre</option>
+                      <option value="bottom">Bottom</option>
+                    </select>
+                  </label>
+                </div>
+                <Toggle
+                  label="Show projects count on the photo"
+                  hint="The “8+ Projects shipped” overlay with the arrow button."
+                  value={get('about.photoBadge') ?? true}
+                  onChange={(v) => set('about.photoBadge', v)}
+                />
+              </Card>
+              <Card title="Journey">
+                <RowList
+                  label="Milestones"
+                  value={get('about.milestones')}
+                  onChange={(v) => set('about.milestones', v)}
+                  fields={[
+                    { key: 'year', label: 'Year' },
+                    { key: 'text', label: 'What happened', type: 'textarea' },
+                  ]}
+                />
+              </Card>
+              <Card title="Tech stack">
+                <RowList
+                  label="Tools"
+                  folder="logos"
+                  value={get('toolkit')}
+                  onChange={(v) => set('toolkit', v)}
+                  fields={[
+                    { key: 'name', label: 'Name' },
+                    { key: 'logo', label: 'Logo', type: 'image' },
+                  ]}
+                />
+              </Card>
+              <Card title="Certifications">
+                <RowList
+                  label="Certificates"
+                  value={get('about.certifications')}
+                  onChange={(v) => set('about.certifications', v)}
+                  fields={[
+                    { key: 'name', label: 'Name' },
+                    { key: 'issuer', label: 'Issuer' },
+                    { key: 'link', label: 'Verification link' },
+                  ]}
+                />
+              </Card>
+            </>
+          )}
+
+          {tab === 'projects' && (
+            <CollectionEditor
+              endpoint="/api/content/projects"
+              schema={PROJECT_SCHEMA}
+              titleKey="title"
+              subtitleKey="category"
+              folder="projects"
+              emptyItem={{ title: '', category: '', description: '', technologies: [], impact: { metric: '', label: '' }, featured: false }}
+              onAuthError={onAuthError}
+              notify={notify}
+            />
+          )}
+
+          {tab === 'experience' && (
+            <CollectionEditor
+              endpoint="/api/content/experience"
+              schema={EXPERIENCE_SCHEMA}
+              titleKey="role"
+              subtitleKey="company"
+              emptyItem={{ role: '', company: '', duration: '', type: 'professional', description: [] }}
+              onAuthError={onAuthError}
+              notify={notify}
+            />
+          )}
+
+          {tab === 'services' && (
+            <CollectionEditor
+              endpoint="/api/content/services"
+              schema={SERVICE_SCHEMA}
+              titleKey="title"
+              subtitleKey="description"
+              emptyItem={{ title: '', icon: 'Globe', description: '', details: '', workflow: [] }}
+              onAuthError={onAuthError}
+              notify={notify}
+            />
+          )}
+
+          {tab === 'reviews' && <ReviewsModeration onAuthError={onAuthError} notify={notify} />}
+        </main>
+
+        {/* Save bar for settings tabs */}
+        {isSettingsTab && settings && (
+          <div className="fixed inset-x-0 bottom-0 z-40 border-t border-primary/10 bg-surface/95 backdrop-blur">
+            <div className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-3">
+              <p className="text-sm text-secondary">{dirty ? 'You have unsaved changes' : 'All changes saved'}</p>
+              <button
+                type="button"
+                disabled={!dirty || saving}
+                onClick={saveSettings}
+                className="rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-background hover:bg-accent transition-colors disabled:opacity-40"
+              >
+                {saving ? 'Saving…' : 'Save changes'}
+              </button>
             </div>
           </div>
-        </div>
+        )}
+
+        {toast && (
+          <div
+            role="status"
+            className={`fixed left-1/2 top-4 z-50 -translate-x-1/2 rounded-full px-5 py-2.5 text-sm font-semibold shadow-lg ${
+              toast.isError ? 'bg-red-600 text-white' : 'bg-primary text-background'
+            }`}
+          >
+            {toast.msg}
+          </div>
+        )}
       </div>
-
-      {/* MODALS */}
-      {editingProject && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white p-8 rounded-lg shadow-2xl w-full max-w-lg">
-            <h2 className="text-2xl font-bold mb-4">Edit Project</h2>
-            <form onSubmit={handleUpdateProjectSubmit} className="space-y-4">
-              <input name="title" value={editingProject.title} onChange={handleEditProjectChange} placeholder="Title" required className="w-full p-2 bg-background border rounded"/>
-              <textarea name="description" value={editingProject.description} onChange={handleEditProjectChange} placeholder="Description" required className="w-full p-2 bg-background border rounded"/>
-              <input name="technologies" value={Array.isArray(editingProject.technologies) ? editingProject.technologies.join(', ') : editingProject.technologies} onChange={handleEditProjectChange} placeholder="Technologies (comma-separated)" required className="w-full p-2 bg-background border rounded"/>
-              <input name="liveUrl" value={editingProject.liveUrl} onChange={handleEditProjectChange} placeholder="Live URL" className="w-full p-2 bg-background border rounded"/>
-              <input name="githubUrl" value={editingProject.githubUrl} onChange={handleEditProjectChange} placeholder="GitHub URL" className="w-full p-2 bg-background border rounded"/>
-              
-              <div>
-                <label className="block text-sm font-medium mb-1">New Snapshot (optional)</label>
-                <input type="file" name="snapshot" onChange={(e) => setEditSnapshot(e.target.files[0])} className="w-full text-sm" />
-              </div>
-
-              <div className="flex items-center">
-                <input type="checkbox" id="edit-featured" name="featured" checked={editingProject.featured} onChange={handleEditProjectChange} />
-                <label htmlFor="edit-featured" className="ml-2 block text-sm">Mark as Featured</label>
-              </div>
-              
-              <div className="flex justify-end space-x-4">
-                <button type="button" onClick={() => setEditingProject(null)} className="px-4 py-2 font-semibold bg-gray-200 rounded-md hover:bg-gray-300">Cancel</button>
-                <button type="submit" className="px-4 py-2 font-semibold text-white bg-green-600 rounded-md hover:bg-green-700">Save Changes</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* This is the Edit Experience Modal */}
-      {editingExperience && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white p-8 rounded-lg shadow-2xl w-full max-w-lg">
-            <h2 className="text-2xl font-bold mb-4">Edit Experience</h2>
-            <form onSubmit={handleUpdateExperienceSubmit} className="space-y-4">
-              <input name="role" value={editingExperience.role} onChange={handleEditExperienceChange} placeholder="Role / Degree" required className="w-full p-2 bg-background border rounded"/>
-              <input name="company" value={editingExperience.company} onChange={handleEditExperienceChange} placeholder="Company / Institution" required className="w-full p-2 bg-background border rounded"/>
-              <input name="duration" value={editingExperience.duration} onChange={handleEditExperienceChange} placeholder="Duration" required className="w-full p-2 bg-background border rounded"/>
-              <input name="description" value={Array.isArray(editingExperience.description) ? editingExperience.description.join(', ') : editingExperience.description} onChange={handleEditExperienceChange} placeholder="Description (comma-separated)" className="w-full p-2 bg-background border rounded"/>
-              <select name="type" value={editingExperience.type} onChange={handleEditExperienceChange} className="w-full p-2 bg-background border rounded">
-                <option value="professional">Professional</option>
-                <option value="education">Education</option>
-              </select>
-              <div className="flex justify-end space-x-4">
-                <button type="button" onClick={() => setEditingExperience(null)} className="px-4 py-2 font-semibold bg-gray-200 rounded-md hover:bg-gray-300">Cancel</button>
-                <button type="submit" className="px-4 py-2 font-semibold text-white bg-green-600 rounded-md hover:bg-green-700">Save Changes</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </PrivateRoute>
   );
-};
-
-export default DashboardPage;
+}

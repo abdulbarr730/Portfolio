@@ -11,7 +11,7 @@ export const metadata = {
 
 export default function JobsLayout({ children }) {
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-muted/60">
       {/* Navbar will be at the top */}
       <Navbar_Jobs />
 

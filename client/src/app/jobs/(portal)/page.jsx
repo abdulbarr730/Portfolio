@@ -32,11 +32,11 @@ function CountUp({ end = 0, duration = 800, className = "text-4xl font-bold" }) 
 // -------------------- Skeleton Card --------------------
 function SkeletonCard() {
   return (
-    <div className="animate-pulse p-6 bg-white rounded-2xl shadow-md border border-gray-200">
-      <div className="h-6 w-1/3 bg-gray-300 rounded mb-4" />
-      <div className="h-3 w-full bg-gray-200 rounded mb-2" />
-      <div className="h-3 w-5/6 bg-gray-200 rounded mb-6" />
-      <div className="h-10 w-full bg-gray-300 rounded" />
+    <div className="animate-pulse p-6 bg-surface rounded-2xl shadow-md border border-primary/15">
+      <div className="h-6 w-1/3 bg-muted rounded mb-4" />
+      <div className="h-3 w-full bg-muted rounded mb-2" />
+      <div className="h-3 w-5/6 bg-muted rounded mb-6" />
+      <div className="h-10 w-full bg-muted rounded" />
     </div>
   );
 }
@@ -289,7 +289,7 @@ export default function JobsPage() {
   // -------------------- LOADING UI --------------------
   if (loading)
     return (
-      <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-50 p-8">
+      <div className="min-h-screen bg-gradient-to-br from-accent/10 to-accent/10 p-8">
         <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
           <SkeletonCard />
           <SkeletonCard />
@@ -308,10 +308,10 @@ export default function JobsPage() {
 
       <ConfettiCanvas trigger={confettiTrigger} />
 
-      <div className="min-h-screen bg-gray-50 pb-24 relative">
+      <div className="min-h-screen bg-background pb-24 relative">
 
         {/* ================= HEADER ================= */}
-        <header className="bg-gradient-to-r from-indigo-600 to-blue-600 text-white py-16 rounded-b-[2rem] shadow-xl">
+        <header className="bg-gradient-to-r from-accent to-accent text-white py-16 rounded-b-[2rem] shadow-xl">
           <div className="max-w-6xl mx-auto px-6 text-center">
             <motion.h1
               initial={{ opacity: 0, y: -8 }}
@@ -334,33 +334,33 @@ export default function JobsPage() {
             <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-3xl mx-auto">
               <motion.div
                 onClick={() => (window.location.href = "/jobs/my-applications")}
-                className="cursor-pointer bg-white rounded-2xl p-4 shadow-md border border-gray-100 transition-all duration-200 hover:shadow-lg hover:scale-[1.03] hover:bg-neutral-50"
+                className="cursor-pointer bg-surface rounded-2xl p-4 shadow-md border border-primary/10 transition-all duration-200 hover:shadow-lg hover:scale-[1.03] hover:bg-background"
                 initial={{ y: 8, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
               >
-                <div className="text-xs uppercase text-gray-500">Jobs Applied</div>
-                <CountUp end={appliedCount} className="text-2xl font-bold text-blue-700" />
+                <div className="text-xs uppercase text-secondary">Jobs Applied</div>
+                <CountUp end={appliedCount} className="text-2xl font-bold text-accent" />
               </motion.div>
 
               <motion.div
                 onClick={() => (window.location.href = "/jobs/updateprofile")}
-                className="cursor-pointer bg-white rounded-2xl p-4 shadow-md border border-gray-100 transition-all duration-200 hover:shadow-lg hover:scale-[1.03] hover:bg-neutral-50"
+                className="cursor-pointer bg-surface rounded-2xl p-4 shadow-md border border-primary/10 transition-all duration-200 hover:shadow-lg hover:scale-[1.03] hover:bg-background"
                 initial={{ y: 8, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.05 }}
               >
-                <div className="text-xs uppercase text-gray-500">Branch</div>
-                <div className="text-2xl font-bold text-purple-600">{student?.branch}</div>
+                <div className="text-xs uppercase text-secondary">Branch</div>
+                <div className="text-2xl font-bold text-accent">{student?.branch}</div>
               </motion.div>
 
               <motion.div
                 onClick={() => (window.location.href = "/jobs/updateprofile")}
-                className="cursor-pointer bg-white rounded-2xl p-4 shadow-md border border-gray-100 transition-all duration-200 hover:shadow-lg hover:scale-[1.03] hover:bg-neutral-50"
+                className="cursor-pointer bg-surface rounded-2xl p-4 shadow-md border border-primary/10 transition-all duration-200 hover:shadow-lg hover:scale-[1.03] hover:bg-background"
                 initial={{ y: 8, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.1 }}
               >
-                <div className="text-xs uppercase text-gray-500">Year</div>
+                <div className="text-xs uppercase text-secondary">Year</div>
                 <div className="text-2xl font-bold text-green-600">{student?.year}</div>
               </motion.div>
             </div>
@@ -376,7 +376,7 @@ export default function JobsPage() {
                 initial={{ opacity: 0, y: -8 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -8 }}
-                className="mt-6 p-3 bg-white rounded-xl border-l-4 border-blue-500 shadow"
+                className="mt-6 p-3 bg-surface rounded-xl border-l-4 border-accent shadow"
               >
                 {tempMessage}
               </motion.div>
@@ -384,19 +384,19 @@ export default function JobsPage() {
           </AnimatePresence>
 
           {/* Filters */}
-          <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-white p-4 rounded-2xl mt-6 shadow border border-gray-100">
+          <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-surface p-4 rounded-2xl mt-6 shadow border border-primary/10">
             <div className="flex gap-3 items-center w-full md:w-2/3">
               <input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search roles, companies..."
-                className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-300"
+                className="w-full p-3 rounded-xl border border-primary/15 focus:ring-2 focus:ring-accent/40"
               />
 
               <select
                 value={filterType}
                 onChange={(e) => setFilterType(e.target.value)}
-                className="p-3 rounded-xl border border-gray-200"
+                className="p-3 rounded-xl border border-primary/15"
               >
                 <option value="all">All Types</option>
                 <option value="full-time">Full-Time</option>
@@ -409,11 +409,11 @@ export default function JobsPage() {
             </div>
 
             <div className="flex items-center gap-3">
-              <label className="text-sm text-gray-600">Sort</label>
+              <label className="text-sm text-secondary">Sort</label>
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="p-3 rounded-xl border border-gray-200"
+                className="p-3 rounded-xl border border-primary/15"
               >
                 <option value="latest">Latest</option>
                 <option value="oldest">Oldest</option>
@@ -450,13 +450,13 @@ export default function JobsPage() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 12 }}
                     transition={{ duration: 0.28 }}
-                    className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100 relative hover:shadow-xl hover:scale-[1.02] transition-all duration-200"
+                    className="bg-surface p-6 rounded-2xl shadow-lg border border-primary/10 relative hover:shadow-xl hover:scale-[1.02] transition-all duration-200"
                   >
                     {/* Bookmark */}
                     <button
                       onClick={() => toggleBookmark(job._id)}
                       className={`absolute top-4 right-4 text-lg ${
-                        bookmarked.has(job._id) ? "text-yellow-500" : "text-gray-300"
+                        bookmarked.has(job._id) ? "text-yellow-500" : "text-secondary/70"
                       }`}
                     >
                       ★
@@ -464,13 +464,13 @@ export default function JobsPage() {
 
                     <div className="flex items-start gap-4">
                       <div className="flex-1">
-                        <h3 className="text-xl font-semibold text-gray-900">{job.name}</h3>
+                        <h3 className="text-xl font-semibold text-primary">{job.name}</h3>
 
-                        <p className="text-sm text-gray-600 mt-2 line-clamp-3">{job.description}</p>
+                        <p className="text-sm text-secondary mt-2 line-clamp-3">{job.description}</p>
 
                         <div className="mt-4 flex gap-2 flex-wrap text-xs">
                           {job.type && (
-                            <span className="px-3 py-1 rounded-full bg-blue-50 text-blue-700">
+                            <span className="px-3 py-1 rounded-full bg-accent/10 text-accent">
                               {job.type}
                             </span>
                           )}
@@ -491,7 +491,7 @@ export default function JobsPage() {
                           target={isEmail ? "_self" : "_blank"}
                           rel="noreferrer"
                           onClick={() => handleExternalLinkClick(job._id)}
-                          className={`text-sm font-semibold underline ${isEmail ? 'text-purple-600' : 'text-blue-600'}`}
+                          className={`text-sm font-semibold underline ${isEmail ? 'text-accent' : 'text-accent'}`}
                         >
                           {linkText}
                         </a>
@@ -520,7 +520,7 @@ export default function JobsPage() {
                             className={`mt-2 w-full py-2 rounded-xl text-white font-semibold transition-all text-xs
                               ${visitedLinks.has(job._id) 
                                   ? "bg-emerald-500 hover:bg-emerald-600 shadow-md cursor-pointer" 
-                                  : "bg-gray-300 cursor-not-allowed"}`}
+                                  : "bg-muted cursor-not-allowed"}`}
                           >
                             {visitedLinks.has(job._id) 
                               ? (processingApplyId === job._id ? "Processing..." : "I have Applied") 
@@ -546,7 +546,7 @@ export default function JobsPage() {
               className="fixed inset-0 z-40 flex items-center justify-center p-4"
             >
               <div
-                className="absolute inset-0 bg-black/30 backdrop-blur-sm"
+                className="absolute inset-0 bg-ink/30 backdrop-blur-sm"
                 onClick={() => setConfirmOpen(false)}
               />
 
@@ -555,29 +555,29 @@ export default function JobsPage() {
                 animate={{ y: 0, opacity: 1 }}
                 exit={{ y: 30, opacity: 0 }}
                 transition={{ duration: 0.25 }}
-                className="relative z-50 w-full max-w-2xl bg-white rounded-2xl shadow-2xl p-6 border border-gray-100"
+                className="relative z-50 w-full max-w-2xl bg-surface rounded-2xl shadow-2xl p-6 border border-primary/10"
               >
                 <h3 className="text-2xl font-bold mb-2">Confirm Application</h3>
 
-                <p className="text-gray-700 mb-4">
+                <p className="text-secondary mb-4">
                   Did you successfully submit the application for <strong>{jobToApply.name}</strong>?
                 </p>
 
                 <div className="mb-4">
-                  <div className="text-sm text-gray-500">Role</div>
+                  <div className="text-sm text-secondary">Role</div>
                   <div className="text-lg font-semibold">{jobToApply.name}</div>
                 </div>
 
                 {/* --- Verification Checkbox --- */}
-                <div className="mb-6 bg-blue-50 p-3 rounded-lg border border-blue-100">
+                <div className="mb-6 bg-accent/10 p-3 rounded-lg border border-accent/20">
                   <label className="flex items-start gap-3 cursor-pointer">
                     <input 
                       type="checkbox" 
-                      className="mt-1 w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      className="mt-1 w-5 h-5 rounded border-primary/20 text-accent focus:ring-accent"
                       checked={confirmChecked}
                       onChange={(e) => setConfirmChecked(e.target.checked)}
                     />
-                    <span className="text-sm text-gray-700">
+                    <span className="text-sm text-secondary">
                        I verify that I have submitted my application (via Website or Email) for this role.
                     </span>
                   </label>
@@ -586,7 +586,7 @@ export default function JobsPage() {
                 <div className="flex gap-3 justify-end">
                   <button
                     onClick={() => setConfirmOpen(false)}
-                    className="px-4 py-2 rounded-lg border border-gray-200 hover:bg-gray-50"
+                    className="px-4 py-2 rounded-lg border border-primary/15 hover:bg-background"
                   >
                     Cancel
                   </button>
@@ -597,7 +597,7 @@ export default function JobsPage() {
                     className={`px-4 py-2 rounded-lg text-white font-semibold transition-colors
                       ${confirmChecked 
                         ? "bg-emerald-500 hover:bg-emerald-600" 
-                        : "bg-gray-300 cursor-not-allowed"
+                        : "bg-muted cursor-not-allowed"
                       }`}
                   >
                     {processingApplyId === jobToApply._id

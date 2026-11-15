@@ -139,8 +139,8 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex justify-center items-center px-4 py-10">
-      <div className="bg-white shadow-lg rounded-2xl p-8 w-full max-w-md">
+    <div className="min-h-screen bg-muted/60 flex justify-center items-center px-4 py-10">
+      <div className="bg-surface shadow-lg rounded-2xl p-8 w-full max-w-md">
         <h1 className="text-3xl font-bold text-center mb-6">
           Student Registration
         </h1>
@@ -184,7 +184,7 @@ export default function RegisterPage() {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500"
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-secondary"
               >
                 {showPassword ? "🙈" : "👁️"}
               </button>
@@ -236,7 +236,7 @@ export default function RegisterPage() {
 
             <button
               onClick={handleRegister}
-              className="w-full bg-blue-600 text-white py-3 rounded-md hover:bg-blue-700"
+              className="w-full bg-accent text-white py-3 rounded-md hover:bg-primary"
               disabled={loading}
             >
               {loading ? "Registering..." : "Register"}
@@ -249,7 +249,7 @@ export default function RegisterPage() {
           <div className="space-y-4">
             <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-md">
               <p className="font-semibold">Registration pending</p>
-              <p className="text-sm text-gray-700 mt-1">
+              <p className="text-sm text-secondary mt-1">
                 Your registration is waiting for admin approval.
               </p>
             </div>
@@ -264,7 +264,7 @@ export default function RegisterPage() {
 
               <button
                 onClick={() => (window.location.href = "/jobs/login")}
-                className="flex-1 bg-gray-200 py-2 rounded-md"
+                className="flex-1 bg-muted py-2 rounded-md"
               >
                 Back to login
               </button>
@@ -274,7 +274,7 @@ export default function RegisterPage() {
 
         {/* Messages */}
         {message && (
-          <div className="mt-4 bg-black text-white p-3 rounded text-center">
+          <div className="mt-4 bg-ink text-white p-3 rounded text-center">
             {message}
           </div>
         )}
@@ -285,9 +285,9 @@ export default function RegisterPage() {
           </div>
         )}
 
-        <p className="text-center mt-5 text-gray-700">
+        <p className="text-center mt-5 text-secondary">
           Already have an account?{" "}
-          <a href="/jobs/login" className="text-blue-600 underline">
+          <a href="/jobs/login" className="text-accent underline">
             Login here
           </a>
         </p>
@@ -295,10 +295,10 @@ export default function RegisterPage() {
 
       {/* Cancel Modal */}
       {showConfirmCancel && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-xl w-full max-w-md">
+        <div className="fixed inset-0 bg-ink/40 flex items-center justify-center z-50">
+          <div className="bg-surface p-6 rounded-xl w-full max-w-md">
             <h3 className="text-lg font-semibold mb-2">Confirm cancellation</h3>
-            <p className="text-sm text-gray-600 mb-4">
+            <p className="text-sm text-secondary mb-4">
               Are you sure you want to cancel your pending registration?
             </p>
 
@@ -313,7 +313,7 @@ export default function RegisterPage() {
 
               <button
                 onClick={() => setShowConfirmCancel(false)}
-                className="flex-1 bg-gray-200 py-2 rounded-md"
+                className="flex-1 bg-muted py-2 rounded-md"
               >
                 No, keep it
               </button>

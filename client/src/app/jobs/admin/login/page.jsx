@@ -43,16 +43,16 @@ export default function AdminLoginPage() {
 
   return (
     // FIX: Changed dark background to light neutral
-    <div className="min-h-screen bg-gray-50 flex justify-center items-center px-4 py-10"> 
+    <div className="min-h-screen bg-background flex justify-center items-center px-4 py-10"> 
       {/* FIX: Added border for better separation */}
-      <div className="bg-white shadow-xl rounded-2xl p-8 w-full max-w-md border border-gray-200">
-        <h1 className="text-3xl font-bold mb-8 text-gray-900">Admin Login</h1>
+      <div className="bg-surface shadow-xl rounded-2xl p-8 w-full max-w-md border border-primary/15">
+        <h1 className="text-3xl font-bold mb-8 text-primary">Admin Login</h1>
         
         <div className="space-y-4">
           <input
             type="email"
             placeholder="Admin Email"
-            className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 transition duration-150"
+            className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-accent transition duration-150"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
@@ -63,7 +63,7 @@ export default function AdminLoginPage() {
             <input
               type={showPassword ? "text" : "password"}
               placeholder="Admin Password"
-              className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 transition duration-150"
+              className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-accent transition duration-150"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -72,7 +72,7 @@ export default function AdminLoginPage() {
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-r-lg"
+              className="absolute inset-y-0 right-0 flex items-center pr-3 text-secondary hover:text-accent focus:outline-none focus:ring-2 focus:ring-accent rounded-r-lg"
               aria-label={showPassword ? "Hide password" : "Show password"} 
             >
               {showPassword ? (
@@ -87,7 +87,7 @@ export default function AdminLoginPage() {
 
           <button
             onClick={handleLogin}
-            className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition duration-150 focus:outline-none focus:ring-4 focus:ring-blue-300"
+            className="w-full bg-accent text-white py-3 rounded-lg hover:bg-primary transition duration-150 focus:outline-none focus:ring-4 focus:ring-accent/40"
             disabled={loading}
           >
             {loading ? "Logging in..." : "Login"}

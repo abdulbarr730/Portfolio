@@ -37,6 +37,7 @@ const adminAuth = require('./middleware/adminAuth_jobs');
 const adminAuthRoutes = require('./routes/adminAuthRoutes');
 const adminApiRoutes = require('./routes/adminApiRoutes');
 const subscriberRoutes = require("./routes/subscriberRoutes");
+const contentRoutes = require("./routes/contentRoutes");
 
 
 
@@ -71,6 +72,7 @@ app.use('/api/student', StudentRoutes);
 app.use("/api/jobs", JobRoutes);
 app.use("/api/admin/auth", adminAuthRoutes); // <-- Login/Logout (NOT protected)
 app.use("/api/admin", adminAuth, adminApiRoutes);
+app.use("/api", contentRoutes); // site settings, uploads, admin content
 app.use("/api/", subscriberRoutes);
 
 

@@ -1,3 +1,4 @@
+import PageHeader from '@/components/PageHeader';
 // app/terms/page.jsx
 
 export const metadata = {
@@ -67,20 +68,11 @@ const sections = [
 
 export default function TermsPage() {
   return (
-    <main className="min-h-screen bg-background text-primary px-6 md:px-16 lg:px-32 py-24">
-      {/* Header */}
-      <div className="mb-16 border-b border-primary/10 pb-10">
-        <p className="text-secondary text-xs uppercase tracking-[0.3em] mb-3">Legal</p>
-        <h1 className="text-5xl md:text-7xl font-thin tracking-tighter text-primary mb-4">
-          Terms & Conditions
-        </h1>
-        <p className="text-secondary text-sm">
-          Last updated: <span className="text-primary/70">June 2026</span>
-        </p>
-      </div>
-
+    <main className="min-h-screen bg-background text-primary pb-24">
+      <PageHeader eyebrow="Legal" title="Terms" intro="Last updated June 2026. Plain-language, no surprises." />
+      <div className="page-container">
       {/* Sections */}
-      <div className="space-y-14 max-w-3xl">
+      <div className="space-y-12 max-w-3xl border-t border-primary/10 pt-12">
         {sections.map((section, i) => (
           <div key={i}>
             <h2 className="text-lg font-semibold text-primary/90 mb-4 tracking-tight">
@@ -111,6 +103,7 @@ export default function TermsPage() {
       </div>
 
       
+      </div>
     </main>
   );
 }

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useCallback, useLayoutEffect, memo } from 'react';
+import SectionHeader from '@/components/SectionHeader';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -50,7 +51,7 @@ const validateForm = ({ name, review, rating }) => {
 // ─────────────────────────────────────────────
 const Star = memo(({ filled, isRatingStar }) => (
   <svg
-    className={`w-5 h-5 ${isRatingStar ? 'text-yellow-400' : 'text-gray-300'}`}
+    className={`w-5 h-5 ${isRatingStar ? 'text-accent' : 'text-secondary/70'}`}
     fill={filled ? 'currentColor' : 'none'}
     viewBox="0 0 24 24"
     stroke="currentColor"
@@ -121,7 +122,7 @@ const TimeAgo = ({ date }) => {
     if (typeof window !== 'undefined')
       setText(formatDistanceToNow(new Date(date), { addSuffix: true }));
   }, [date]);
-  return <p className="text-xs text-gray-500">{text}</p>;
+  return <p className="text-xs text-secondary">{text}</p>;
 };
 
 // ─────────────────────────────────────────────
@@ -154,7 +155,7 @@ const useBodyScrollLock = (isLocked) => {
 // ─────────────────────────────────────────────
 // 🏆 Reviews Section
 // ─────────────────────────────────────────────
-export default function ReviewsSection() {
+export default function ReviewsSection({ index = '08' }) {
   const { data, mutate } = useSWR(
     `${process.env.NEXT_PUBLIC_API_URL}/api/reviews`,
     fetcher
@@ -222,25 +223,26 @@ export default function ReviewsSection() {
     text.length <= max ? { text, long: false } : { text: text.slice(0, max) + '...', long: true };
 
   return (
-    <section id="reviews" className="container mx-auto pt-22 pb-16 px-4 sm:px-6 lg:px-8 overflow-hidden">
-      <header className="text-center mb-16">
-        <h2 className="text-4xl font-bold tracking-tight text-primary">Testimonials</h2>
-        <p className="mt-4 text-lg text-secondary">
-          What others are saying about my work.
-        </p>
-      </header>
+    <section id="reviews" className="page-container pb-24 md:pb-32 overflow-hidden">
+      <SectionHeader
+        index={index}
+        eyebrow="Testimonials"
+        title="Kind words"
+        intro="What clients, teammates and visitors have said about working with me."
+      />
 
       {reviews.length > 0 ? (
         <div className="relative">
-          <div className="overflow-hidden" ref={emblaRef}>
+          <div className="overflow-hidden pt-4" ref={emblaRef}>
             <div className="flex -ml-4">
               {reviews.map((r, i) => {
                 const { text, long } = truncate(r.review);
                 return (
                   <div key={r._id} className="flex-shrink-0 w-full md:w-1/2 lg:w-1/3 pl-4">
-                    <div className="bg-white p-6 rounded-lg shadow-md flex flex-col h-full relative">
+                    <div className="card flex h-full flex-col relative p-7">
+                      <span aria-hidden="true" className="absolute right-6 top-4 font-serif text-7xl leading-none text-accent/15">&rdquo;</span>
                       {i === 0 && (
-                        <div className="absolute top-0 right-0 bg-blue-500 text-white text-xs font-bold px-2 py-1 rounded-bl-lg rounded-tr-lg">
+                        <div className="absolute left-7 -top-3 rounded-full bg-accent px-2.5 py-0.5 text-xs font-bold text-white">
                           Latest
                         </div>
                       )}
@@ -248,20 +250,23 @@ export default function ReviewsSection() {
                         <FlowingStars rating={r.rating} />
                         <TimeAgo date={r.createdAt} />
                       </div>
-                      <p className="text-secondary my-4 flex-grow italic">
-                        &ldquo;{text}&rdquo;
+                      <p className="my-5 flex-grow text-lg leading-relaxed text-primary">
+                        {text}
                       </p>
                       {long && (
                         <button
                           onClick={() => setSelectedReview(r)}
-                          className="text-blue-500 hover:underline text-sm self-start mb-4"
+                          className="text-accent hover:underline text-sm self-start mb-4"
                         >
                           Read More
                         </button>
                       )}
-                      <p className="font-bold text-primary mt-auto self-end">
-                        - {r.name}
-                      </p>
+                      <div className="mt-auto flex items-center gap-3 border-t border-primary/10 pt-4">
+                        <span className="grid h-9 w-9 place-items-center rounded-full bg-accent/10 text-sm font-bold text-accent">
+                          {(r.name || '?').trim().charAt(0).toUpperCase()}
+                        </span>
+                        <p className="font-semibold text-primary">{r.name}</p>
+                      </div>
                     </div>
                   </div>
                 );
@@ -270,13 +275,15 @@ export default function ReviewsSection() {
           </div>
           <button
             onClick={scrollPrev}
-            className="absolute top-1/2 -left-4 transform -translate-y-1/2 bg-white p-2 rounded-full shadow-md text-primary hover:scale-110 transition-transform"
+            aria-label="Previous reviews"
+            className="absolute top-1/2 -left-3 -translate-y-1/2 grid h-11 w-11 place-items-center rounded-full border border-primary/15 bg-surface text-primary shadow-sm transition-colors hover:border-accent hover:bg-accent hover:text-white"
           >
             ←
           </button>
           <button
             onClick={scrollNext}
-            className="absolute top-1/2 -right-4 transform -translate-y-1/2 bg-white p-2 rounded-full shadow-md text-primary hover:scale-110 transition-transform"
+            aria-label="Next reviews"
+            className="absolute top-1/2 -right-3 -translate-y-1/2 grid h-11 w-11 place-items-center rounded-full border border-primary/15 bg-surface text-primary shadow-sm transition-colors hover:border-accent hover:bg-accent hover:text-white"
           >
             →
           </button>
@@ -296,7 +303,7 @@ export default function ReviewsSection() {
         )}
         <button
           onClick={() => setIsAddModalOpen(true)}
-          className="bg-primary text-white font-bold py-3 px-8 rounded-lg text-lg hover:bg-opacity-90 transition-colors"
+          className="bg-accent text-white hover:bg-primary shadow-[0_10px_30px_-10px_rgb(var(--accent-rgb)/0.7)] font-bold py-3 px-8 rounded-lg text-lg transition-colors"
         >
           Leave a Review
         </button>
@@ -312,14 +319,14 @@ export default function ReviewsSection() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
+            className="fixed inset-0 bg-ink/60 z-50 flex items-center justify-center p-4"
             onClick={() => setIsAddModalOpen(false)}
           >
             <motion.div
               initial={{ y: 50, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: 50, opacity: 0 }}
-              className="bg-white rounded-lg shadow-2xl w-full max-w-lg"
+              className="bg-surface rounded-lg shadow-2xl w-full max-w-lg"
               onClick={e => e.stopPropagation()}
             >
               <form onSubmit={handleSubmit} className="p-8 space-y-4">
@@ -328,7 +335,7 @@ export default function ReviewsSection() {
                   <button
                     type="button"
                     onClick={() => { setIsAddModalOpen(false); setMessage(''); setFormState({ name: '', review: '', rating: 0 }); setAgreedToPolicy(false); }}
-                    className="text-2xl text-gray-400 hover:text-primary transition-colors"
+                    className="text-2xl text-secondary/70 hover:text-accent transition-colors"
                   >
                     &times;
                   </button>
@@ -345,7 +352,7 @@ export default function ReviewsSection() {
                     required
                     className="w-full p-2 bg-background border rounded"
                   />
-                  <p className="text-xs text-gray-400 text-right mt-0.5">
+                  <p className="text-xs text-secondary/70 text-right mt-0.5">
                     {formState.name.length}/{LIMITS.name}
                   </p>
                 </div>
@@ -361,7 +368,7 @@ export default function ReviewsSection() {
                     required
                     className="w-full p-2 bg-background border rounded resize-none"
                   />
-                  <p className="text-xs text-gray-400 text-right mt-0.5">
+                  <p className="text-xs text-secondary/70 text-right mt-0.5">
                     {formState.review.length}/{LIMITS.review}
                   </p>
                 </div>
@@ -388,7 +395,7 @@ export default function ReviewsSection() {
                     onChange={e => setAgreedToPolicy(e.target.checked)}
                     className="mt-1 w-4 h-4 accent-primary shrink-0 cursor-pointer"
                   />
-                  <span className="text-xs text-gray-500 leading-relaxed">
+                  <span className="text-xs text-secondary leading-relaxed">
                     I agree to the{' '}
                     <Link
                       href="/privacy"
@@ -436,21 +443,21 @@ export default function ReviewsSection() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
+            className="fixed inset-0 bg-ink/60 z-50 flex items-center justify-center p-4"
             onClick={() => setIsAllReviewsModalOpen(false)}
           >
             <motion.div
               initial={{ y: 50, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: 50, opacity: 0 }}
-              className="bg-white rounded-lg shadow-2xl w-full max-w-4xl h-[80vh] flex flex-col"
+              className="bg-surface rounded-lg shadow-2xl w-full max-w-4xl h-[80vh] flex flex-col"
               onClick={e => e.stopPropagation()}
             >
-              <div className="flex justify-between items-center p-4 border-b border-gray-200">
+              <div className="flex justify-between items-center p-4 border-b border-primary/15">
                 <h3 className="text-2xl font-bold text-primary">All Reviews</h3>
                 <button
                   onClick={() => setIsAllReviewsModalOpen(false)}
-                  className="text-2xl text-gray-400 hover:text-primary"
+                  className="text-2xl text-secondary/70 hover:text-accent"
                 >
                   &times;
                 </button>
@@ -458,12 +465,12 @@ export default function ReviewsSection() {
 
               <div className="p-8 overflow-y-auto grid grid-cols-1 md:grid-cols-2 gap-6 reviews-scroll-container">
                 {reviews.map(r => (
-                  <div key={r._id} className="bg-white p-6 rounded-lg">
+                  <div key={r._id} className="bg-surface p-6 rounded-lg">
                     <div className="flex justify-between items-center mb-2">
                       <FlowingStars rating={r.rating} />
                       <TimeAgo date={r.createdAt} />
                     </div>
-                    <p className="text-gray-700 my-2 italic">&ldquo;{r.review}&rdquo;</p>
+                    <p className="text-secondary my-2 italic">&ldquo;{r.review}&rdquo;</p>
                     <p className="font-bold text-primary mt-2 self-end">- {r.name}</p>
                   </div>
                 ))}
@@ -478,14 +485,14 @@ export default function ReviewsSection() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
+            className="fixed inset-0 bg-ink/60 z-50 flex items-center justify-center p-4"
             onClick={() => setSelectedReview(null)}
           >
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white rounded-lg shadow-2xl w-full max-w-2xl"
+              className="bg-surface rounded-lg shadow-2xl w-full max-w-2xl"
               onClick={e => e.stopPropagation()}
             >
               <div className="p-8">
@@ -493,7 +500,7 @@ export default function ReviewsSection() {
                   <button
                     type="button"
                     onClick={() => setSelectedReview(null)}
-                    className="text-2xl text-gray-400 hover:text-primary transition-colors"
+                    className="text-2xl text-secondary/70 hover:text-accent transition-colors"
                   >
                     &times;
                   </button>
@@ -502,7 +509,7 @@ export default function ReviewsSection() {
                   <FlowingStars rating={selectedReview.rating} />
                   <TimeAgo date={selectedReview.createdAt} />
                 </div>
-                <p className="text-lg text-gray-700 my-4 italic">
+                <p className="text-lg text-secondary my-4 italic">
                   &ldquo;{selectedReview.review}&rdquo;
                 </p>
                 <p className="font-bold text-primary mt-4 text-right">

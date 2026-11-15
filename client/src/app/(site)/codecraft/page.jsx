@@ -1,4 +1,5 @@
 'use client';
+import PageHeader from '@/components/PageHeader';
 
 import { useState, useLayoutEffect, useRef, useEffect } from 'react';
 import { gsap } from 'gsap';
@@ -366,33 +367,6 @@ const CodeCraftPage = () => {
     cardRefs.current[idx] = el;
   };
 
-  // GSAP reveal
-  useLayoutEffect(() => {
-    const ctx = gsap.context(() => {
-      gsap.fromTo(
-        cardRefs.current,
-        { opacity: 0, scale: 0.985 },
-        {
-          opacity: 1,
-          scale: 1,
-          duration: 0.6,
-          ease: 'power2.out',
-          stagger: 0.12,
-          scrollTrigger: {
-            trigger: containerRef.current,
-            start: 'top 85%',
-            toggleActions: 'play none none none',
-          },
-        }
-      );
-    }, containerRef);
-
-    return () => {
-      ctx.revert();
-      ScrollTrigger.getAll().forEach((t) => t.kill());
-    };
-  }, []);
-
   useEffect(() => {
     const onKey = (e) => e.key === 'Escape' && setOpenSnippet(null);
     window.addEventListener('keydown', onKey);
@@ -400,58 +374,30 @@ const CodeCraftPage = () => {
   }, []);
 
   return (
-    <div
-      ref={containerRef}
-      className="container mx-auto py-20 px-4 sm:px-6 lg:px-8 relative"
-    >
-      {/* Header */}
-      <div className="text-center mb-12">
-        <motion.h1
-          className="text-4xl md:text-5xl font-bold text-primary"
-          initial={{ y: -18, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.7 }}
-        >
-          Code Craft
-        </motion.h1>
-        <motion.p
-          className="mt-3 text-lg text-secondary max-w-2xl mx-auto"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.18, duration: 0.7 }}
-        >
-          How I implement features, handle edge cases, and write production-ready
-          code — compare my implementation to typical approaches.
-        </motion.p>
-      </div>
+    <div ref={containerRef} className="relative pb-24">
+      <PageHeader
+        index="07"
+        eyebrow="Code craft"
+        title="How I build"
+        intro="How I implement features, handle edge cases and write production-ready code, side by side with the typical approach."
+      />
 
-      {/* CTA */}
-      <div className="service-cta-card mb-12">
-        <Link
-          href="/services"
-          className="block bg-primary/10 border border-primary rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 text-center"
-        >
-          <h3 className="text-2xl font-bold text-primary mb-2">
-            Book a Service / Learn More
-          </h3>
-          <p className="text-secondary text-sm sm:text-base">
-            Explore my web dev and consulting services. First consultancy is
-            free!
-          </p>
-        </Link>
-      </div>
-
+      <div className="page-container">
       {/* Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {codeSnippets.map((snippet, idx) => (
-          <article
+          <motion.article
             key={snippet.id}
             ref={(el) => setCardRef(el, idx)}
-            className="project-card will-change-transform bg-white/70 backdrop-blur-md rounded-xl border border-white/20 shadow-md overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:scale-[1.02] hover:shadow-[0_0_25px_rgba(0,0,0,0.15)]"
-            style={{ opacity: 0 }}
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.15 }}
+            transition={{ duration: 0.6, ease: 'easeOut', delay: (idx % 3) * 0.08 }}
+            className="project-card card card-hover group overflow-hidden"
           >
             <div className="p-5 flex flex-col h-full">
-              <h3 className="text-lg font-semibold text-primary">
+              <p className="eyebrow mb-2 tabular-nums">{String(idx + 1).padStart(2, '0')}</p>
+              <h3 className="text-lg font-bold tracking-tight text-primary transition-colors group-hover:text-accent">
                 {snippet.title}
               </h3>
               <p className="mt-2 text-sm text-secondary">
@@ -483,13 +429,13 @@ const CodeCraftPage = () => {
                 </button>
                 <Link
                   href="/services"
-                  className="text-sm text-secondary hover:text-primary transition"
+                  className="text-sm text-secondary hover:text-accent transition"
                 >
                   Need help implementing?
                 </Link>
               </div>
             </div>
-          </article>
+          </motion.article>
         ))}
       </div>
 
@@ -511,7 +457,7 @@ const CodeCraftPage = () => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
-              className="absolute inset-0 bg-black/60 backdrop-blur-[10px]"
+              className="absolute inset-0 bg-ink/60 backdrop-blur-[10px]"
             />
 
             {/* MODAL PANEL */}
@@ -521,11 +467,11 @@ const CodeCraftPage = () => {
               exit={{ opacity: 0, scale: 0.97 }}
               transition={{ type: 'spring', stiffness: 240, damping: 26 }}
               onClick={(e) => e.stopPropagation()}
-              className="relative bg-white rounded-xl shadow-2xl w-full max-w-6xl max-h-[80vh] overflow-hidden flex flex-col"
+              className="relative bg-surface rounded-xl shadow-2xl w-full max-w-6xl max-h-[80vh] overflow-hidden flex flex-col"
               role="dialog"
               aria-modal="true"
             >
-              <div className="flex items-start justify-between p-6 border-b border-gray-200">
+              <div className="flex items-start justify-between p-6 border-b border-primary/15">
                 <div>
                   <h2 className="text-2xl font-bold text-primary">
                     {openSnippet.title}
@@ -536,7 +482,7 @@ const CodeCraftPage = () => {
                 </div>
                 <button
                   onClick={() => setOpenSnippet(null)}
-                  className="text-2xl text-gray-400 hover:text-primary"
+                  className="text-2xl text-secondary/70 hover:text-accent"
                   aria-label="Close code modal"
                 >
                   &times;
@@ -610,6 +556,7 @@ const CodeCraftPage = () => {
           </motion.div>
         )}
       </AnimatePresence>
+      </div>
     </div>
   );
 };

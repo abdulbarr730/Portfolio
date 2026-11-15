@@ -4,7 +4,7 @@ let Review = require('../models/Review.model');
 
 // GET: Fetch all reviews (no longer filtering for isApproved)
 router.route('/').get((req, res) => {
-  Review.find().sort({ createdAt: -1 }) // REMOVED: { isApproved: true }
+  Review.find({ isApproved: true }).sort({ createdAt: -1 }) // hidden reviews are moderated in the admin panel
     .then(reviews => res.json(reviews))
     .catch(err => res.status(400).json('Error: ' + err));
 });

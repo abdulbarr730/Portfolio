@@ -7,12 +7,57 @@ import Image from 'next/image';
 import { TypeAnimation } from 'react-type-animation';
 import Link from 'next/link';
 import RightSidebar from '@/components/RightSidebar';
-import { allProjectsData } from '@/app/data/projectData';
-import { asset } from '@/lib/asset';
+import { useSettings, useProjects } from '@/lib/content';
 
 gsap.registerPlugin(ScrollTrigger);
 
+// Spotlight mask: the outlined name is only visible inside a soft circle
+// whose centre (--mx/--my) and radius (--r) are driven from JS.
+const SPOTLIGHT = 'radial-gradient(circle var(--r) at var(--mx) var(--my), #000 0%, rgba(0,0,0,0.55) 45%, transparent 100%)';
+const spotlightStyle = {
+  '--r': '1px',
+  '--mx': '50%',
+  '--my': '50%',
+  WebkitMaskImage: SPOTLIGHT,
+  maskImage: SPOTLIGHT,
+};
+
+// "Years of Experience" -> ["Years of", "Experience"] (break before the last word)
+const splitLabel = (label = '') => {
+  const i = label.trim().lastIndexOf(' ');
+  return i === -1 ? [label, ''] : [label.slice(0, i), label.slice(i + 1)];
+};
+
+const AvailabilityBadge = ({ text, className = '' }) => (
+  <span
+    className={`inline-flex items-center gap-2 rounded-full border border-primary/10 bg-surface/80 backdrop-blur-sm px-3 py-1 text-xs font-medium text-primary whitespace-nowrap ${className}`}
+  >
+    <span className="relative flex h-2 w-2">
+      <span className="absolute inline-flex h-full w-full rounded-full bg-accent opacity-60 animate-ping" />
+      <span className="relative inline-flex h-2 w-2 rounded-full bg-accent" />
+    </span>
+    {text}
+  </span>
+);
+
+// "3+" -> 3 in black, "+" in orange
+const StatValue = ({ value }) => {
+  const m = /^(.*?)([^0-9a-z\s]*)$/i.exec(String(value));
+  return (
+    <>
+      {m ? m[1] : value}
+      {m && m[2] && <span className="text-accent">{m[2]}</span>}
+    </>
+  );
+};
+
 const HeroSection = () => {
+  const { settings } = useSettings();
+  const { projects } = useProjects();
+  const hero = settings.hero;
+  const availability = settings.availability;
+  const stats = hero.stats.map((st) => ({ ...st, value: st.value || `${projects.length}+` }));
+  const nameWords = String(hero.outlineName || '').trim().split(/\s+/);
   // --- WATERMARK ---
   if (typeof window !== 'undefined' && window.location.hostname !== 'abdulbarr.in') {
     if (window.console) console.debug('%c Auth-Trace: AB-730-PRV ', 'color: transparent;');
@@ -23,10 +68,10 @@ const HeroSection = () => {
 
   const marqueeTween = useRef(null);
   const desktopSlamTextRef = useRef(null);
-  const mobileSlamTextRef = useRef(null); // ✅ NEW REF FOR MOBILE BUTTON
 
   useLayoutEffect(() => {
     let removeMouseMove = null;
+    let removeSpotlight = null;
 
     const ctx = gsap.context(() => {
       // =========================
@@ -108,6 +153,14 @@ const HeroSection = () => {
         '-=0.55'
       );
 
+      // Giant outlined name: slides in from the side
+      tl.fromTo(
+        '.hero-outline-name',
+        { xPercent: -8, opacity: 0 },
+        { xPercent: 0, opacity: 1, duration: 1.2, ease: 'expo.out' },
+        '-=0.7'
+      );
+
       // Main content fade-in
       tl.to(
         '.hero-content-layer',
@@ -122,7 +175,7 @@ const HeroSection = () => {
       );
 
       // ✅ SLAM BUTTON ANIMATION (For both Desktop & Mobile)
-      const slamTargets = [desktopSlamTextRef.current, mobileSlamTextRef.current].filter(Boolean);
+      const slamTargets = [desktopSlamTextRef.current].filter(Boolean);
       
       if (slamTargets.length > 0) {
         tl.fromTo(
@@ -157,18 +210,58 @@ const HeroSection = () => {
       });
 
       // =========================
-      // MOBILE MARQUEE: HIDE AFTER HERO SCROLL
+      // NAME SPOTLIGHT
       // =========================
-      const mobileMarquee = document.querySelector('.mobile-marquee');
-      if (mobileMarquee && component.current) {
-        gsap.set(mobileMarquee, { y: 0, opacity: 1 });
+      const isDesktop = window.innerWidth > 768;
+      const reveal = gsap.utils
+        .toArray('.hero-name-reveal')
+        .find((el) => el.offsetParent !== null);
 
-        ScrollTrigger.create({
-          trigger: component.current,
-          start: 'bottom bottom', // when hero ends
-          onEnter: () => gsap.to(mobileMarquee, { y: 30, opacity: 0, duration: 0.25, ease: 'power2.out' }),
-          onLeaveBack: () => gsap.to(mobileMarquee, { y: 0, opacity: 1, duration: 0.25, ease: 'power2.out' }),
-        });
+      if (reveal) {
+        const light = { x: 0, y: 0, r: 1 };
+        const paint = () => {
+          reveal.style.setProperty('--mx', `${light.x}px`);
+          reveal.style.setProperty('--my', `${light.y}px`);
+          reveal.style.setProperty('--r', `${Math.max(light.r, 1)}px`);
+        };
+
+        if (isDesktop && component.current) {
+          // Desktop: the light follows the cursor and fades in/out
+          const xTo = gsap.quickTo(light, 'x', { duration: 0.45, ease: 'power3.out', onUpdate: paint });
+          const yTo = gsap.quickTo(light, 'y', { duration: 0.45, ease: 'power3.out', onUpdate: paint });
+          const heroEl = component.current;
+
+          const onMove = (e) => {
+            const rect = reveal.getBoundingClientRect();
+            xTo(e.clientX - rect.left);
+            yTo(e.clientY - rect.top);
+            gsap.to(light, { r: 260, duration: 0.5, ease: 'power2.out', overwrite: 'auto', onUpdate: paint });
+          };
+          const onLeave = () =>
+            gsap.to(light, { r: 1, duration: 0.6, ease: 'power2.inOut', overwrite: 'auto', onUpdate: paint });
+
+          heroEl.addEventListener('mousemove', onMove);
+          heroEl.addEventListener('mouseleave', onLeave);
+          removeSpotlight = () => {
+            heroEl.removeEventListener('mousemove', onMove);
+            heroEl.removeEventListener('mouseleave', onLeave);
+          };
+        } else {
+          // Mobile: no cursor, so the light slowly sweeps across the name
+          light.y = reveal.offsetHeight / 2;
+          light.r = 130;
+          light.x = -60;
+          paint();
+          gsap.to(light, {
+            x: reveal.offsetWidth + 60,
+            duration: 3.2,
+            ease: 'sine.inOut',
+            repeat: -1,
+            yoyo: true,
+            delay: 1.2,
+            onUpdate: paint,
+          });
+        }
       }
 
       // Parallax
@@ -207,6 +300,7 @@ const HeroSection = () => {
 
     return () => {
       if (removeMouseMove) removeMouseMove();
+      if (removeSpotlight) removeSpotlight();
       ctx.revert();
       if (marqueeTween.current) marqueeTween.current.kill();
     };
@@ -215,7 +309,7 @@ const HeroSection = () => {
   return (
     <section ref={component} className="relative w-full bg-background overflow-hidden min-h-[100svh]">
       {/* INTRO OVERLAY */}
-      <div className="intro-svg-container fixed inset-0 z-[9999] bg-black flex items-center justify-center pointer-events-auto">
+      <div className="intro-svg-container fixed inset-0 z-[9999] bg-ink flex items-center justify-center pointer-events-auto">
         <svg viewBox="0 0 800 600" className="w-full h-full" preserveAspectRatio="xMidYMid slice">
           <defs>
             <mask id="abMask">
@@ -244,84 +338,89 @@ const HeroSection = () => {
         <RightSidebar ref={sidebarRef} />
 
         {/* content area */}
-        <div className="relative z-10 w-full min-h-[100svh] pb-24 md:pb-20">
+        <div className="relative z-10 w-full min-h-[100svh] md:pb-20">
           {/* MOBILE */}
-          <div className="md:hidden flex flex-col items-center justify-start min-h-[100svh] px-4 pt-8 pb-28">
-            {/* Bigger avatar */}
-            <div className="mobile-avatar image-container mb-6 relative z-10">
-              <div className="w-52 h-52 rounded-full overflow-hidden border-4 border-primary/10">
+          <div className="md:hidden relative flex flex-col items-center justify-center min-h-[100svh] px-5 pt-16 pb-20">
+            {/* Arch portrait with outlined name behind */}
+            <div className="relative w-full flex justify-center mb-6">
+              <div
+                aria-hidden="true"
+                className="hero-name-reveal pointer-events-none select-none absolute inset-x-0 top-0 h-[80%] flex items-center justify-center"
+                style={spotlightStyle}
+              >
+                <span className="hero-outline-name text-center text-[25vw] font-black uppercase leading-[0.85] tracking-tighter text-accent/[0.08] [-webkit-text-stroke:1.5px_rgb(var(--accent-rgb)/0.85)] [filter:drop-shadow(0_0_18px_rgb(var(--accent-rgb)/0.45))]">
+                  {nameWords.map((w, i) => (
+                    <span key={i} className="block">{w}</span>
+                  ))}
+                </span>
+              </div>
+
+              <div className="mobile-avatar image-container relative z-10 w-40 h-52 rounded-t-full overflow-hidden bg-muted border border-primary/10">
                 <Image
-                  src={asset("/profile.png")}
+                  src={hero.photoUrl}
                   alt="Abdul Barr"
-                  width={224}
-                  height={224}
-                  className="w-full h-full object-cover"
+                  width={352}
+                  height={448}
+                  className="w-full h-full object-cover object-top"
                   priority
                 />
               </div>
+              {availability.enabled && (
+                <AvailabilityBadge
+                  text={availability.text}
+                  className="hero-content-layer absolute z-20 left-1/2 -translate-x-1/2 -bottom-3 shadow-sm"
+                />
+              )}
             </div>
 
-            {/* Bigger stats */}
-            <div className="flex justify-center space-x-14 mb-8 relative z-20">
-              <Link
-                href="/experience"
-                className="hero-content-layer stat-item text-center cursor-pointer active:scale-95 transition-transform"
-              >
-                <h3 className="text-3xl font-bold text-primary">2+</h3>
-                <p className="text-secondary text-sm font-medium leading-tight">
-                  Years of <br />
-                  Experience
-                </p>
-              </Link>
-
-              <Link
-                href="/projects"
-                className="hero-content-layer stat-item text-center cursor-pointer active:scale-95 transition-transform"
-              >
-                <h3 className="text-3xl font-bold text-primary">{allProjectsData.length}+</h3>
-                <p className="text-secondary text-sm font-medium leading-tight">
-                  Projects <br />
-                  Completed
-                </p>
-              </Link>
+            {/* Stats */}
+            <div className="flex justify-center space-x-14 mt-3 mb-6 relative z-20">
+              {stats.map((st, i) => {
+                const [l1, l2] = splitLabel(st.label);
+                return (
+                  <Link
+                    key={i}
+                    href={st.href || '#'}
+                    className="hero-content-layer stat-item text-center cursor-pointer active:scale-95 transition-transform"
+                  >
+                    <h3 className="text-3xl font-bold text-primary"><StatValue value={st.value} /></h3>
+                    <p className="text-secondary text-sm font-medium leading-tight">
+                      {l1} <br />
+                      {l2}
+                    </p>
+                  </Link>
+                );
+              })}
             </div>
 
-            <div className="text-center relative z-10">
-              <h1 className="hero-content-layer text-6xl font-thin tracking-tighter text-primary mb-3">
-                Hello
+            {/* Greeting */}
+            <div className="text-center relative z-10 w-full">
+              <h1 className="hero-content-layer accent-dot text-6xl font-thin tracking-tighter text-primary leading-none">
+                {hero.greeting}
               </h1>
 
-              <div className="hero-content-layer bio-line text-xl text-secondary mb-4 min-h-[32px]">
+              <div className="hero-content-layer bio-line text-lg text-secondary mt-3 min-h-[3.5rem]">
                 — I&apos;m a{' '}
                 <TypeAnimation
-                  sequence={[
-                    'Full-Stack Developer',
-                    2000,
-                    'System Architect',
-                    2000,
-                    'Problem Solver',
-                    2000,
-                    'AI & Automation Engineer',
-                    2000,
-                  ]}
+                  key={hero.rolesMobile.join('|')}
+                  sequence={hero.rolesMobile.flatMap((r) => [r, 2000])}
                   wrapper="span"
                   speed={50}
-                  className="text-primary font-bold"
+                  className="text-accent font-bold"
                   repeat={Infinity}
                 />
               </div>
 
-              <p className="hero-content-layer bio-line text-sm text-secondary/80 max-w-xs mx-auto leading-relaxed">
-                More than an ordinary developer; I don&apos;t just build features, I engineer solutions that
-                last.
+              <p className="hero-content-layer bio-line text-sm text-secondary max-w-[19rem] mx-auto leading-relaxed">
+                {hero.tagline}
               </p>
 
-              <div className="hero-content-layer bio-line mt-6">
+              <div className="hero-content-layer mt-6">
                 <Link
-                  href="/codecraft"
-                  className="font-semibold text-primary border-b-2 border-primary/50 hover:border-primary transition-colors"
+                  href={hero.ctaHref}
+                  className="inline-flex items-center gap-2 rounded-full bg-primary text-background px-6 py-3 text-sm font-semibold active:scale-95 hover:bg-accent active:bg-accent transition-all"
                 >
-                  Wanna know how?? Tap tap &rarr;
+                  {hero.ctaTextMobile} &rarr;
                 </Link>
               </div>
             </div>
@@ -330,11 +429,21 @@ const HeroSection = () => {
           {/* DESKTOP */}
           <div className="hidden md:block">
             <div
+              aria-hidden="true"
+              className="hero-name-reveal pointer-events-none select-none absolute inset-x-0 top-0 h-[88%] flex items-center justify-center"
+              style={spotlightStyle}
+            >
+              <span className="hero-outline-name whitespace-nowrap text-[12.5vw] font-black uppercase leading-none tracking-tighter text-accent/[0.08] [-webkit-text-stroke:2px_rgb(var(--accent-rgb)/0.9)] [filter:drop-shadow(0_0_28px_rgb(var(--accent-rgb)/0.5))]">
+                {hero.outlineName}
+              </span>
+            </div>
+
+            <div
               className="hero-content-layer parallax-layer image-container absolute bottom-24 left-10 w-[50%] lg:w-[55%]"
               data-speed="1"
             >
               <Image
-                src={asset("/profile.png")}
+                src={hero.photoUrl}
                 alt="Abdul Barr"
                 width={1080}
                 height={1350}
@@ -343,133 +452,94 @@ const HeroSection = () => {
               />
             </div>
 
-            <Link
-              href="/experience"
-              className="hero-content-layer parallax-layer stat-item absolute top-[20%] left-[10%] text-left cursor-pointer hover:scale-105 transition-transform"
-              data-speed="1.8"
-            >
-              <h3 className="text-6xl font-bold text-primary">2+</h3>
-              <p className="text-secondary leading-tight">
-                Years of <br />
-                Experience
-              </p>
-            </Link>
-
-            <Link
-              href="/projects"
-              className="hero-content-layer parallax-layer stat-item absolute top-[20%] right-[10%] text-left cursor-pointer hover:scale-105 transition-transform"
-              data-speed="1.8"
-            >
-              <h3 className="text-6xl font-bold text-primary">{allProjectsData.length}+</h3>
-              <p className="text-secondary leading-tight">
-                Projects <br />
-                Completed
-              </p>
-            </Link>
+            {stats.slice(0, 2).map((st, i) => {
+              const [l1, l2] = splitLabel(st.label);
+              return (
+                <Link
+                  key={i}
+                  href={st.href || '#'}
+                  className={`hero-content-layer parallax-layer stat-item absolute top-[20%] ${i === 0 ? 'left-[10%]' : 'right-[10%]'} text-left cursor-pointer hover:scale-105 transition-transform`}
+                  data-speed="1.8"
+                >
+                  <h3 className="text-6xl font-bold text-primary"><StatValue value={st.value} /></h3>
+                  <p className="text-secondary leading-tight">
+                    {l1} <br />
+                    {l2}
+                  </p>
+                </Link>
+              );
+            })}
 
             <div
               className="hero-content-layer parallax-layer absolute top-1/2 right-28 lg:right-40 transform -translate-y-1/2"
               data-speed="2.5"
             >
-              <h1 className="text-9xl font-thin tracking-tighter text-primary">Hello</h1>
+              {availability.enabled && <AvailabilityBadge text={availability.text} className="mb-5" />}
+
+              <h1 className="accent-dot text-9xl font-thin tracking-tighter text-primary">{hero.greeting}</h1>
 
               <div className="bio-line mt-4 text-lg text-secondary">
                 — I&apos;m a{' '}
                 <TypeAnimation
-                  sequence={[
-                    'Full-Stack Developer',
-                    2000,
-                    'System Architect',
-                    2000,
-                    'Problem Solver',
-                    2000,
-                    'Machine Learning Enthusiast',
-                    2000,
-                  ]}
+                  key={hero.rolesDesktop.join('|')}
+                  sequence={hero.rolesDesktop.flatMap((r) => [r, 2000])}
                   wrapper="span"
                   speed={50}
-                  className="text-primary font-semibold"
+                  className="text-accent font-semibold"
                   repeat={Infinity}
                 />
               </div>
 
-              <p className="bio-line mt-2 text-sm text-secondary/80 max-w-md">
-                More than an ordinary developer; I don&apos;t just build features, I engineer solutions that
-                last.
-              </p>
+              <p className="bio-line mt-2 text-sm text-secondary/80 max-w-md">{hero.tagline}</p>
 
               <div className="bio-line mt-8">
                 <Link
-                  href="/codecraft"
-                  className="font-semibold text-primary border-b-2 border-primary/50 hover:border-primary transition-colors"
+                  href={hero.ctaHref}
+                  className="font-semibold text-primary border-b-2 border-accent/60 hover:border-accent transition-colors"
                 >
-                  Wanna know how?? Click click &rarr;
+                  {hero.ctaTextDesktop} &rarr;
                 </Link>
               </div>
             </div>
 
-            {/* Desktop marquee inside hero */}
-            <Link
-              href="/projects"
-              className="absolute bottom-4 left-0 w-full h-16 md:h-20 bg-primary/5 border-t border-primary/10 z-30 overflow-hidden cursor-pointer backdrop-blur-sm group m-0"
+            {/* Scroll indicator */}
+            <div
+              aria-hidden="true"
+              className="hero-content-layer absolute bottom-32 left-5 z-20 flex flex-col items-center gap-3 text-[10px] uppercase tracking-[0.3em] text-secondary"
             >
-              <div className="marquee-track absolute left-0 top-1/2 -translate-y-1/2 flex whitespace-nowrap w-max opacity-40 group-hover:opacity-70 transition-opacity duration-300">
-                {[...allProjectsData, ...allProjectsData].map((project, i) => (
-                  <div key={i} className="flex items-center mx-8">
-                    <span className="text-base md:text-xl font-black text-primary/80 uppercase tracking-widest">
-                      {project.title}
-                    </span>
-                    <span className="ml-8 text-secondary/30 text-xl">•</span>
-                  </div>
-                ))}
-              </div>
-
-              <div
-                ref={desktopSlamTextRef}
-                className="absolute top-2 left-1/2 -translate-x-1/2 z-10 bg-primary text-background px-6 py-2 rounded-full font-bold text-[10px] md:text-xs uppercase tracking-widest shadow-xl border border-background/20 opacity-0 whitespace-nowrap"
-              >
-                View All Projects &rarr;
-              </div>
-            </Link>
+              <span className="[writing-mode:vertical-rl] rotate-180">Scroll</span>
+              <span className="relative block h-14 w-px overflow-hidden bg-primary/15">
+                <span className="absolute left-0 top-0 h-1/2 w-px bg-accent animate-[scrollLine_1.8s_ease-in-out_infinite]" />
+              </span>
+            </div>
           </div>
+
+          {/* Projects marquee (same on mobile & desktop) */}
+          <Link
+            href="/projects"
+            className="absolute bottom-0 left-0 w-full h-16 md:h-20 bg-primary/5 border-t-2 border-accent z-30 overflow-hidden cursor-pointer backdrop-blur-sm group m-0"
+          >
+            <div className="marquee-track absolute left-0 top-1/2 -translate-y-1/2 flex whitespace-nowrap w-max opacity-40 group-hover:opacity-70 transition-opacity duration-300">
+              {[...projects, ...projects].map((project, i) => (
+                <div key={i} className="flex items-center mx-8">
+                  <span className="text-base md:text-xl font-black text-primary/80 uppercase tracking-widest transition-colors group-hover:text-accent">
+                    {project.title}
+                  </span>
+                  <span className="ml-8 text-accent text-xl">✦</span>
+                </div>
+              ))}
+            </div>
+
+            <div
+              ref={desktopSlamTextRef}
+              className="absolute top-2 left-1/2 -translate-x-1/2 z-10 bg-accent text-white px-6 py-2 rounded-full font-bold text-[10px] md:text-xs uppercase tracking-widest shadow-xl border border-background/20 opacity-0 whitespace-nowrap"
+            >
+              View All Projects &rarr;
+            </div>
+          </Link>
         </div>
       </div>
 
-      {/* ✅ MOBILE MARQUEE FIXED (PERFECT BOTTOM) + HIDES AFTER HERO */}
-      <Link
-        href="/projects"
-        className="
-          mobile-marquee
-          md:hidden
-          fixed left-0 w-full
-          h-16
-          bg-primary/5 border-t border-primary/10
-          overflow-hidden cursor-pointer backdrop-blur-sm group
-          z-[500]
-        "
-        style={{
-          bottom: `calc(env(safe-area-inset-bottom) + 0px)`,
-        }}
-      >
-        <div className="marquee-track absolute left-0 top-1/2 -translate-y-1/2 flex whitespace-nowrap w-max opacity-40 group-hover:opacity-70 transition-opacity duration-300">
-          {[...allProjectsData, ...allProjectsData].map((project, i) => (
-            <div key={i} className="flex items-center mx-8">
-              <span className="text-base font-black text-primary/80 uppercase tracking-widest">
-                {project.title}
-              </span>
-              <span className="ml-8 text-secondary/30 text-xl">•</span>
-            </div>
-          ))}
-        </div>
-
-        {/* ✅ ADDED SLAM REF HERE FOR MOBILE ANIMATION */}
-        <div 
-          ref={mobileSlamTextRef}
-          className="absolute top-2 left-1/2 -translate-x-1/2 z-20 bg-primary text-background px-6 py-2 rounded-full font-bold text-[10px] uppercase tracking-widest shadow-xl border border-background/20 whitespace-nowrap opacity-0"
-        >
-          View All Projects &rarr;
-        </div>
-      </Link>
     </section>
   );
 };

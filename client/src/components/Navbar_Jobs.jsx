@@ -53,13 +53,13 @@ export default function Navbar_Jobs() {
   return (
     <>
       {/* NAVBAR */}
-      <nav className="bg-white/90 backdrop-blur-xl shadow-md px-6 py-3 sticky top-0 z-[100] transition-all border-b border-gray-100">
+      <nav className="bg-surface/90 backdrop-blur-xl shadow-md px-6 py-3 sticky top-0 z-[100] transition-all border-b border-primary/10">
         <div className="max-w-5xl mx-auto flex justify-between items-center">
           {/* LEFT */}
           <div className="flex items-center gap-5">
             <a
               href="/jobs"
-              className="font-extrabold text-2xl bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent"
+              className="font-extrabold text-2xl bg-gradient-to-r from-accent to-accent bg-clip-text text-transparent"
             >
               BBDIT
             </a>
@@ -69,14 +69,14 @@ export default function Navbar_Jobs() {
               <div className="hidden sm:flex items-center gap-6">
                 <a
                   href="/jobs"
-                  className="text-gray-700 hover:text-blue-600 font-medium transition"
+                  className="text-secondary hover:text-accent font-medium transition"
                 >
                   Jobs
                 </a>
 
                 <a
                   href="/jobs/my-applications"
-                  className="text-gray-700 hover:text-blue-600 font-medium transition"
+                  className="text-secondary hover:text-accent font-medium transition"
                 >
                   My Applications
                 </a>
@@ -87,13 +87,13 @@ export default function Navbar_Jobs() {
           {/* RIGHT */}
           <div className="flex items-center gap-4">
             {isLoading ? (
-              <div className="h-8 w-24 bg-gray-200 rounded-md animate-pulse"></div>
+              <div className="h-8 w-24 bg-muted rounded-md animate-pulse"></div>
             ) : student ? (
               <>
                 {/* Name */}
-                <span className="font-medium text-gray-700 hidden sm:block">
+                <span className="font-medium text-secondary hidden sm:block">
                   Hi,{" "}
-                  <span className="font-semibold text-blue-700">
+                  <span className="font-semibold text-accent">
                     {student.name?.split(" ")[0]}
                   </span>
                 </span>
@@ -101,7 +101,7 @@ export default function Navbar_Jobs() {
                 {/* Profile icon */}
                 <a
                   href="/jobs/updateprofile"
-                  className="text-gray-600 hover:text-blue-600 transition"
+                  className="text-secondary hover:text-accent transition"
                   aria-label="Profile"
                 >
                   <svg
@@ -131,7 +131,7 @@ export default function Navbar_Jobs() {
                 {/* MOBILE HAMBURGER */}
                 <button
                   onClick={() => setIsMobileMenuOpen((prev) => !prev)}
-                  className="sm:hidden text-gray-700 ml-1"
+                  className="sm:hidden text-secondary ml-1"
                   aria-label="Toggle menu"
                 >
                   <svg
@@ -153,7 +153,7 @@ export default function Navbar_Jobs() {
             ) : (
               <a
                 href="/jobs/login"
-                className="bg-blue-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-blue-700 transition"
+                className="bg-accent text-white px-4 py-2 rounded-lg shadow-md hover:bg-primary transition"
               >
                 Login
               </a>
@@ -165,26 +165,26 @@ export default function Navbar_Jobs() {
         {isMobileMenuOpen && student && (
           <div
             ref={mobileMenuRef}
-            className="sm:hidden absolute left-0 right-0 mt-3 mx-4 p-5 rounded-2xl bg-white/80 backdrop-blur-xl shadow-xl border border-gray-200 z-[200] animate-fadeIn"
+            className="sm:hidden absolute left-0 right-0 mt-3 mx-4 p-5 rounded-2xl bg-surface/80 backdrop-blur-xl shadow-xl border border-primary/15 z-[200] animate-fadeIn"
           >
             <div className="flex flex-col gap-4">
               <a
                 href="/jobs"
-                className="text-gray-800 font-medium hover:text-blue-600 transition"
+                className="text-primary font-medium hover:text-accent transition"
               >
                 Jobs
               </a>
 
               <a
                 href="/jobs/my-applications"
-                className="text-gray-800 font-medium hover:text-blue-600 transition"
+                className="text-primary font-medium hover:text-accent transition"
               >
                 My Applications
               </a>
 
-              <hr className="border-gray-300" />
+              <hr className="border-primary/20" />
 
-              <span className="font-semibold text-gray-700">
+              <span className="font-semibold text-secondary">
                 Hi, {student.name?.split(" ")[0]}
               </span>
             </div>

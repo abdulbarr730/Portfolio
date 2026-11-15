@@ -1,15 +1,12 @@
 import HeroSection from '@/components/HeroSection';
-import AboutSection from '@/components/AboutSection';
-import ReviewsSection from '@/components/ReviewsSection';
-import ContactSection from '@/components/ContactSection';
+import HomeContent from '@/components/HomeContent';
 
 export default function Home() {
   return (
     <>
       <HeroSection />
-      <AboutSection />
-      <ReviewsSection />
-      <ContactSection />
+      {/* Sections below the hero: order and visibility come from admin → Home */}
+      <HomeContent />
     </>
   );
 }

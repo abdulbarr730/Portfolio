@@ -104,35 +104,35 @@ export default function MyApplicationsPage() {
     );
 
   return (
-    <div className="min-h-screen bg-gray-100 px-6 py-10">
+    <div className="min-h-screen bg-muted/60 px-6 py-10">
       {/* Header */}
-      <div className="max-w-5xl mx-auto bg-white rounded-2xl shadow-lg p-8 mb-10">
+      <div className="max-w-5xl mx-auto bg-surface rounded-2xl shadow-lg p-8 mb-10">
         <h1 className="text-4xl font-bold mb-2">My Applications</h1>
-        <p className="text-gray-600 text-lg">
+        <p className="text-secondary text-lg">
           View and manage all the jobs you've applied for.
         </p>
       </div>
 
       {/* Message */}
       {message && (
-        <div className="max-w-5xl mx-auto mb-6 p-4 bg-black text-white rounded-lg text-center">
+        <div className="max-w-5xl mx-auto mb-6 p-4 bg-ink text-white rounded-lg text-center">
           {message}
         </div>
       )}
 
       {/* Search + Filter */}
-      <div className="max-w-5xl mx-auto bg-white p-5 rounded-2xl shadow mb-8 flex flex-col md:flex-row gap-4 justify-between items-center border border-gray-200">
+      <div className="max-w-5xl mx-auto bg-surface p-5 rounded-2xl shadow mb-8 flex flex-col md:flex-row gap-4 justify-between items-center border border-primary/15">
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search job titles..."
-          className="w-full md:w-2/3 p-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-400"
+          className="w-full md:w-2/3 p-3 rounded-xl border border-primary/20 focus:ring-2 focus:ring-accent"
         />
 
         <select
           value={filterType}
           onChange={(e) => setFilterType(e.target.value)}
-          className="p-3 rounded-xl border border-gray-300"
+          className="p-3 rounded-xl border border-primary/20"
         >
           <option value="all">All Types</option>
           <option value="full-time">Full-Time</option>
@@ -148,13 +148,13 @@ export default function MyApplicationsPage() {
       {/* Applications List */}
       <div className="max-w-5xl mx-auto">
         {filteredApps.length === 0 ? (
-          <div className="text-center bg-white p-10 rounded-xl shadow">
-            <p className="text-gray-700 text-lg">
+          <div className="text-center bg-surface p-10 rounded-xl shadow">
+            <p className="text-secondary text-lg">
               No applications match your filters.
             </p>
             <a
               href="/jobs"
-              className="mt-4 inline-block bg-blue-600 text-white px-5 py-2 rounded-md font-medium hover:bg-blue-700"
+              className="mt-4 inline-block bg-accent text-white px-5 py-2 rounded-md font-medium hover:bg-primary"
             >
               Browse Jobs
             </a>
@@ -168,22 +168,22 @@ export default function MyApplicationsPage() {
               return (
                 <div
                   key={app._id}
-                  className="bg-white rounded-xl shadow-lg p-6 transition border border-gray-100"
+                  className="bg-surface rounded-xl shadow-lg p-6 transition border border-primary/10"
                 >
                   <div className="flex flex-col sm:flex-row justify-between sm:items-start gap-4">
                     <div>
                       {/* Numbering */}
-                      <div className="text-gray-400 text-sm font-semibold mb-1">
+                      <div className="text-secondary/70 text-sm font-semibold mb-1">
                         #{index + 1}
                       </div>
 
                       <h3 className="text-2xl font-bold">{job.name}</h3>
 
-                      <p className="text-gray-500 text-sm mt-1">
+                      <p className="text-secondary text-sm mt-1">
                         Applied on: {formatDate(app.appliedAt)}
                       </p>
 
-                      <span className="inline-block mt-3 px-3 py-1 bg-blue-50 text-blue-700 text-xs rounded-full">
+                      <span className="inline-block mt-3 px-3 py-1 bg-accent/10 text-accent text-xs rounded-full">
                         {type}
                       </span>
                     </div>
@@ -191,7 +191,7 @@ export default function MyApplicationsPage() {
                     <div className="flex-shrink-0 flex sm:flex-col gap-2 w-full sm:w-auto">
                       <a
                         href={job.link}
-                        className="text-blue-600 underline font-medium text-center sm:text-right"
+                        className="text-accent underline font-medium text-center sm:text-right"
                         target="_blank"
                         rel="noopener noreferrer"
                       >
@@ -210,7 +210,7 @@ export default function MyApplicationsPage() {
                   </div>
 
                   {job.description && (
-                    <p className="text-gray-600 mt-3 pt-3 border-t">
+                    <p className="text-secondary mt-3 pt-3 border-t">
                       {job.description}
                     </p>
                   )}

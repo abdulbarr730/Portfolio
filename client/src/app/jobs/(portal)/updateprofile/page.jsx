@@ -163,8 +163,8 @@ export default function UpdateProfilePage() {
     );
 
   return (
-    <div className="min-h-screen bg-gray-100 px-6 py-10">
-      <div className="max-w-3xl mx-auto bg-white p-8 rounded-2xl shadow">
+    <div className="min-h-screen bg-muted/60 px-6 py-10">
+      <div className="max-w-3xl mx-auto bg-surface p-8 rounded-2xl shadow">
         
         <h1 className="text-2xl font-bold mb-4">Update Profile</h1>
 
@@ -200,7 +200,7 @@ export default function UpdateProfilePage() {
           {/* Roll Number */}
           <label className="text-sm font-medium">Roll Number (read-only)</label>
           <input
-            className="w-full p-3 border rounded-md bg-gray-100"
+            className="w-full p-3 border rounded-md bg-muted/60"
             value={form.rollNumber}
             readOnly
           />
@@ -210,7 +210,7 @@ export default function UpdateProfilePage() {
             <div>
               <label className="text-sm font-medium">Course</label>
               <select
-                className="w-full p-3 border rounded-md bg-white"
+                className="w-full p-3 border rounded-md bg-surface"
                 value={form.course}
                 onChange={(e) => setForm({ ...form, course: e.target.value })}
               >
@@ -222,7 +222,7 @@ export default function UpdateProfilePage() {
             <div>
               <label className="text-sm font-medium">Branch</label>
               <select
-                className="w-full p-3 border rounded-md bg-white"
+                className="w-full p-3 border rounded-md bg-surface"
                 value={form.branch}
                 onChange={(e) => setForm({ ...form, branch: e.target.value })}
               >
@@ -241,7 +241,7 @@ export default function UpdateProfilePage() {
           {/* Year */}
           <label className="text-sm font-medium">Year</label>
           <select
-            className="w-full p-3 border rounded-md bg-white"
+            className="w-full p-3 border rounded-md bg-surface"
             value={form.year}
             onChange={(e) => setForm({ ...form, year: e.target.value })}
           >
@@ -255,7 +255,7 @@ export default function UpdateProfilePage() {
           <button
             onClick={handleSave}
             disabled={saving}
-            className="w-full bg-blue-600 text-white py-3 rounded-md hover:bg-blue-700"
+            className="w-full bg-accent text-white py-3 rounded-md hover:bg-primary"
           >
             {saving ? "Saving..." : "Save profile"}
           </button>
@@ -270,7 +270,7 @@ export default function UpdateProfilePage() {
           <button
             type="button"
             onClick={() => setShowPasswords(!showPasswords)}
-            className="text-gray-500 hover:text-gray-700"
+            className="text-secondary hover:text-secondary"
           >
             {showPasswords ? "Hide" : "Show"}
           </button>
@@ -320,7 +320,7 @@ export default function UpdateProfilePage() {
         </div>
 
         {message && (
-          <div className="mt-4 p-3 rounded text-sm bg-black text-white text-center">
+          <div className="mt-4 p-3 rounded text-sm bg-ink text-white text-center">
             {message}
           </div>
         )}

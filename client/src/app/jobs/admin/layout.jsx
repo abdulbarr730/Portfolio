@@ -5,12 +5,12 @@ import JobsAdminSidebar from "@/components/JobsAdminSidebar";
 // --- New Mobile Header Component ---
 function MobileHeader({ onMenuClick }) {
   return (
-    <header className="lg:hidden bg-gray-100 border-b border-gray-200 p-4 sticky top-0 z-10">
+    <header className="lg:hidden bg-muted/60 border-b border-primary/15 p-4 sticky top-0 z-10">
       <div className="flex justify-between items-center">
         <h1 className="text-xl font-bold">Admin Menu</h1>
         <button
           onClick={onMenuClick}
-          className="text-gray-800"
+          className="text-primary"
           aria-label="Open menu"
         >
           {/* Hamburger Icon */}
@@ -27,7 +27,7 @@ export default function AdminLayout({ children }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   return (
-    <div className="min-h-screen flex bg-gray-100">
+    <div className="min-h-screen flex bg-muted/60">
       {/* --- SIDEBAR --- */}
       {/* It now receives props to control its mobile state */}
       <JobsAdminSidebar 
@@ -44,7 +44,7 @@ export default function AdminLayout({ children }) {
         <main className="flex-1 p-4 sm:p-8 overflow-y-auto">
           <Suspense fallback={
             // Optional: Show a simple loading indicator while the client is fetching search params
-            <div className="text-center py-20 text-gray-500">Loading Filters...</div>
+            <div className="text-center py-20 text-secondary">Loading Filters...</div>
           }>
             {children}
           </Suspense>

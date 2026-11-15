@@ -1,212 +1,137 @@
 'use client';
-
-import { useEffect, useState, useRef } from 'react';
+// macOS-style floating dock. Icons smoothly magnify near the cursor (spring
+// physics), items come from the admin panel (Dock tab).
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { Home, ArrowUp, ArrowDown, Briefcase, Code, Linkedin, FileText } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { usePathname } from 'next/navigation';
+import {
+  Home, ArrowUp, ArrowDown, Briefcase, Code, Linkedin, Github, FileText, Mail, BookOpen, User, Calendar, Star, Phone,
+} from 'lucide-react';
+import { AnimatePresence, motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
+import { useSettings } from '@/lib/content';
+
+export const DOCK_ICONS = { Home, ArrowUp, ArrowDown, Briefcase, Code, Linkedin, Github, FileText, Mail, BookOpen, User, Calendar, Star, Phone };
+
+const BASE = 40; // px
+const MAX = 60; // px when the cursor is right on it
+const RANGE = 130; // px of influence either side
+
+function DockIcon({ item, mouseX, active }) {
+  const ref = useRef(null);
+  const [hover, setHover] = useState(false);
+  const Icon = DOCK_ICONS[item.icon] || Home;
+
+  const distance = useTransform(mouseX, (x) => {
+    const b = ref.current?.getBoundingClientRect();
+    return b ? x - (b.left + b.width / 2) : Infinity;
+  });
+  const sizeTarget = useTransform(distance, [-RANGE, 0, RANGE], [BASE, MAX, BASE]);
+  const size = useSpring(sizeTarget, { mass: 0.15, stiffness: 180, damping: 14 });
+  const iconSize = useTransform(size, [BASE, MAX], [18, 26]);
+
+  const scrollTo = (where) =>
+    window.scrollTo({ top: where === 'top' ? 0 : document.body.scrollHeight, behavior: 'smooth' });
+
+  const inner = (
+    <motion.div
+      ref={ref}
+      style={{ width: size, height: size }}
+      onHoverStart={() => setHover(true)}
+      onHoverEnd={() => setHover(false)}
+      className={`relative grid place-items-center rounded-full transition-colors duration-200 ${
+        hover ? 'bg-accent text-white' : active ? 'bg-accent/10 text-accent' : 'bg-muted/50 text-primary'
+      }`}
+    >
+      <motion.span style={{ width: iconSize, height: iconSize }} className="grid place-items-center">
+        <Icon className="h-full w-full" strokeWidth={1.8} />
+      </motion.span>
+
+      <AnimatePresence>
+        {hover && (
+          <motion.span
+            initial={{ opacity: 0, y: 6, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 4, scale: 0.95 }}
+            transition={{ duration: 0.15 }}
+            className="pointer-events-none absolute -top-9 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-primary px-2 py-1 text-[11px] font-medium text-background shadow-md"
+          >
+            {item.label}
+          </motion.span>
+        )}
+      </AnimatePresence>
+
+      {active && <span className="absolute -bottom-2 h-1 w-1 rounded-full bg-accent" />}
+    </motion.div>
+  );
+
+  if (item.action === 'top' || item.action === 'bottom') {
+    return (
+      <button type="button" aria-label={item.label} onClick={() => scrollTo(item.action)}>
+        {inner}
+      </button>
+    );
+  }
+  const href = item.href || '/';
+  if (item.newTab || /^https?:/.test(href)) {
+    return (
+      <a href={href} target="_blank" rel="noopener noreferrer" aria-label={item.label}>
+        {inner}
+      </a>
+    );
+  }
+  return (
+    <Link href={href} aria-label={item.label}>
+      {inner}
+    </Link>
+  );
+}
 
 export default function FloatingDock() {
+  const { settings } = useSettings();
+  const pathname = usePathname();
   const [visible, setVisible] = useState(false);
-  const containerRef = useRef(null);
-  const itemRefs = useRef([]);
+  const mouseX = useMotionValue(Infinity);
+
+  const items = (settings.dock || []).filter((d) => !d.hidden);
 
   useEffect(() => {
-    const handleScroll = () => {
-      const scrollY = window.scrollY;
-      const height = document.body.scrollHeight;
-      const viewport = window.innerHeight;
-
-      setVisible(scrollY > 300 && scrollY < height - viewport - 200);
+    const onScroll = () => {
+      const max = document.body.scrollHeight - window.innerHeight;
+      setVisible(window.scrollY > 300 && window.scrollY < max - 200);
     };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  // 🔥 MAGNETIC SYSTEM
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-
-    let rafId = null;
-
-    const handleMove = (e) => {
-      if (rafId) cancelAnimationFrame(rafId);
-
-      rafId = requestAnimationFrame(() => {
-        const mouseX = e.clientX;
-
-        itemRefs.current.forEach((el) => {
-          if (!el) return;
-
-          const rect = el.getBoundingClientRect();
-          const center = rect.left + rect.width / 2;
-
-          const distance = Math.abs(mouseX - center);
-
-          const maxScale = 1.6;
-          const range = 140;
-
-          let scale = 1;
-
-          if (distance < range) {
-            scale = 1 + (maxScale - 1) * (1 - distance / range);
-          }
-
-          el.style.transform = `scale(${scale}) translateY(${-(scale - 1) * 10}px)`;
-        });
-      });
-    };
-
-    const reset = () => {
-      itemRefs.current.forEach((el) => {
-        if (el) {
-          el.style.transform = 'scale(1) translateY(0)';
-        }
-      });
-    };
-
-    container.addEventListener('mousemove', handleMove);
-    container.addEventListener('mouseleave', reset);
-
-    return () => {
-      container.removeEventListener('mousemove', handleMove);
-      container.removeEventListener('mouseleave', reset);
-    };
-  }, []);
-
-  const scrollTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
-  const scrollBottom = () =>
-    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-
-  const Item = ({ children, label, onClick, href, index }) => {
-    return (
-      <div className="relative group flex flex-col items-center">
-
-        {/* Tooltip */}
-        <span className="
-          absolute -top-9
-          text-[11px]
-          px-2 py-1
-          rounded-md
-          bg-black text-white
-          opacity-0
-          translate-y-1
-          group-hover:opacity-100
-          group-hover:translate-y-0
-          transition-all duration-200
-          whitespace-nowrap
-          pointer-events-none
-        ">
-          {label}
-        </span>
-
-        <div
-          ref={(el) => (itemRefs.current[index] = el)}
-          className="will-change-transform transition-transform duration-200"
-        >
-          {href ? (
-            href.startsWith('http') ? (
-              <a
-                href={href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-2 sm:p-2.5 rounded-lg block"
-              >
-                {children}
-              </a>
-            ) : (
-              <Link
-                href={href}
-                className="p-2 sm:p-2.5 rounded-lg block"
-              >
-                {children}
-              </Link>
-            )
-          ) : (
-            <button
-              onClick={onClick}
-              className="p-2 sm:p-2.5 rounded-lg"
-            >
-              {children}
-            </button>
-          )}
-        </div>
-      </div>
-    );
-  };
+  if (!items.length) return null;
 
   return (
-    <AnimatePresence>
-      <motion.div
-        initial={false}
-        animate={{
-          opacity: visible ? 1 : 0,
-          y: visible ? 0 : 60,
-          scale: visible ? 1 : 0.95,
-          pointerEvents: visible ? 'auto' : 'none'
-        }}
-        transition={{ duration: 0.3 }}
-        className="fixed bottom-4 sm:bottom-6 inset-x-0 flex justify-center z-50"
+    <motion.div
+      initial={false}
+      animate={{ opacity: visible ? 1 : 0, y: visible ? 0 : 40 }}
+      transition={{ type: 'spring', stiffness: 260, damping: 26 }}
+      style={{ pointerEvents: visible ? 'auto' : 'none' }}
+      className="fixed inset-x-0 bottom-4 sm:bottom-6 z-50 flex justify-center"
+    >
+      <div
+        onMouseMove={(e) => mouseX.set(e.clientX)}
+        onMouseLeave={() => mouseX.set(Infinity)}
+        className="flex h-[60px] items-end gap-2.5 rounded-2xl border border-primary/10 bg-surface/70 px-3 pb-2.5 shadow-[0_12px_40px_-12px_rgba(34,34,34,0.25)] backdrop-blur-xl"
       >
-        <div className="pointer-events-auto">
-
-          <div
-            ref={containerRef}
-            className="
-              flex items-end gap-2 sm:gap-3
-              px-3 sm:px-4
-              py-1.5 sm:py-2
-              rounded-xl sm:rounded-2xl
-              backdrop-blur-xl
-              bg-white/60
-              border border-black/10
-              shadow-[0_6px_20px_rgba(0,0,0,0.06)] sm:shadow-[0_8px_30px_rgba(0,0,0,0.08)]
-            "
-          >
-
-            <Item label="Home" href="/" index={0}>
-              <Home className="w-4 h-4 sm:w-5 sm:h-5" />
-            </Item>
-
-            <Item label="Top" onClick={scrollTop} index={1}>
-              <ArrowUp className="w-4 h-4 sm:w-5 sm:h-5" />
-            </Item>
-
-            <Item label="Bottom" onClick={scrollBottom} index={2}>
-              <ArrowDown className="w-4 h-4 sm:w-5 sm:h-5" />
-            </Item>
-
-            <div className="w-px h-5 bg-black/10 mx-1" />
-
-            <Item label="Projects" href="/projects" index={3}>
-              <Code className="w-4 h-4 sm:w-5 sm:h-5" />
-            </Item>
-
-            <Item label="Services" href="/services" index={4}>
-              <Briefcase className="w-4 h-4 sm:w-5 sm:h-5" />
-            </Item>
-
-            <Item
-              label="LinkedIn"
-              href="https://www.linkedin.com/in/abdul-barr-9092a4251/"
-              index={5}
-            >
-              <Linkedin className="w-4 h-4 sm:w-5 sm:h-5" />
-            </Item>
-
-            <Item
-              label="Resume"
-              href="https://drive.google.com/file/d/1vnZADDPLb2hbOnx8Fi3W0m8LEesof_z6/view?usp=drive_link"
-              index={6}
-            >
-              <FileText className="w-4 h-4 sm:w-5 sm:h-5" />
-            </Item>
-
-          </div>
-
-        </div>
-      </motion.div>
-    </AnimatePresence>
+        {items.map((item, i) =>
+          item.action === 'divider' ? (
+            <span key={`d${i}`} className="mx-0.5 mb-2 h-6 w-px self-end bg-primary/15" />
+          ) : (
+            <DockIcon
+              key={`${item.label}-${i}`}
+              item={item}
+              mouseX={mouseX}
+              active={item.action === 'link' && item.href === pathname}
+            />
+          )
+        )}
+      </div>
+    </motion.div>
   );
 }
