@@ -36,7 +36,8 @@ function merge(defaults, saved) {
 
 export function useSettings() {
   const { data, isLoading } = useSWR(`${API}/api/settings`, fetcher, swrOptions);
-  return { settings: merge(siteDefaults, data), isLoading };
+  // hasData: true only once real settings arrived from the API (not the bundled defaults)
+  return { settings: merge(siteDefaults, data), isLoading, hasData: !!data && typeof data === 'object' };
 }
 
 function useList(path, fallback) {
@@ -57,12 +58,5 @@ export const useServices = () => {
   return { services: items, isLoading };
 };
 
-// "#FF4F1A" -> "255 79 26" for rgb(var(--accent-rgb) / <alpha>)
-export function hexToRgbTriplet(hex) {
-  const m = /^#?([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(String(hex || '').trim());
-  if (!m) return null;
-  let h = m[1];
-  if (h.length === 3) h = h.split('').map((c) => c + c).join('');
-  const n = parseInt(h, 16);
-  return `${(n >> 16) & 255} ${(n >> 8) & 255} ${n & 255}`;
-}
+// Colour helper lives in lib/color.js so server code can use it too
+export { hexToRgbTriplet } from './color';
