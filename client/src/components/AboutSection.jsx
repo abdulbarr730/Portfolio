@@ -7,22 +7,23 @@ import Image from 'next/image';
 import Link from 'next/link';
 import ProjectPreview from './ProjectPreview';
 import { allProjectsData } from '@/app/data/projectData';
+import { asset } from '@/lib/asset';
 
 gsap.registerPlugin(ScrollTrigger);
 
 const toolkit = [
-  { name: 'React', logo: '/logos/react.svg' },
-  { name: 'Next.js', logo: '/logos/nextjs.svg' },
-  { name: 'Node.js', logo: '/logos/nodejs.svg' },
-  { name: 'Express', logo: '/logos/express.svg' },
-  { name: 'MongoDB', logo: '/logos/mongodb.svg' },
-  { name: 'GSAP', logo: '/logos/gsap.svg' },
-  { name: 'Framer Motion', logo: '/logos/framer.svg' },
-  { name: 'Python', logo: '/logos/python.svg' },
-  { name: 'Scikit-Learn', logo: '/logos/sklearn.svg' },
-  { name: 'Docker', logo: '/logos/docker.svg' },
-  { name: 'Kubernetes', logo: '/logos/kubernetes.svg' },
-  { name: 'Git & GitHub', logo: '/logos/git.svg' },
+  { name: 'React', logo: asset('/logos/react.svg') },
+  { name: 'Next.js', logo: asset('/logos/nextjs.svg') },
+  { name: 'Node.js', logo: asset('/logos/nodejs.svg') },
+  { name: 'Express', logo: asset('/logos/express.svg') },
+  { name: 'MongoDB', logo: asset('/logos/mongodb.svg') },
+  { name: 'GSAP', logo: asset('/logos/gsap.svg') },
+  { name: 'Framer Motion', logo: asset('/logos/framer.svg') },
+  { name: 'Python', logo: asset('/logos/python.svg') },
+  { name: 'Scikit-Learn', logo: asset('/logos/sklearn.svg') },
+  { name: 'Docker', logo: asset('/logos/docker.svg') },
+  { name: 'Kubernetes', logo: asset('/logos/kubernetes.svg') },
+  { name: 'Git & GitHub', logo: asset('/logos/git.svg') },
 ];
 
 const milestones = [
@@ -218,7 +219,7 @@ const AboutSection = () => {
         <div className="about-item order-3 lg:order-2 md:max-w-sm mx-auto flex flex-col items-center bg-white rounded-lg shadow-xl overflow-hidden">
           <div ref={photoCardImageRef} className="w-full h-96 relative overflow-hidden">
             <Image
-              src="/profile2.png"
+              src={asset("/profile2.png")}
               alt="Abdul Barr"
               fill
               className="object-cover"
@@ -242,7 +243,7 @@ const AboutSection = () => {
         {/* Desktop arrow */}
         {/* <div className="about-item hidden lg:block absolute top-[68%] left-[27%] w-48 h-24 pointer-events-none z-20">
           <Image
-            src="/arrows.png"
+            src={asset("/arrows.png")}
             alt="Connecting arrow"
             width={192}
             height={96}

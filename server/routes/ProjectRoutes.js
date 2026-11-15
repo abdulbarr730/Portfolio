@@ -1,23 +1,13 @@
 const router = require('express').Router();
 let Project = require('../models/project.model');
 const multer = require('multer');
-const cloudinary = require('../config/cloudinary');
+const { uploadToR2 } = require('../config/r2');
 const auth = require('../middleware/auth'); // Import the auth middleware
 
 
-// --- Multer & Cloudinary Config ---
+// --- Multer (in-memory) -> Cloudflare R2 ---
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
-
-const uploadToCloudinary = (fileBuffer) => {
-  return new Promise((resolve, reject) => {
-    const uploadStream = cloudinary.uploader.upload_stream({ resource_type: 'auto' }, (error, result) => {
-      if (error) reject(error);
-      else resolve(result);
-    });
-    uploadStream.end(fileBuffer);
-  });
-};
 
 
 // GET: Fetch all projects (This remains public)
@@ -34,8 +24,7 @@ router.route('/add').post(auth, upload.single('snapshot'), async (req, res) => {
   try {
     let snapshotUrl = '';
     if (req.file) {
-      const result = await uploadToCloudinary(req.file.buffer);
-      snapshotUrl = result.secure_url;
+      snapshotUrl = await uploadToR2(req.file.buffer, req.file, 'projects');
     }
 
     const newProject = new Project({
@@ -69,8 +58,7 @@ router.route('/update/:id').post(auth, upload.single('snapshot'), async (req, re
     project.featured = req.body.featured === 'true';
 
     if (req.file) {
-      const result = await uploadToCloudinary(req.file.buffer);
-      project.snapshotUrl = result.secure_url;
+      project.snapshotUrl = await uploadToR2(req.file.buffer, req.file, 'projects');
     }
 
     await project.save();
