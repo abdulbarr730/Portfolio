@@ -7,7 +7,7 @@ export default function Page() {
           You're unsubscribed
         </h1>
 
-        <p className="text-sm text-neutral-600">
+        <p className="text-sm text-secondary">
           You won't receive further emails.
         </p>
 

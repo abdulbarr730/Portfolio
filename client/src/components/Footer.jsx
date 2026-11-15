@@ -1,5 +1,7 @@
 'use client';
 
+import { useSettings } from '@/lib/content';
+
 import { useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -11,7 +13,7 @@ const Footer = () => {
   const router = useRouter();
   const year = new Date().getFullYear();
 
-  const contactEmail = "hello@abdulbarr.in";
+  const contactEmail = useSettings().settings.socials.email;
 
   const [subscriberEmail, setSubscriberEmail] = useState("");
   const [status, setStatus] = useState("");
@@ -93,19 +95,19 @@ const handleSubscribe = async (e) => {
 
   return (
     <motion.footer
-      className="bg-background text-secondary py-16 border-t border-muted relative z-40"
+      className="bg-background text-secondary py-16 border-t-2 border-accent relative z-40"
       initial={{ opacity: 0, y: 50 }}
       whileInView={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.8 }}
       viewport={{ once: true }}
     >
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="page-container">
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 mb-12">
 
           {/* Brand */}
           <div>
-            <h1 className="text-2xl font-bold text-primary">
+            <h1 className="accent-dot text-2xl font-bold text-primary">
               Abdul Barr
             </h1>
             <p className="text-sm mt-2">
@@ -131,28 +133,28 @@ const handleSubscribe = async (e) => {
               <li>
                 <button
                   onClick={() => scrollToSection("about")}
-                  className="hover:text-primary"
+                  className="hover:text-accent"
                 >
                   About
                 </button>
               </li>
               <li>
-                <Link href="/projects" className="hover:text-primary">
+                <Link href="/projects" className="hover:text-accent">
                   Projects
                 </Link>
               </li>
               <li>
-                <Link href="/codecraft" className="hover:text-primary">
+                <Link href="/codecraft" className="hover:text-accent">
                   Codecraft
                 </Link>
               </li>
               <li>
-                <Link href="/services" className="hover:text-primary">
+                <Link href="/services" className="hover:text-accent">
                   Services
                 </Link>
               </li>
               <li>
-                <Link href="/contact" className="hover:text-primary">
+                <Link href="/contact" className="hover:text-accent">
                   Contact
                 </Link>
               </li>
@@ -176,7 +178,7 @@ const handleSubscribe = async (e) => {
                 <li key={service}>
                   <Link
                     href="/services"
-                    className="hover:text-primary transition-colors flex items-center gap-2 group"
+                    className="hover:text-accent transition-colors flex items-center gap-2 group"
                   >
                     {service}
                     <span className="opacity-0 group-hover:opacity-100 transition-opacity">
@@ -210,7 +212,7 @@ const handleSubscribe = async (e) => {
               />
 
               {/* ✅ CONSENT CHECKBOX */}
-              <div className="flex items-start gap-2 text-xs text-neutral-600">
+              <div className="flex items-start gap-2 text-xs text-secondary">
                 <input
                   type="checkbox"
                   checked={agreed}
@@ -232,7 +234,7 @@ const handleSubscribe = async (e) => {
 
               <button
                 disabled={loading || !agreed}
-                className="bg-primary text-white py-2 rounded-md hover:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="bg-accent text-white py-2 rounded-md hover:bg-primary transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {loading ? (
                   <>
@@ -265,15 +267,15 @@ const handleSubscribe = async (e) => {
           </p>
 
           <div className="flex gap-6 mt-3 md:mt-0">
-            <Link href="/privacy" className="hover:text-primary">
+            <Link href="/privacy" className="hover:text-accent">
               Privacy Policy
             </Link>
 
-            <Link href="/terms" className="hover:text-primary">
+            <Link href="/terms" className="hover:text-accent">
               Terms & Conditions
             </Link>
 
-            <Link href="/contact" className="hover:text-primary">
+            <Link href="/contact" className="hover:text-accent">
               Contact
             </Link>
           </div>

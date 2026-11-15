@@ -132,7 +132,7 @@ export default function AdminDashboard() {
       <h1 className="text-4xl font-bold mb-6">Dashboard</h1>
 
       {message && (
-        <div className="mb-6 p-4 bg-black text-white rounded-lg text-center">
+        <div className="mb-6 p-4 bg-ink text-white rounded-lg text-center">
           {message}
         </div>
       )}
@@ -143,47 +143,47 @@ export default function AdminDashboard() {
         {/* Total Jobs Card (Already Clickable) */}
         <a 
           href="/jobs/admin/manage-jobs"
-          className="block bg-white rounded-2xl shadow-lg p-6 transition-transform hover:scale-105"
+          className="block bg-surface rounded-2xl shadow-lg p-6 transition-transform hover:scale-105"
         >
-          <p className="text-gray-500">Total Jobs</p>
-          <p className="text-4xl font-bold text-purple-600">{stats.totalJobs}</p>
+          <p className="text-secondary">Total Jobs</p>
+          <p className="text-4xl font-bold text-accent">{stats.totalJobs}</p>
         </a>
 
         {/* Total Students Card (Clickable) */}
         <a 
           href="/jobs/admin/manage-students"
-          className="block bg-white rounded-2xl shadow-lg p-6 transition-transform hover:scale-105"
+          className="block bg-surface rounded-2xl shadow-lg p-6 transition-transform hover:scale-105"
         >
-          <p className="text-gray-500">Total Students</p>
-          <p className="text-4xl font-bold text-blue-600">{stats.total}</p>
+          <p className="text-secondary">Total Students</p>
+          <p className="text-4xl font-bold text-accent">{stats.total}</p>
         </a>
         
         {/* Verified Students Card (Clickable) */}
         <a 
           href="/jobs/admin/manage-students?status=Approved"
-          className="block bg-white rounded-2xl shadow-lg p-6 transition-transform hover:scale-105"
+          className="block bg-surface rounded-2xl shadow-lg p-6 transition-transform hover:scale-105"
         >
-          <p className="text-gray-500">Verified</p>
+          <p className="text-secondary">Verified</p>
           <p className="text-4xl font-bold text-green-600">{stats.verified}</p>
         </a>
         
         {/* Pending Students Card (Clickable) */}
         <a 
           href="/jobs/admin/manage-students?status=Pending"
-          className="block bg-white rounded-2xl shadow-lg p-6 transition-transform hover:scale-105"
+          className="block bg-surface rounded-2xl shadow-lg p-6 transition-transform hover:scale-105"
         >
-          <p className="text-gray-500">Pending</p>
+          <p className="text-secondary">Pending</p>
           <p className="text-4xl font-bold text-yellow-600">{stats.pending}</p>
         </a>
         
       </div>
 
       {/* --- Pending Students List --- */}
-      <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8">
+      <div className="bg-surface rounded-2xl shadow-lg p-6 sm:p-8">
         <h2 className="text-2xl font-bold mb-4">Pending Student Approvals</h2>
         
         {students.length === 0 ? (
-          <p className="text-gray-600">No pending student approvals found. ✅</p>
+          <p className="text-secondary">No pending student approvals found. ✅</p>
         ) : (
           <div className="space-y-4">
             {students.map((student) => (
@@ -193,9 +193,9 @@ export default function AdminDashboard() {
               >
                 <div className="mb-3 sm:mb-0">
                   <p className="font-bold text-lg">{student.name}</p>
-                  <p className="text-gray-600 text-sm">{student.email}</p>
+                  <p className="text-secondary text-sm">{student.email}</p>
 
-                  <p className="text-gray-600 text-sm">
+                  <p className="text-secondary text-sm">
                     Roll: {student.rollNumber} | Branch: {student.branch} | Year: {student.year}
                   </p>
                 </div>
@@ -204,7 +204,7 @@ export default function AdminDashboard() {
                 <div className="flex gap-3 w-full sm:w-auto">
                     <button
                       onClick={() => handleApprove(student.rollNumber)}
-                      className="w-1/2 sm:w-auto bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+                      className="w-1/2 sm:w-auto bg-accent text-white px-4 py-2 rounded-md hover:bg-primary"
                     >
                       Approve
                     </button>

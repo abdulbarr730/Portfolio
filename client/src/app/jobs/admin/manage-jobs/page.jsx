@@ -71,33 +71,33 @@ export default function ManageJobsPage() {
           <a href="/jobs/admin/create-job" className="bg-green-600 text-white px-5 py-2 rounded-md font-medium hover:bg-green-700 text-center">
             + Create New Job
           </a>
-          <a href="/jobs/admin" className="bg-gray-600 text-white px-5 py-2 rounded-md font-medium hover:bg-gray-700 text-center">
+          <a href="/jobs/admin" className="bg-secondary text-white px-5 py-2 rounded-md font-medium hover:bg-primary text-center">
             ← Back to Dashboard
           </a>
         </div>
       </div>
 
-      {message && <div className="mb-6 p-4 bg-black text-white rounded-lg text-center">{message}</div>}
+      {message && <div className="mb-6 p-4 bg-ink text-white rounded-lg text-center">{message}</div>}
 
-      <div className="bg-white rounded-2xl shadow-xl p-6 sm:p-8 border border-gray-100">
+      <div className="bg-surface rounded-2xl shadow-xl p-6 sm:p-8 border border-primary/10">
         <h2 className="text-2xl font-bold mb-4">All Job Postings ({jobs.length})</h2>
 
         {jobs.length === 0 ? (
-          <p className="text-gray-600">No jobs have been created yet.</p>
+          <p className="text-secondary">No jobs have been created yet.</p>
         ) : (
           <div className="space-y-5">
             {jobs.map((job) => (
-              <div key={job._id} className="p-5 border rounded-xl shadow-sm hover:shadow-md transition bg-gray-50 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+              <div key={job._id} className="p-5 border rounded-xl shadow-sm hover:shadow-md transition bg-background flex flex-col sm:flex-row justify-between sm:items-center gap-4">
                 <div className="flex-1 max-w-xl">
-                  <p className="font-bold text-lg text-gray-900">{job.name}</p>
+                  <p className="font-bold text-lg text-primary">{job.name}</p>
 
-                  <a href={job.link} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-600 hover:underline break-all">
+                  <a href={job.link} target="_blank" rel="noopener noreferrer" className="text-sm text-accent hover:underline break-all">
                     {job.link}
                   </a>
 
                   {/* Job Type Tag */}
                   {job.type && (
-                    <span className="inline-block mt-2 px-3 py-1 text-xs rounded-full bg-blue-50 text-blue-700 font-medium capitalize">
+                    <span className="inline-block mt-2 px-3 py-1 text-xs rounded-full bg-accent/10 text-accent font-medium capitalize">
                       {job.type}
                     </span>
                   )}

@@ -1,6 +1,6 @@
 export default function AuthLayout({ children }) {
   return (
-    <main className="min-h-screen bg-white">
+    <main className="min-h-screen bg-surface">
       {children}
     </main>
   );

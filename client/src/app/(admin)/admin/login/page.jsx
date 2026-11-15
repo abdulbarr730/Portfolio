@@ -36,7 +36,7 @@ const LoginPage = () => {
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-background ">
-      <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
+      <div className="w-full max-w-md p-8 space-y-6 bg-surface rounded-lg shadow-md">
         <h1 className="text-2xl font-bold text-center text-primary ">
           Admin Login
         </h1>
@@ -46,13 +46,14 @@ const LoginPage = () => {
               htmlFor="username"
               className="text-sm font-medium text-secondary "
             >
-              Username
+              Email or username
             </label>
             <input
               id="username"
               type="text"
+              autoComplete="username"
               value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              onChange={(e) => setUsername(e.target.value.trim())}
               required
               className="w-full px-3 py-2 mt-1 border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-primary/50"
             />

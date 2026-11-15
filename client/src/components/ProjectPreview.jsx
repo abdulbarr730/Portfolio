@@ -5,7 +5,7 @@ import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Link from 'next/link';
 import Image from 'next/image';
-import { allProjectsData } from '@/app/data/projectData';
+import { useProjects } from '@/lib/content';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -64,7 +64,7 @@ const StatCounter = ({ metric, label }) => {
       <h3 ref={numberRef} className="text-3xl font-extrabold text-primary">
         {isNumber ? `0${metricSuffix}` : metric}
       </h3>
-      <p className="text-gray-600 text-sm font-medium">{label}</p>
+      <p className="text-secondary text-sm font-medium">{label}</p>
     </div>
   );
 };
@@ -73,6 +73,7 @@ const StatCounter = ({ metric, label }) => {
 // ✅ Main Component
 // -----------------------------------------
 const ProjectPreview = () => {
+  const { projects: allProjectsData } = useProjects();
   const component = useRef(null);
 
   // 1. Get the first 3 projects only
@@ -125,10 +126,10 @@ const ProjectPreview = () => {
             key={index}
             className="block group project-card-wrapper"
           >
-            <div className="bg-white rounded-xl shadow-md overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-2 h-full flex flex-col border border-gray-100">
+            <div className="bg-surface rounded-xl shadow-md overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-2 h-full flex flex-col border border-primary/10">
               {/* Image Section */}
               <div className="w-full h-52 relative overflow-hidden">
-                <div className="absolute inset-0 bg-gray-100" />
+                <div className="absolute inset-0 bg-muted/60" />
                 {project.snapshotUrl ? (
                   <Image
                     src={project.snapshotUrl}
@@ -137,12 +138,12 @@ const ProjectPreview = () => {
                     className="object-cover project-snapshot-image"
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-gray-400">No Image</div>
+                  <div className="w-full h-full flex items-center justify-center text-secondary/70">No Image</div>
                 )}
                 
                 {/* Hover Overlay */}
-                <div className="absolute inset-0 bg-black/25 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <div className="w-14 h-14 bg-white/90 text-primary rounded-full flex items-center justify-center backdrop-blur-sm shadow-lg transform scale-0 group-hover:scale-100 transition-transform duration-300 delay-75">
+                <div className="absolute inset-0 bg-ink/25 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <div className="w-14 h-14 bg-surface/90 text-primary rounded-full flex items-center justify-center backdrop-blur-sm shadow-lg transform scale-0 group-hover:scale-100 transition-transform duration-300 delay-75">
                     <svg
                       className="w-6 h-6"
                       fill="none"
@@ -163,10 +164,10 @@ const ProjectPreview = () => {
               {/* Content Section */}
               <div className="p-6 text-left flex flex-col flex-grow justify-between">
                 <div>
-                  <h3 className="text-xl font-bold text-primary mb-2 group-hover:text-blue-600 transition-colors">
+                  <h3 className="text-xl font-bold text-primary mb-2 group-hover:text-accent transition-colors">
                     {project.title}
                   </h3>
-                  <p className="text-gray-600 text-sm leading-relaxed line-clamp-3">
+                  <p className="text-secondary text-sm leading-relaxed line-clamp-3">
                     {project.detailedDescription} {/* Use detailedDescription for better context */}
                   </p>
                 </div>

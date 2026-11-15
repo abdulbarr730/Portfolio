@@ -1,5 +1,7 @@
 'use client';
 
+import { useSettings } from '@/lib/content';
+
 import { useLayoutEffect, useRef, useState, useEffect } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -11,37 +13,32 @@ import { asset } from '@/lib/asset';
 
 gsap.registerPlugin(ScrollTrigger);
 
-// ✅ Updated Links Order
-const HAMBURGER_LINKS = [
-  {
-    id: 'https://drive.google.com/file/d/1vnZADDPLb2hbOnx8Fi3W0m8LEesof_z6/view?usp=drive_link',
-    text: 'View Resume',
-    type: 'link',
-    target: '_blank',
-  },
-  { id: 'hero', text: 'Home', type: 'scroll' },
-  { id: '/blog', text: 'Blog', type: 'link' },
-  { id: 'about', text: 'About Me', type: 'scroll' },
-  { id: '/projects', text: 'Projects', type: 'link' },
-  { id: '/services', text: 'Services', type: 'link' }, // ✅ Added Services here
-  { id: '/codecraft', text: 'Code Craft', type: 'link' },
-
-  // ✅ Review is now 3rd from the last
-  {
-    id: 'reviews',
-    text: 'Review',
-    type: 'scroll',
-    cta: 'Drop a review if you liked anything about me or my projects',
-  },
-  
-  { id: '/experience', text: 'Experience', type: 'link' }, // 2nd Last
-  { id: '/contact', text: 'Contact', type: 'link' },       // Last
-];
-
 const Navbar = () => {
+  const { settings } = useSettings();
+  const { socials } = settings;
+  // Menu links are managed in the admin panel (Menu tab); hidden ones are skipped
+  const HAMBURGER_LINKS = (settings.menu || []).filter((m) => !m.hidden && m.text && m.id);
   const component = useRef(null);
   const mobileMenuRef = useRef(null);
   const bookRef = useRef(null);
+  const progressRef = useRef(null);
+  const pathnameForProgress = usePathname();
+
+  // Orange reading-progress bar under the navbar
+  useEffect(() => {
+    const onScroll = () => {
+      const max = document.documentElement.scrollHeight - window.innerHeight;
+      const p = max > 0 ? Math.min(window.scrollY / max, 1) : 0;
+      if (progressRef.current) progressRef.current.style.transform = `scaleX(${p})`;
+    };
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onScroll);
+    };
+  }, [pathnameForProgress]);
 
   const pathname = usePathname();
   const router = useRouter();
@@ -140,13 +137,13 @@ const Navbar = () => {
         ref={component}
         className="fixed top-0 left-0 w-full z-[999] bg-background/80 backdrop-blur-sm overflow-x-hidden h-14"
       >
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="page-container">
           <div className="flex items-center justify-between h-full">
             {/* Logo */}
             <div className="relative h-12 w-52 flex items-center">
               <Link href="/" className="full-name-container absolute top-[6px] left-0 flex items-center whitespace-nowrap">
                 <span className="name-part-abdul text-xl font-bold text-primary leading-none pt-2">Abdul</span>
-                <span className="name-part-barr text-xl font-bold text-primary ml-1.5 leading-none pt-2">Barr</span>
+                <span className="name-part-barr accent-dot text-xl font-bold text-primary ml-1.5 leading-none pt-2">Barr</span>
               </Link>
 
               <Link href="/" className="initial-logo absolute top-[4px] left-0 flex items-center justify-center w-12 h-12 opacity-0">
@@ -160,15 +157,15 @@ const Navbar = () => {
               <Link
                 href="/contact"
                 ref={bookRef}
-                className="group relative text-sm sm:text-base font-semibold text-black tracking-wide whitespace-nowrap hover:text-black"
+                className="group relative text-sm sm:text-base font-semibold text-primary tracking-wide whitespace-nowrap hover:text-accent"
               >
                 Book An Appointment
 
                 {/* Always visible underline */}
-                <span className="absolute left-0 -bottom-1 h-[2px] w-full bg-black/40" />
+                <span className="absolute left-0 -bottom-1 h-[2px] w-full bg-accent" />
 
                 {/* Hover underline animation (top of it) */}
-                <span className="absolute left-0 -bottom-1 h-[2px] w-full bg-black scale-x-0 origin-left transition-transform duration-300 ease-out group-hover:scale-x-100" />
+                <span className="absolute left-0 -bottom-1 h-[2px] w-full bg-primary scale-x-0 origin-left transition-transform duration-300 ease-out group-hover:scale-x-100" />
               </Link>
               {/* Hamburger */}
               <button
@@ -182,8 +179,8 @@ const Navbar = () => {
                   }`}
                 ></span>
                 <span
-                  className={`block w-7 h-0.5 bg-primary rounded-full transition-opacity duration-300 ${
-                    menuOpen ? 'opacity-0' : 'my-1.5'
+                  className={`block h-0.5 rounded-full transition-all duration-300 ${
+                    menuOpen ? 'opacity-0 w-7' : 'my-1.5 w-5 self-end bg-accent'
                   }`}
                 ></span>
                 <span
@@ -193,17 +190,22 @@ const Navbar = () => {
                 ></span>
 
                 {!menuOpen && !clickedReviewDot && (
-                  <span className="absolute top-0 right-0 w-2 h-2 bg-black rounded-full animate-ping"></span>
+                  <span className="absolute top-0 right-0 w-2 h-2 bg-accent rounded-full animate-ping"></span>
                 )}
               </button>
             </div>
           </div>
         </div>
+        <span
+          ref={progressRef}
+          aria-hidden="true"
+          className="pointer-events-none absolute bottom-0 left-0 h-[2px] w-full origin-left scale-x-0 bg-accent shadow-[0_0_8px_rgb(var(--accent-rgb)/0.6)]"
+        />
       </header>
 
       {/* Overlay */}
       <div
-        className={`fixed inset-0 bg-black/40 z-[998] transition-opacity duration-300 ${
+        className={`fixed inset-0 bg-ink/40 z-[998] transition-opacity duration-300 ${
           menuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
         onClick={() => setMenuOpen(false)}
@@ -212,7 +214,7 @@ const Navbar = () => {
       {/* Mobile Menu */}
       <aside
         ref={mobileMenuRef}
-        className="fixed top-0 right-0 h-full w-64 bg-white shadow-xl z-[999] flex flex-col translate-x-full"
+        className="fixed top-0 right-0 h-full w-72 bg-background border-l border-primary/10 shadow-2xl z-[999] flex flex-col translate-x-full"
       >
         <div className="flex justify-between items-center p-5 border-b border-primary/10">
           <Link href="/" className="flex items-center justify-center w-10 h-10">
@@ -221,41 +223,49 @@ const Navbar = () => {
 
           <button
             onClick={() => setMenuOpen(false)}
-            className="text-4xl text-secondary hover:text-primary transition-colors"
+            className="text-4xl text-secondary hover:text-accent transition-colors"
             aria-label="Close menu"
           >
             &times;
           </button>
         </div>
 
-        <nav className="flex flex-col px-4 py-6 space-y-2 flex-grow overflow-y-auto">
-          {HAMBURGER_LINKS.map((item) =>
+        <nav className="no-scrollbar flex flex-col px-5 py-5 space-y-0.5 flex-grow overflow-y-auto">
+          {HAMBURGER_LINKS.map((item, idx) =>
             item.type === 'scroll' ? (
               <div
                 key={item.id}
-                className="menu-link block text-lg font-medium cursor-pointer text-primary py-3 px-2 rounded-lg transition-transform duration-200 hover:scale-105 relative group"
+                className="menu-link block text-lg font-medium cursor-pointer text-primary py-2.5 px-2 rounded-lg transition-all duration-200 hover:translate-x-1 hover:text-accent relative group"
                 onClick={() => handleScrollLink(item.id)}
               >
+                <span className="mr-3 align-middle text-[11px] font-semibold tabular-nums text-accent">{String(idx + 1).padStart(2, '0')}</span>
                 {item.text}
-                <span className="absolute bottom-1 left-0 w-0 h-[2px] bg-primary transition-all duration-300 group-hover:w-full" />
+                <span className="absolute bottom-1 left-0 w-0 h-[2px] bg-accent transition-all duration-300 group-hover:w-full" />
 
                 {item.cta && !clickedReviewDot && (
-                  <span className="absolute right-0 top-3 w-2 h-2 bg-black rounded-full animate-ping"></span>
+                  <span className="absolute right-0 top-3 w-2 h-2 bg-accent rounded-full animate-ping"></span>
                 )}
 
-                {item.cta && <p className="text-xs text-secondary mt-1">{item.cta}</p>}
+                {item.cta && <p className="ml-8 text-xs text-secondary mt-1">{item.cta}</p>}
               </div>
             ) : (
               <Link
                 key={item.id}
                 href={item.id}
-                target={item.target || '_self'}
-                rel={item.target === '_blank' ? 'noopener noreferrer' : undefined}
-                className="menu-link block text-lg font-medium cursor-pointer text-primary py-3 px-2 rounded-lg transition-transform duration-200 hover:scale-105 relative group"
+                target={item.newTab ? '_blank' : '_self'}
+                rel={item.newTab ? 'noopener noreferrer' : undefined}
+                className={`menu-link block text-lg font-medium cursor-pointer py-2.5 px-2 rounded-lg transition-all duration-200 hover:translate-x-1 hover:text-accent relative group ${
+                  pathname === item.id ? 'text-accent' : 'text-primary'
+                }`}
                 onClick={() => setMenuOpen(false)}
               >
+                <span className="mr-3 align-middle text-[11px] font-semibold tabular-nums text-accent">{String(idx + 1).padStart(2, '0')}</span>
                 {item.text}
-                <span className="absolute bottom-1 left-0 w-0 h-[2px] bg-primary transition-all duration-300 group-hover:w-full" />
+                <span
+                  className={`absolute bottom-1 left-0 h-[2px] bg-accent transition-all duration-300 group-hover:w-full ${
+                    pathname === item.id ? 'w-full' : 'w-0'
+                  }`}
+                />
               </Link>
             )
           )}
@@ -263,9 +273,9 @@ const Navbar = () => {
 
         <div className="menu-link flex justify-center items-center space-x-6 p-6 border-t border-primary/10">
           <Link
-            href="https://github.com/abdulbarr730"
+            href={socials.github}
             target="_blank"
-            className="text-secondary hover:text-primary transition-colors"
+            className="text-secondary hover:text-accent transition-colors"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -283,9 +293,8 @@ const Navbar = () => {
           </Link>
 
           <Link
-            href="https://www.linkedin.com/in/abdul-barr-9092a4251"
-            target="_blank"
-            className="text-secondary hover:text-primary transition-colors"
+            href={socials.linkedin} target="_blank"
+            className="text-secondary hover:text-accent transition-colors"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"

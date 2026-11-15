@@ -16,8 +16,8 @@ function NavLink({ href, children }) {
       className={`
         flex items-center gap-3 px-4 py-3 rounded-lg transition-all
         ${isActive
-          ? "bg-blue-600 text-white font-semibold" // Active link
-          : "text-gray-700 hover:bg-gray-200 hover:text-black" // Inactive link
+          ? "bg-accent text-white font-semibold" // Active link
+          : "text-secondary hover:bg-muted hover:text-primary" // Inactive link
         }
       `}
     >
@@ -45,14 +45,14 @@ export default function JobsAdminSidebar({ isOpen, onClose }) {
     <>
       {/* --- Mobile Overlay (click to close) --- */}
       <div 
-        className={`fixed inset-0 z-10 bg-black/50 lg:hidden ${isOpen ? "block" : "hidden"}`}
+        className={`fixed inset-0 z-10 bg-ink/50 lg:hidden ${isOpen ? "block" : "hidden"}`}
         onClick={onClose}
       ></div>
 
       {/* --- Sidebar --- */}
       <div 
         className={`
-          w-64 bg-gray-100 text-gray-800 flex flex-col min-h-screen p-4 border-r border-gray-200 
+          w-64 bg-muted/60 text-primary flex flex-col min-h-screen p-4 border-r border-primary/15 
           fixed z-20 top-0 left-0 transition-transform transform
           lg:static lg:translate-x-0
           ${isOpen ? "translate-x-0" : "-translate-x-full"}
@@ -60,7 +60,7 @@ export default function JobsAdminSidebar({ isOpen, onClose }) {
       >
         <div className="mb-6">
           <h2 className="text-2xl font-bold text-center">Admin Panel</h2>
-          <p className="text-sm text-gray-500 text-center">BBDIT Job Portal</p>
+          <p className="text-sm text-secondary text-center">BBDIT Job Portal</p>
         </div>
 
         {/* --- Main Navigation --- */}
@@ -96,7 +96,7 @@ export default function JobsAdminSidebar({ isOpen, onClose }) {
         <div className="mt-auto">
           <a 
             href="/jobs"
-            className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-200 hover:text-black"
+            className="flex items-center gap-3 px-4 py-3 rounded-lg text-secondary hover:bg-muted hover:text-primary"
           >
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3" /></svg>
             <span>Back to Student Portal</span>

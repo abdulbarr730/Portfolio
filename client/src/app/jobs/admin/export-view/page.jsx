@@ -118,14 +118,14 @@ export default function ExportViewPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-100 flex justify-center items-center">
+      <div className="min-h-screen bg-muted/60 flex justify-center items-center">
         Loading Full Application List...
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 px-4 sm:px-6 py-10">
+    <div className="min-h-screen bg-muted/60 px-4 sm:px-6 py-10">
       {/* HEADER */}
       <div className="max-w-7xl mx-auto mb-6 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <h1 className="text-3xl font-bold">Full Application List (Grouped)</h1>
@@ -140,14 +140,14 @@ export default function ExportViewPage() {
 
           <a
             href="/jobs/admin/all-applications"
-            className="bg-blue-600 text-white px-4 py-2 rounded-md shadow hover:bg-blue-700 text-sm"
+            className="bg-accent text-white px-4 py-2 rounded-md shadow hover:bg-primary text-sm"
           >
             Back to Grid →
           </a>
 
           <a
             href="/jobs/admin"
-            className="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 text-sm"
+            className="bg-secondary text-white px-4 py-2 rounded-md hover:bg-primary text-sm"
           >
             Back
           </a>
@@ -156,55 +156,55 @@ export default function ExportViewPage() {
 
       {/* MESSAGE */}
       {message && (
-        <div className="max-w-7xl mx-auto mb-6 p-4 bg-black text-white rounded-lg text-center">
+        <div className="max-w-7xl mx-auto mb-6 p-4 bg-ink text-white rounded-lg text-center">
           {message}
         </div>
       )}
 
       {/* TABLE CONTAINER: ✅ Fixed height + Scrollable */}
-      <div className="max-w-7xl mx-auto bg-white rounded-2xl shadow-lg p-6 h-[80vh] flex flex-col">
+      <div className="max-w-7xl mx-auto bg-surface rounded-2xl shadow-lg p-6 h-[80vh] flex flex-col">
         {groupedArray.length === 0 ? (
-          <p className="text-gray-600 text-center p-10">No applications found.</p>
+          <p className="text-secondary text-center p-10">No applications found.</p>
         ) : (
           <div className="overflow-auto flex-1 border rounded-lg">
-            <table className="min-w-full divide-y divide-gray-300 relative">
+            <table className="min-w-full divide-y divide-primary/20 relative">
               
               {/* Sticky Header */}
-              <thead className="bg-gray-100 sticky top-0 z-10 shadow-sm">
+              <thead className="bg-muted/60 sticky top-0 z-10 shadow-sm">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase bg-gray-100">Student</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase bg-gray-100">Roll</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase bg-gray-100">Phone</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase bg-gray-100">Branch & Year</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase bg-gray-100">Jobs Applied</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-secondary uppercase bg-muted/60">Student</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-secondary uppercase bg-muted/60">Roll</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-secondary uppercase bg-muted/60">Phone</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-secondary uppercase bg-muted/60">Branch & Year</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-secondary uppercase bg-muted/60">Jobs Applied</th>
                 </tr>
               </thead>
 
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-surface divide-y divide-primary/15">
                 {groupedArray.map((entry) => (
-                  <tr key={entry.student.rollNumber || entry.student._id} className="hover:bg-gray-50 transition-colors">
+                  <tr key={entry.student.rollNumber || entry.student._id} className="hover:bg-background transition-colors">
                     <td className="px-4 py-4 align-top">
-                      <div className="font-semibold text-gray-900">{entry.student.name}</div>
-                      <div className="text-sm text-gray-500">{entry.student.email}</div>
+                      <div className="font-semibold text-primary">{entry.student.name}</div>
+                      <div className="text-sm text-secondary">{entry.student.email}</div>
                     </td>
 
-                    <td className="px-4 py-4 text-gray-700 align-top">{entry.student.rollNumber}</td>
+                    <td className="px-4 py-4 text-secondary align-top">{entry.student.rollNumber}</td>
 
-                    <td className="px-4 py-4 text-gray-700 align-top">{entry.student.phoneNumber || "N/A"}</td>
+                    <td className="px-4 py-4 text-secondary align-top">{entry.student.phoneNumber || "N/A"}</td>
 
-                    <td className="px-4 py-4 text-gray-700 align-top">
+                    <td className="px-4 py-4 text-secondary align-top">
                       {entry.student.branch} — {formatYear(entry.student.year)}
                     </td>
 
                     <td className="px-4 py-4 align-top">
                       <ul className="space-y-2">
                         {entry.jobs.map((job, i) => (
-                          <li key={i} className="text-sm border-b pb-2 last:border-0 last:pb-0 border-gray-100">
-                            <span className="font-medium text-gray-800">{job.name}</span>
-                            <span className="text-gray-500 ml-1 text-xs">({formatDate(job.date)})</span>
+                          <li key={i} className="text-sm border-b pb-2 last:border-0 last:pb-0 border-primary/10">
+                            <span className="font-medium text-primary">{job.name}</span>
+                            <span className="text-secondary ml-1 text-xs">({formatDate(job.date)})</span>
                             <br />
                             {job.link && (
-                              <a href={job.link} target="_blank" rel="noreferrer" className="text-blue-600 text-xs hover:underline">
+                              <a href={job.link} target="_blank" rel="noreferrer" className="text-accent text-xs hover:underline">
                                 Open Link →
                               </a>
                             )}

@@ -18,7 +18,7 @@ function Content() {
           {success ? "Subscription Confirmed" : "Confirmation failed"}
         </h1>
 
-        <p className="text-sm text-neutral-600 mb-6">
+        <p className="text-sm text-secondary mb-6">
           {success
             ? "You're now subscribed and will receive updates when new blogs or projects are published."
             : "Invalid or expired confirmation link."
@@ -41,7 +41,7 @@ function Content() {
 
             <Link
               href="/"
-              className="block border rounded-md py-2 bg-black text-white"
+              className="block border rounded-md py-2 bg-ink text-white"
             >
               Go to Homepage
             </Link>

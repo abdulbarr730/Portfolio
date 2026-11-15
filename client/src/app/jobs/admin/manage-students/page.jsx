@@ -52,8 +52,8 @@ function ResetModal({ student, API_BASE_URL, onClose, onPasswordChange }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="bg-white rounded-xl w-full max-w-md shadow-2xl p-6">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/50 p-4">
+      <div className="bg-surface rounded-xl w-full max-w-md shadow-2xl p-6">
         <h3 className="text-xl font-bold mb-4">Reset Password for {student.name}</h3>
         
         <input
@@ -64,12 +64,12 @@ function ResetModal({ student, API_BASE_URL, onClose, onPasswordChange }) {
           className="w-full p-3 border rounded-md mb-4"
         />
 
-        {message && <div className="p-3 bg-gray-100 text-sm rounded mb-4">{message}</div>}
+        {message && <div className="p-3 bg-muted/60 text-sm rounded mb-4">{message}</div>}
 
         <div className="flex gap-3">
           <button 
             onClick={onClose}
-            className="flex-1 bg-gray-200 py-2 rounded-md hover:bg-gray-300"
+            className="flex-1 bg-muted py-2 rounded-md hover:bg-muted"
             disabled={loading}
           >
             Close
@@ -314,9 +314,9 @@ export default function ManageStudentsPage() {
     <>
       <h1 className="text-4xl font-bold mb-6">Manage All Students</h1>
       
-      {message && <div className="mb-4 p-3 bg-black text-white rounded-lg text-center">{message}</div>}
+      {message && <div className="mb-4 p-3 bg-ink text-white rounded-lg text-center">{message}</div>}
 
-      <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8">
+      <div className="bg-surface rounded-2xl shadow-lg p-6 sm:p-8">
         
         {/* Search Bar and Filters */}
         <div className="mb-6 flex flex-col sm:flex-row justify-between items-center gap-3">
@@ -372,15 +372,15 @@ export default function ManageStudentsPage() {
                 <option value="Approved">Approved</option>
                 <option value="Pending">Pending</option>
             </select>
-            <p className="text-sm text-gray-500 flex items-center justify-end col-span-2 md:col-span-1">
+            <p className="text-sm text-secondary flex items-center justify-end col-span-2 md:col-span-1">
                 Showing {filteredStudents.length} of {students.length} students.
             </p>
         </div>
         
         {/* --- BULK ACTION BAR --- */}
         {selectedStudents.size > 0 && (
-          <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md flex flex-wrap gap-3 items-center">
-            <span className="font-semibold text-blue-800">{selectedStudents.size} Selected:</span>
+          <div className="mb-4 p-3 bg-accent/10 border border-accent/40 rounded-md flex flex-wrap gap-3 items-center">
+            <span className="font-semibold text-accent">{selectedStudents.size} Selected:</span>
             <button 
               onClick={() => handleBulkAction('verify')} 
               className="bg-green-600 text-white px-3 py-1 rounded-md text-sm hover:bg-green-700"
@@ -407,8 +407,8 @@ export default function ManageStudentsPage() {
 
         {/* Student Table */}
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+          <table className="min-w-full divide-y divide-primary/15">
+            <thead className="bg-background">
               <tr>
                 {/* Checkbox Header */}
                 <th className="px-3 py-3 w-10">
@@ -416,19 +416,19 @@ export default function ManageStudentsPage() {
                     type="checkbox"
                     checked={selectedStudents.size === filteredStudents.length && filteredStudents.length > 0}
                     onChange={handleToggleSelectAll}
-                    className="rounded text-blue-600"
+                    className="rounded text-accent"
                   />
                 </th>
-                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name & Email</th>
-                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Roll Number</th>
-                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Course</th>
-                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Branch</th>
-                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Year</th>
-                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                <th className="px-3 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">Name & Email</th>
+                <th className="px-3 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">Roll Number</th>
+                <th className="px-3 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">Course</th>
+                <th className="px-3 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">Branch</th>
+                <th className="px-3 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">Year</th>
+                <th className="px-3 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">Status</th>
+                <th className="px-3 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-surface divide-y divide-primary/15">
               {filteredStudents.map((student) => (
                 <tr key={student._id}>
                   
@@ -438,23 +438,23 @@ export default function ManageStudentsPage() {
                       type="checkbox"
                       checked={selectedStudents.has(student._id)}
                       onChange={() => handleToggleStudent(student._id)}
-                      className="rounded text-blue-600"
+                      className="rounded text-accent"
                     />
                   </td>
 
                   {/* Name & Email */}
                   <td className="px-3 py-4 whitespace-nowrap">
-                    <div className="font-medium text-gray-900">{student.name}</div>
-                    <div className="text-sm text-gray-500">{student.email}</div>
+                    <div className="font-medium text-primary">{student.name}</div>
+                    <div className="text-sm text-secondary">{student.email}</div>
                   </td>
                   {/* Roll Number */}
-                  <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-700">{student.rollNumber}</td>
+                  <td className="px-3 py-4 whitespace-nowrap text-sm text-secondary">{student.rollNumber}</td>
                   {/* Course */}
-                  <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-700">{student.course}</td>
+                  <td className="px-3 py-4 whitespace-nowrap text-sm text-secondary">{student.course}</td>
                   {/* Branch */}
-                  <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-700">{student.branch}</td>
+                  <td className="px-3 py-4 whitespace-nowrap text-sm text-secondary">{student.branch}</td>
                   {/* Year */}
-                  <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-700">{formatYear(student.year)}</td>
+                  <td className="px-3 py-4 whitespace-nowrap text-sm text-secondary">{formatYear(student.year)}</td>
                   
                   {/* Status Cell */}
                   <td className="px-3 py-4 whitespace-nowrap">
@@ -462,7 +462,7 @@ export default function ManageStudentsPage() {
                       className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
                         ${student.approved ? 'bg-green-100 text-green-800' : 
                          student.registered ? 'bg-yellow-100 text-yellow-800' : 
-                         'bg-gray-100 text-gray-800'}`
+                         'bg-muted/60 text-primary'}`
                       }
                     >
                       {student.approved ? 'Approved' : student.registered ? 'Pending' : 'Unregistered'}
@@ -492,7 +492,7 @@ export default function ManageStudentsPage() {
                       {/* PASSWORD RESET BUTTON */}
                       <button
                         onClick={() => setModalStudent(student)}
-                        className="text-blue-600 hover:text-blue-900"
+                        className="text-accent hover:text-accent"
                       >
                         Reset Password
                       </button>

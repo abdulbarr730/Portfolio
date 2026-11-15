@@ -8,6 +8,9 @@ const nextConfig = {
       { protocol: 'https', hostname: '**.r2.dev' },
       // Old images already uploaded to Cloudinary
       { protocol: 'https', hostname: 'res.cloudinary.com' },
+      // Medium article cover images (blog page)
+      { protocol: 'https', hostname: 'miro.medium.com' },
+      { protocol: 'https', hostname: 'cdn-images-1.medium.com' },
     ],
   },
   async rewrites() {

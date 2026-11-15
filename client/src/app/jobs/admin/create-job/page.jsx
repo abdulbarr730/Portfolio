@@ -82,14 +82,14 @@ export default function CreateJobPage() {
     <div className="max-w-lg mx-auto py-10">
       <h1 className="text-3xl font-extrabold mb-6">Create New Job</h1>
 
-      <div className="bg-white shadow-xl rounded-2xl p-8">
+      <div className="bg-surface shadow-xl rounded-2xl p-8">
         <div className="space-y-4">
           <input
             name="name"
             value={form.name}
             onChange={handleChange}
             placeholder="Job Title (e.g., Google SWE Intern)"
-            className="w-full p-3 rounded-xl border focus:ring-2 focus:ring-blue-300"
+            className="w-full p-3 rounded-xl border focus:ring-2 focus:ring-accent/40"
           />
 
           <input
@@ -97,7 +97,7 @@ export default function CreateJobPage() {
             value={form.link}
             onChange={handleChange}
             placeholder="Application Link (https://...)"
-            className="w-full p-3 rounded-xl border focus:ring-2 focus:ring-blue-300"
+            className="w-full p-3 rounded-xl border focus:ring-2 focus:ring-accent/40"
           />
 
           <textarea
@@ -106,7 +106,7 @@ export default function CreateJobPage() {
             onChange={handleChange}
             rows="3"
             placeholder="Short Job Description (Optional)"
-            className="w-full p-3 rounded-xl border focus:ring-2 focus:ring-blue-300"
+            className="w-full p-3 rounded-xl border focus:ring-2 focus:ring-accent/40"
           />
 
           <input
@@ -114,14 +114,14 @@ export default function CreateJobPage() {
             value={form.location}
             onChange={handleChange}
             placeholder="Location (City, Remote, etc.)"
-            className="w-full p-3 rounded-xl border focus:ring-2 focus:ring-blue-300"
+            className="w-full p-3 rounded-xl border focus:ring-2 focus:ring-accent/40"
           />
 
           <select
             name="type"
             value={form.type}
             onChange={handleChange}
-            className="w-full p-3 rounded-xl border bg-white"
+            className="w-full p-3 rounded-xl border bg-surface"
           >
             <option value="internship">Internship</option>
             <option value="full-time">Full-Time</option>
@@ -134,14 +134,14 @@ export default function CreateJobPage() {
           <button
             onClick={handleSubmit}
             disabled={loading}
-            className="w-full py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold shadow hover:scale-[1.01] transition disabled:opacity-60"
+            className="w-full py-3 rounded-xl bg-gradient-to-r from-accent to-accent text-white font-semibold shadow hover:scale-[1.01] transition disabled:opacity-60"
           >
             {loading ? "Creating..." : "Create Job"}
           </button>
         </div>
 
         {message && (
-          <div className="mt-4 text-center p-3 rounded-xl bg-black text-white">
+          <div className="mt-4 text-center p-3 rounded-xl bg-ink text-white">
             {message}
           </div>
         )}

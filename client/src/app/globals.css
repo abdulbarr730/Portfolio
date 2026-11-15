@@ -2,6 +2,32 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+  /* Accent colour (overridden at runtime by the admin setting) */
+  --accent-rgb: 94 107 38;
+
+  /* Light theme */
+  --c-background: 245 243 238; /* #F5F3EE off-white */
+  --c-surface: 255 255 255;    /* white cards */
+  --c-muted: 232 228 220;      /* #E8E4DC */
+  --c-primary: 34 34 34;       /* #222222 text */
+  --c-secondary: 123 123 123;  /* #7B7B7B */
+  --c-cream: 245 236 222;      /* #F5ECDE */
+  --c-ink: 30 30 30;           /* #1E1E1E */
+  color-scheme: light;
+}
+
+html,
+body {
+  background: rgb(var(--c-background));
+  color: rgb(var(--c-primary));
+}
+
+::selection {
+  background: rgb(var(--accent-rgb) / 0.9);
+  color: #fff;
+}
 @keyframes shimmer {
   0% { transform: translateX(-100%); }
   100% { transform: translateX(100%); }
@@ -38,4 +64,79 @@ html.modal-open body {
 
 .dock-item {
   @apply p-2 rounded-lg transition hover:bg-black/10 active:scale-90;
+}
+
+/* Hero scroll indicator line */
+@keyframes scrollLine {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(200%); }
+}
+
+/* ---------- Accent details ---------- */
+
+/* Orange full stop after section headings: <h2 className="accent-dot"> */
+.accent-dot::after {
+  content: '.';
+  color: rgb(var(--accent-rgb));
+}
+
+/* Right sidebar: orange shimmer that sweeps through the vertical label */
+.sidebar-shimmer {
+  color: transparent;
+  background-image: linear-gradient(
+    to top,
+    rgb(var(--c-secondary)) 0%,
+    rgb(var(--c-secondary)) 40%,
+    rgb(var(--accent-rgb)) 50%,
+    rgb(var(--c-secondary)) 60%,
+    rgb(var(--c-secondary)) 100%
+  );
+  background-size: 100% 300%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: sidebarShimmer 4s ease-in-out infinite;
+}
+@keyframes sidebarShimmer {
+  0% { background-position: 0 100%; }
+  100% { background-position: 0 0%; }
+}
+
+/* Right sidebar: spark travelling down the line */
+@keyframes sidebarSpark {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(1200%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sidebar-shimmer { animation: none; color: rgb(var(--c-secondary)); }
+}
+
+/* Hide scrollbars but keep scrolling (slide-out menu etc.) */
+.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
+/* ---------- Shared page design system ---------- */
+@layer components {
+  /* full-width pages with consistent side gutters */
+  .page-container {
+    @apply w-full px-5 sm:px-8 lg:px-14 2xl:px-20;
+  }
+  /* white card on the off-white page, olive on hover */
+  .card {
+    @apply rounded-2xl border border-primary/10 bg-surface transition-all duration-300;
+  }
+  .card-hover {
+    @apply hover:-translate-y-1 hover:border-accent/40 hover:shadow-[0_24px_50px_-28px_rgba(34,34,34,0.35)];
+  }
+  /* small uppercase label */
+  .eyebrow {
+    @apply text-xs font-semibold uppercase tracking-[0.2em] text-accent;
+  }
+  /* outlined pill / chip */
+  .chip {
+    @apply inline-flex items-center rounded-full border border-primary/15 px-3.5 py-1.5 text-sm font-medium text-primary transition-colors;
+  }
+  .chip-active {
+    @apply border-primary bg-primary text-background;
+  }
 }

@@ -1,5 +1,8 @@
 'use client';
 
+import { useSettings } from '@/lib/content';
+import PageHeader from '@/components/PageHeader';
+
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 
@@ -47,6 +50,7 @@ const IconForm = (props) => (
 
 
 export default function ContactPage() {
+  const { socials } = useSettings().settings;
   const [formStatus, setFormStatus] = useState('idle');
 
   const handleSubmit = async (e) => {
@@ -79,84 +83,69 @@ export default function ContactPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50/30 pt-28 pb-20 px-6 sm:px-10 lg:px-16">
-      
-      <div className="max-w-7xl mx-auto">
-        
-        {/* --- TOP SECTION --- */}
-        <motion.div 
-          className="text-center mb-16 space-y-6"
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, ease: "easeOut" }}
-        >
-          <h1 className="text-6xl md:text-7xl font-bold text-black tracking-tighter">
-            Let's Make it Happen.
-          </h1>
-          
-          <div className="max-w-1xl mx-auto space-y-6">
-            <p className="text-xl md:text-2xl text-gray-600 font-light leading-relaxed">
-              Whether you need a full-stack overhaul, a quick technical fix, or just advice on where to start—I’m here. 
-              I treat every project with the same focus and passion I put into my own.
-            </p>
-            
-            {/* Monochrome Badge */}
-            <div className="inline-block bg-white border border-black text-black px-6 py-2 rounded-full shadow-sm">
-              <span className="text-lg font-medium">Your first consultancy session is absolutely free.</span>
-            </div>
+    <div className="min-h-screen pb-24">
+      <PageHeader
+        index="06"
+        eyebrow="Contact"
+        title="Let's talk"
+        intro="Whether you need a full-stack overhaul, a quick technical fix, or just advice on where to start, I treat every project with the same focus I put into my own."
+      >
+        <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="inline-flex items-center gap-2 rounded-full bg-accent/10 px-3.5 py-1.5 text-sm font-semibold text-accent">
+              <span className="h-1.5 w-1.5 rounded-full bg-accent" />
+              First consultation is free
+            </span>
+            <span className="text-sm text-secondary">Available weekends · fast replies on weekdays</span>
           </div>
-
-          <p className="text-sm md:text-base text-gray-500 font-medium tracking-wide uppercase pt-4">
-            Available Weekends (Sat & Sun) • Fast Response on Weekdays
-          </p>
-
-          {/* --- TOP BOOKING BUTTONS (Black & White) --- */}
-          <div className="pt-8 flex flex-col sm:flex-row items-center justify-center gap-5">
-            <a 
-              href="https://cal.com/abdul-barr/15min" 
-              target="_blank" 
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <a
+              href="https://cal.com/abdul-barr/15min"
+              target="_blank"
               rel="noopener noreferrer"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-3 bg-black text-white px-10 py-5 rounded-2xl text-lg font-bold shadow-xl shadow-gray-400/20 hover:scale-[1.02] hover:shadow-2xl transition-all duration-300 group"
+              className="group inline-flex items-center justify-center gap-2 rounded-full bg-accent px-6 py-3 font-semibold text-white shadow-[0_10px_30px_-12px_rgb(var(--accent-rgb)/0.8)] transition-colors hover:bg-primary"
             >
-              <span>Book 15-min Call</span>
-              <IconCalendar className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              Book 15-min call
+              <IconCalendar className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
             </a>
-
-            <a 
-              href="https://forms.gle/W5EHuDF57kRi64d76" 
-              target="_blank" 
+            <a
+              href="https://forms.gle/W5EHuDF57kRi64d76"
+              target="_blank"
               rel="noopener noreferrer"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-3 bg-white text-black border-2 border-black px-10 py-5 rounded-2xl text-lg font-bold shadow-sm hover:bg-gray-50 hover:scale-[1.02] transition-all duration-300 group"
+              className="group inline-flex items-center justify-center gap-2 rounded-full border border-primary/20 bg-surface px-6 py-3 font-semibold text-primary transition-colors hover:border-accent hover:text-accent"
             >
-              <span>Fill Appointment Form</span>
-              <IconForm className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              Appointment form
+              <IconForm className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
             </a>
           </div>
-        </motion.div>
+        </div>
+      </PageHeader>
+
+      <div className="page-container">
 
         {/* --- GRID LAYOUT --- */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
           
           {/* LEFT: The Email Form */}
           <motion.div 
-            className="bg-white p-8 md:p-12 rounded-[2rem] shadow-xl shadow-gray-200/50 border border-gray-200 h-full"
+            className="card p-8 md:p-12 h-full"
             initial={{ opacity: 0, x: -30 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
             <div className="mb-8">
-              <h2 className="text-3xl font-bold text-black mb-2">Drop me a line</h2>
-              <p className="text-gray-600">Prefer email? Fill this out and I'll get back to you within 24 hours.</p>
+              <h2 className="accent-dot text-3xl font-bold text-primary mb-2">Drop me a line</h2>
+              <p className="text-secondary">Prefer email? Fill this out and I'll get back to you within 24 hours.</p>
             </div>
             
             {formStatus === 'success' ? (
-              <div className="text-center py-20 bg-gray-50 rounded-3xl border border-gray-200">
-                <div className="w-20 h-20 bg-black text-white rounded-full flex items-center justify-center mx-auto mb-6 text-4xl shadow-lg">✓</div>
-                <h3 className="text-2xl font-bold text-black mb-2">Received!</h3>
-                <p className="text-gray-600">I'll check it out and reply shortly.</p>
+              <div className="text-center py-20 bg-background rounded-3xl border border-primary/15">
+                <div className="w-20 h-20 bg-accent text-white rounded-full flex items-center justify-center mx-auto mb-6 text-4xl shadow-lg">✓</div>
+                <h3 className="text-2xl font-bold text-primary mb-2">Received!</h3>
+                <p className="text-secondary">I'll check it out and reply shortly.</p>
                 <button 
                   onClick={() => setFormStatus('idle')} 
-                  className="mt-8 px-8 py-3 bg-white text-black rounded-xl font-bold border-2 border-black hover:bg-black hover:text-white transition-all"
+                  className="mt-8 px-8 py-3 bg-surface text-primary rounded-xl font-bold border-2 border-accent hover:bg-accent hover:text-white transition-all"
                 >
                   Send another
                 </button>
@@ -165,36 +154,36 @@ export default function ContactPage() {
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="group">
-                    <label htmlFor="name" className="block text-sm font-bold text-gray-500 mb-2 uppercase tracking-wider">Your Name</label>
+                    <label htmlFor="name" className="block text-sm font-bold text-secondary mb-2 uppercase tracking-wider">Your Name</label>
                     <input 
                       type="text" 
                       name="name" 
                       id="name" 
                       required 
-                      className="w-full px-5 py-4 rounded-xl bg-gray-50 border-2 border-transparent focus:bg-white focus:border-black focus:shadow-lg outline-none transition-all duration-300 font-medium placeholder-gray-400 hover:bg-gray-100"
+                      className="w-full px-5 py-4 rounded-xl bg-background border-2 border-transparent focus:bg-surface focus:border-primary focus:shadow-lg outline-none transition-all duration-300 font-medium placeholder-secondary/60 hover:bg-muted/60"
                       placeholder="e.g. Elon Musk"
                     />
                   </div>
                   <div className="group">
-                    <label htmlFor="email" className="block text-sm font-bold text-gray-500 mb-2 uppercase tracking-wider">Your Email</label>
+                    <label htmlFor="email" className="block text-sm font-bold text-secondary mb-2 uppercase tracking-wider">Your Email</label>
                     <input 
                       type="email" 
                       name="email" 
                       id="email" 
                       required 
-                      className="w-full px-5 py-4 rounded-xl bg-gray-50 border-2 border-transparent focus:bg-white focus:border-black focus:shadow-lg outline-none transition-all duration-300 font-medium placeholder-gray-400 hover:bg-gray-100"
+                      className="w-full px-5 py-4 rounded-xl bg-background border-2 border-transparent focus:bg-surface focus:border-primary focus:shadow-lg outline-none transition-all duration-300 font-medium placeholder-secondary/60 hover:bg-muted/60"
                       placeholder="elon@spacex.com"
                     />
                   </div>
                 </div>
                 <div className="group">
-                  <label htmlFor="message" className="block text-sm font-bold text-gray-500 mb-2 uppercase tracking-wider">How can I help?</label>
+                  <label htmlFor="message" className="block text-sm font-bold text-secondary mb-2 uppercase tracking-wider">How can I help?</label>
                   <textarea 
                     name="message" 
                     id="message" 
                     rows="6" 
                     required 
-                    className="w-full px-5 py-4 rounded-xl bg-gray-50 border-2 border-transparent focus:bg-white focus:border-black focus:shadow-lg outline-none transition-all duration-300 resize-none font-medium leading-relaxed placeholder-gray-400 hover:bg-gray-100"
+                    className="w-full px-5 py-4 rounded-xl bg-background border-2 border-transparent focus:bg-surface focus:border-primary focus:shadow-lg outline-none transition-all duration-300 resize-none font-medium leading-relaxed placeholder-secondary/60 hover:bg-muted/60"
                     placeholder="Tell me a bit about your project goals..."
                   ></textarea>
                 </div>
@@ -202,7 +191,7 @@ export default function ContactPage() {
                 <button 
                   type="submit" 
                   disabled={formStatus === 'submitting'}
-                  className="w-full bg-black text-white font-bold py-4 rounded-xl text-lg hover:-translate-y-1 hover:shadow-xl hover:shadow-gray-400/20 transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed flex justify-center items-center gap-3"
+                  className="w-full bg-accent text-white hover:bg-primary shadow-[0_10px_30px_-10px_rgb(var(--accent-rgb)/0.7)] font-bold py-4 rounded-xl text-lg hover:-translate-y-1 transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed flex justify-center items-center gap-3"
                 >
                   {formStatus === 'submitting' ? (
                     <>
@@ -225,66 +214,65 @@ export default function ContactPage() {
           >
             
             {/* 1. Direct Channels Card (Monochrome Icons) */}
-            <div className="bg-white p-10 rounded-[2rem] shadow-xl shadow-gray-200/60 border border-gray-200 flex-grow">
-              <h3 className="text-2xl font-bold text-black mb-8">Direct Channels</h3>
+            <div className="bg-surface p-10 rounded-[2rem] shadow-xl shadow-gray-200/60 border border-primary/15 flex-grow">
+              <h3 className="text-2xl font-bold text-primary mb-8">Direct Channels</h3>
               
               <div className="space-y-4">
                 {/* Email */}
                 <a 
-                  href="mailto:hello@abdulbarr.in"
-                  className="flex items-center gap-5 p-4 rounded-2xl bg-gray-50 border border-transparent hover:bg-white hover:border-black transition-all duration-300 group"
+                  href={`mailto:${socials.email}`}
+                  className="flex items-center gap-5 p-4 rounded-2xl bg-background border border-transparent hover:bg-surface hover:border-primary transition-all duration-300 group"
                 >
-                  <div className="w-12 h-12 bg-white border border-gray-200 text-black rounded-xl flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                  <div className="w-12 h-12 bg-surface border border-primary/15 text-primary rounded-xl flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
                     <IconEmail className="w-6 h-6" />
                   </div>
                   <div>
-                    <p className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-0.5">Email</p>
-                    <p className="text-black font-bold break-all transition-colors">hello@abdulbarr.in</p>
+                    <p className="text-xs text-secondary font-bold uppercase tracking-wider mb-0.5">Email</p>
+                    <p className="text-primary font-bold break-all transition-colors">{socials.email}</p>
                   </div>
                 </a>
 
                 {/* LinkedIn */}
                 <a 
-                  href="https://www.linkedin.com/in/abdul-barr-9092a4251" 
-                  target="_blank"
-                  className="flex items-center gap-5 p-4 rounded-2xl bg-gray-50 border border-transparent hover:bg-white hover:border-black transition-all duration-300 group"
+                  href={socials.linkedin} target="_blank"
+                  className="flex items-center gap-5 p-4 rounded-2xl bg-background border border-transparent hover:bg-surface hover:border-primary transition-all duration-300 group"
                 >
-                  <div className="w-12 h-12 bg-white border border-gray-200 text-black rounded-xl flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                  <div className="w-12 h-12 bg-surface border border-primary/15 text-primary rounded-xl flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
                     <IconLinkedIn className="w-6 h-6" />
                   </div>
                   <div>
-                    <p className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-0.5">LinkedIn</p>
-                    <p className="text-black font-bold transition-colors">Connect Professionally</p>
+                    <p className="text-xs text-secondary font-bold uppercase tracking-wider mb-0.5">LinkedIn</p>
+                    <p className="text-primary font-bold transition-colors">Connect Professionally</p>
                   </div>
                 </a>
 
                 {/* GitHub */}
                 <a 
-                  href="https://github.com/abdulbarr730" 
+                  href={socials.github} 
                   target="_blank"
-                  className="flex items-center gap-5 p-4 rounded-2xl bg-gray-50 border border-transparent hover:bg-white hover:border-black transition-all duration-300 group"
+                  className="flex items-center gap-5 p-4 rounded-2xl bg-background border border-transparent hover:bg-surface hover:border-primary transition-all duration-300 group"
                 >
-                  <div className="w-12 h-12 bg-white border border-gray-200 text-black rounded-xl flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                  <div className="w-12 h-12 bg-surface border border-primary/15 text-primary rounded-xl flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
                     <IconGitHub className="w-6 h-6" />
                   </div>
                   <div>
-                    <p className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-0.5">GitHub</p>
-                    <p className="text-black font-bold transition-colors">Check my Code</p>
+                    <p className="text-xs text-secondary font-bold uppercase tracking-wider mb-0.5">GitHub</p>
+                    <p className="text-primary font-bold transition-colors">Check my Code</p>
                   </div>
                 </a>
               </div>
             </div>
 
             {/* 2. Schedule Options (Bottom Right) */}
-            <div className="bg-gray-100 p-10 rounded-[2rem] border border-gray-200 shadow-inner">
-               <h3 className="text-2xl font-bold text-black mb-6">Ready to schedule?</h3>
+            <div className="bg-muted/60 p-10 rounded-[2rem] border border-primary/15 shadow-inner">
+               <h3 className="text-2xl font-bold text-primary mb-6">Ready to schedule?</h3>
                <div className="space-y-4">
                   {/* Cal.com */}
                   <a 
                     href="https://cal.com/abdul-barr/15min" 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="flex items-center justify-between w-full bg-black text-white px-6 py-4 rounded-xl font-bold shadow-lg hover:bg-gray-900 hover:-translate-y-1 transition-all group"
+                    className="flex items-center justify-between w-full bg-ink text-white px-6 py-4 rounded-xl font-bold shadow-lg hover:bg-accent hover:-translate-y-1 transition-all group"
                   >
                     <span>Book 15-min Call</span>
                     <IconCalendar className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
@@ -295,7 +283,7 @@ export default function ContactPage() {
                     href="https://forms.gle/W5EHuDF57kRi64d76" 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="flex items-center justify-between w-full bg-white text-black px-6 py-4 rounded-xl font-bold border-2 border-black shadow-sm hover:bg-gray-50 hover:-translate-y-1 transition-all group"
+                    className="flex items-center justify-between w-full bg-surface text-primary px-6 py-4 rounded-xl font-bold border-2 border-primary shadow-sm hover:bg-background hover:-translate-y-1 transition-all group"
                   >
                     <span>Fill Appointment Form</span>
                     <IconForm className="w-5 h-5 group-hover:translate-x-1 transition-transform" />

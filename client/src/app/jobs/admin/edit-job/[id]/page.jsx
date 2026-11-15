@@ -99,17 +99,17 @@ export default function EditJobPage() {
     <div className="max-w-lg mx-auto py-10">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-extrabold">Edit Job</h1>
-        <a href="/jobs/admin/manage-jobs" className="text-sm text-blue-600 hover:underline">← Back</a>
+        <a href="/jobs/admin/manage-jobs" className="text-sm text-accent hover:underline">← Back</a>
       </div>
 
-      <div className="bg-white rounded-3xl shadow-xl p-8">
+      <div className="bg-surface rounded-3xl shadow-xl p-8">
         <div className="space-y-4">
-          <input name="name" value={form.name} onChange={handleChange} placeholder="Job Title" className="w-full p-3 rounded-xl border focus:ring-2 focus:ring-blue-300" />
-          <input name="link" value={form.link} onChange={handleChange} placeholder="Application Link" className="w-full p-3 rounded-xl border focus:ring-2 focus:ring-blue-300" />
-          <textarea name="description" value={form.description} onChange={handleChange} rows="3" placeholder="Short Job Description" className="w-full p-3 rounded-xl border focus:ring-2 focus:ring-blue-300" />
-          <input name="location" value={form.location} onChange={handleChange} placeholder="Location (City, Remote, etc.)" className="w-full p-3 rounded-xl border focus:ring-2 focus:ring-blue-300" />
+          <input name="name" value={form.name} onChange={handleChange} placeholder="Job Title" className="w-full p-3 rounded-xl border focus:ring-2 focus:ring-accent/40" />
+          <input name="link" value={form.link} onChange={handleChange} placeholder="Application Link" className="w-full p-3 rounded-xl border focus:ring-2 focus:ring-accent/40" />
+          <textarea name="description" value={form.description} onChange={handleChange} rows="3" placeholder="Short Job Description" className="w-full p-3 rounded-xl border focus:ring-2 focus:ring-accent/40" />
+          <input name="location" value={form.location} onChange={handleChange} placeholder="Location (City, Remote, etc.)" className="w-full p-3 rounded-xl border focus:ring-2 focus:ring-accent/40" />
 
-          <select name="type" value={form.type} onChange={handleChange} className="w-full p-3 rounded-xl border bg-white">
+          <select name="type" value={form.type} onChange={handleChange} className="w-full p-3 rounded-xl border bg-surface">
             <option value="internship">Internship</option>
             <option value="full-time">Full-Time</option>
             <option value="part-time">Part-Time</option>
@@ -118,12 +118,12 @@ export default function EditJobPage() {
             <option value="seminar">Seminar</option>
           </select>
 
-          <button onClick={handleUpdate} disabled={saving} className="w-full py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold">
+          <button onClick={handleUpdate} disabled={saving} className="w-full py-3 rounded-xl bg-gradient-to-r from-accent to-accent text-white font-semibold">
             {saving ? "Saving..." : "Save Changes"}
           </button>
         </div>
 
-        {message && <div className="mt-4 text-center p-3 rounded-xl bg-black text-white">{message}</div>}
+        {message && <div className="mt-4 text-center p-3 rounded-xl bg-ink text-white">{message}</div>}
       </div>
     </div>
   );
