@@ -7,6 +7,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { animateScroll as scroll } from 'react-scroll';
 import { usePathname, useRouter } from 'next/navigation';
+import { asset } from '@/lib/asset';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -149,7 +150,7 @@ const Navbar = () => {
               </Link>
 
               <Link href="/" className="initial-logo absolute top-[4px] left-0 flex items-center justify-center w-12 h-12 opacity-0">
-                <Image src="/logo.png" alt="Logo" width={48} height={48} />
+                <Image src={asset("/logo.png")} alt="Logo" width={48} height={48} />
               </Link>
             </div>
 
@@ -215,7 +216,7 @@ const Navbar = () => {
       >
         <div className="flex justify-between items-center p-5 border-b border-primary/10">
           <Link href="/" className="flex items-center justify-center w-10 h-10">
-            <Image src="/logo.png" alt="Logo" width={40} height={40} />
+            <Image src={asset("/logo.png")} alt="Logo" width={40} height={40} />
           </Link>
 
           <button

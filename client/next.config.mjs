@@ -2,6 +2,14 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  images: {
+    remotePatterns: [
+      // Cloudflare R2 public bucket URLs
+      { protocol: 'https', hostname: '**.r2.dev' },
+      // Old images already uploaded to Cloudinary
+      { protocol: 'https', hostname: 'res.cloudinary.com' },
+    ],
+  },
   async rewrites() {
     return [
       {

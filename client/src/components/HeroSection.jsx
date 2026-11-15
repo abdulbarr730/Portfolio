@@ -8,6 +8,7 @@ import { TypeAnimation } from 'react-type-animation';
 import Link from 'next/link';
 import RightSidebar from '@/components/RightSidebar';
 import { allProjectsData } from '@/app/data/projectData';
+import { asset } from '@/lib/asset';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -250,7 +251,7 @@ const HeroSection = () => {
             <div className="mobile-avatar image-container mb-6 relative z-10">
               <div className="w-52 h-52 rounded-full overflow-hidden border-4 border-primary/10">
                 <Image
-                  src="/profile.png"
+                  src={asset("/profile.png")}
                   alt="Abdul Barr"
                   width={224}
                   height={224}
@@ -333,7 +334,7 @@ const HeroSection = () => {
               data-speed="1"
             >
               <Image
-                src="/profile.png"
+                src={asset("/profile.png")}
                 alt="Abdul Barr"
                 width={1080}
                 height={1350}

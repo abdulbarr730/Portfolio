@@ -1,5 +1,7 @@
 // index.js
 require("dotenv").config();
+// Optional: custom DNS resolvers (fixes mongodb+srv "querySrv ECONNREFUSED" on some Windows setups)
+if (process.env.DNS_SERVERS) require("dns").setServers(process.env.DNS_SERVERS.split(","));
 require("./cron/mediumCron");
 const express = require('express');
 const cors = require('cors');

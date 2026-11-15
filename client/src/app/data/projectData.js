@@ -1,3 +1,4 @@
+import { asset } from '@/lib/asset';
 // app/data/projectData.js
 
 export const allProjectsData = [
@@ -16,7 +17,7 @@ export const allProjectsData = [
     technologies: ["Next.js", "React", "Tailwind CSS", "Node.js", "MongoDB", "Supabase"],
     liveUrl: "https://hackathon-college-portal.vercel.app",
     githubUrl: "https://github.com/abdulbarr730/hackathonCollegePortal",
-    snapshotUrl: "/snapshots/sih-portal.png",
+    snapshotUrl: asset("/snapshots/sih-portal.png"),
     impact: { metric: "80+", label: "Student Signups" },
   },
   {
@@ -33,7 +34,7 @@ export const allProjectsData = [
     technologies: ["Adobe Suite", "System Architecture", "Business Logic"],
     liveUrl: "https://midafco.vercel.app/", 
     githubUrl: "https://github.com/abdulbarr730/midafco",
-    snapshotUrl: "/snapshots/midafco.png", 
+    snapshotUrl: asset("/snapshots/midafco.png"), 
     impact: { metric: "Bilingual", label: "English & Arabic (عربي)" },
   },
   {
@@ -50,7 +51,7 @@ export const allProjectsData = [
     technologies: ["Next.js", "Node.js", "MongoDB", "ExcelJS"],
     liveUrl: "/jobs",
     githubUrl: "https://github.com/abdulbarr730/Portfolio",
-    snapshotUrl: "/snapshots/placement-tracker.png", 
+    snapshotUrl: asset("/snapshots/placement-tracker.png"), 
     impact: { metric: "100%", label: "Data Visibility" },
   },
   {
@@ -67,7 +68,7 @@ export const allProjectsData = [
     technologies: ["Next.js", "Tailwind CSS", "Framer Motion"],
     liveUrl: "https://nayi-kiran-ngo.vercel.app/", 
     githubUrl: "https://github.com/abdulbarr730/nayi-kiran-ngo",
-    snapshotUrl: "/snapshots/nayi-kiran.png",
+    snapshotUrl: asset("/snapshots/nayi-kiran.png"),
   },
   {
     title: "AI Meeting Notes Summarizer",
@@ -84,7 +85,7 @@ export const allProjectsData = [
     technologies: ["React", "Node.js (Serverless)", "Groq API", "Llama 3", "Vercel"],
     liveUrl: "https://meeting-summarizer-black.vercel.app",
     githubUrl: "https://github.com/abdulbarr730",
-    snapshotUrl: "/snapshots/ai-summarizer.png",
+    snapshotUrl: asset("/snapshots/ai-summarizer.png"),
   },
   {
     title: "E-commerce Website - Two Good Co.",
@@ -101,7 +102,7 @@ export const allProjectsData = [
     technologies: ["HTML5", "CSS3", "JavaScript", "GSAP", "Locomotive Scroll"],
     liveUrl: "https://twogood-e-commerce.vercel.app",
     githubUrl: "https://github.com/abdulbarr730",
-    snapshotUrl: "/snapshots/two-good.png",
+    snapshotUrl: asset("/snapshots/two-good.png"),
   },
   {
     title: "GTA-VI Re-imagined Website",
@@ -118,7 +119,7 @@ export const allProjectsData = [
     technologies: ["ReactJs", "GSAP"],
     liveUrl: "https://gta-vi-imagine.vercel.app",
     githubUrl: "https://github.com/abdulbarr730",
-    snapshotUrl: "/snapshots/gta-vi.png",
+    snapshotUrl: asset("/snapshots/gta-vi.png"),
   },
   {
     title: "Weather Project",
@@ -135,6 +136,6 @@ export const allProjectsData = [
     technologies: ["HTML", "CSS", "JavaScript", "OpenWeather API"],
     liveUrl: "https://weather-project-chi-two.vercel.app/",
     githubUrl: "https://github.com/abdulbarr730/Weather-Project",
-    snapshotUrl: "/snapshots/weather.png",
+    snapshotUrl: asset("/snapshots/weather.png"),
   },
 ];
