@@ -1,6 +1,7 @@
 'use client';
 
 import { useSettings } from '@/lib/content';
+import { heroThemeVars } from '@/lib/heroTheme';
 
 import { useLayoutEffect, useRef, useState, useEffect } from 'react';
 import { gsap } from 'gsap';
@@ -29,6 +30,7 @@ const Navbar = () => {
   const mobileMenuRef = useRef(null);
   const bookRef = useRef(null);
   const progressRef = useRef(null);
+  const [overHero, setOverHero] = useState(true);
   const pathnameForProgress = usePathname();
 
   // Orange reading-progress bar under the navbar
@@ -37,6 +39,8 @@ const Navbar = () => {
       const max = document.documentElement.scrollHeight - window.innerHeight;
       const p = max > 0 ? Math.min(window.scrollY / max, 1) : 0;
       if (progressRef.current) progressRef.current.style.transform = `scaleX(${p})`;
+      // dark navbar while it sits over the home hero (hero is one screen tall)
+      setOverHero(window.scrollY < window.innerHeight - 56);
     };
     onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
@@ -142,7 +146,8 @@ const Navbar = () => {
     <>
       <header
         ref={component}
-        className="fixed top-0 left-0 w-full z-[999] bg-background/80 backdrop-blur-sm overflow-x-hidden h-14"
+        style={pathname === '/' && overHero ? heroThemeVars(settings.heroTheme, settings.accentColor) : undefined}
+        className="fixed top-0 left-0 w-full z-[999] bg-background/80 text-primary backdrop-blur-sm overflow-x-hidden h-14 transition-colors duration-300"
       >
         <div className="page-container">
           <div className="flex items-center justify-between h-full">

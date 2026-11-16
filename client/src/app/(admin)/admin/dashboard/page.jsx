@@ -199,6 +199,18 @@ export default function DashboardPage() {
 
           {tab === 'site' && settings && (
             <>
+              <Card
+                title="Hero look (60 / 30 / 10)"
+                description="Dark hero: 60% black, 30% white and 10% your brand colour (set below) on the parts you want people to notice. The rest of the site keeps the normal look."
+              >
+                <Toggle
+                  label="Dark hero"
+                  hint="Turn off to use the normal light hero."
+                  value={get('heroTheme.dark') ?? false}
+                  onChange={(v) => set('heroTheme.dark', v)}
+                />
+              </Card>
+
               <Card title="Brand colour" description="The third colour used for highlights, the badge dot and hover states.">
                 <ColorField label="Accent" value={get('accentColor')} onChange={(v) => set('accentColor', v)} presets={ACCENT_PRESETS} />
               </Card>

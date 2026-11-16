@@ -8,6 +8,7 @@ import { TypeAnimation } from 'react-type-animation';
 import Link from 'next/link';
 import RightSidebar from '@/components/RightSidebar';
 import { useSettings, useProjects } from '@/lib/content';
+import { heroThemeVars } from '@/lib/heroTheme';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -55,6 +56,7 @@ const HeroSection = () => {
   const { settings } = useSettings();
   const { projects } = useProjects();
   const hero = settings.hero;
+  const heroVars = heroThemeVars(settings.heroTheme, settings.accentColor);
   const availability = settings.availability;
   const stats = hero.stats.map((st) => ({ ...st, value: st.value || `${projects.length}+` }));
   const nameWords = String(hero.outlineName || '').trim().split(/\s+/);
@@ -307,7 +309,14 @@ const HeroSection = () => {
   }, []);
 
   return (
-    <section ref={component} className="relative w-full bg-background overflow-hidden min-h-[100svh]">
+    <section ref={component} style={heroVars} className="relative w-full bg-background text-primary overflow-hidden min-h-[100svh]">
+      {/* 10% accent spotlight behind the portrait (dark hero only) */}
+      {heroVars && (
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-0">
+          <div className="absolute left-[8%] bottom-[-20%] h-[85%] w-[55%] rounded-full bg-[radial-gradient(closest-side,rgb(var(--accent-rgb)/0.22),transparent)] blur-2xl md:left-[5%]" />
+          <div className="absolute right-[-10%] top-[-25%] h-[60%] w-[45%] rounded-full bg-[radial-gradient(closest-side,rgb(var(--accent-rgb)/0.08),transparent)] blur-2xl" />
+        </div>
+      )}
       {/* INTRO OVERLAY */}
       <div className="intro-svg-container fixed inset-0 z-[9999] bg-ink flex items-center justify-center pointer-events-auto">
         <svg viewBox="0 0 800 600" className="w-full h-full" preserveAspectRatio="xMidYMid slice">
@@ -418,7 +427,11 @@ const HeroSection = () => {
               <div className="hero-content-layer mt-6">
                 <Link
                   href={hero.ctaHref}
-                  className="inline-flex items-center gap-2 rounded-full bg-primary text-background px-6 py-3 text-sm font-semibold active:scale-95 hover:bg-accent active:bg-accent transition-all"
+                  className={
+                    heroVars
+                      ? 'inline-flex items-center gap-2 rounded-full bg-accent text-ink px-6 py-3 text-sm font-semibold shadow-[0_0_30px_-6px_rgb(var(--accent-rgb)/0.7)] active:scale-95 hover:bg-primary transition-all'
+                      : 'inline-flex items-center gap-2 rounded-full bg-primary text-background px-6 py-3 text-sm font-semibold active:scale-95 hover:bg-accent active:bg-accent transition-all'
+                  }
                 >
                   {hero.ctaTextMobile} &rarr;
                 </Link>
@@ -495,7 +508,11 @@ const HeroSection = () => {
               <div className="bio-line mt-8">
                 <Link
                   href={hero.ctaHref}
-                  className="font-semibold text-primary border-b-2 border-accent/60 hover:border-accent transition-colors"
+                  className={
+                    heroVars
+                      ? 'inline-flex items-center gap-2 rounded-full bg-accent text-ink px-6 py-3 font-semibold shadow-[0_0_34px_-6px_rgb(var(--accent-rgb)/0.75)] transition-all hover:-translate-y-0.5 hover:bg-primary'
+                      : 'font-semibold text-primary border-b-2 border-accent/60 hover:border-accent transition-colors'
+                  }
                 >
                   {hero.ctaTextDesktop} &rarr;
                 </Link>
@@ -532,7 +549,7 @@ const HeroSection = () => {
 
             <div
               ref={desktopSlamTextRef}
-              className="absolute top-2 left-1/2 -translate-x-1/2 z-10 bg-accent text-white px-6 py-2 rounded-full font-bold text-[10px] md:text-xs uppercase tracking-widest shadow-xl border border-background/20 opacity-0 whitespace-nowrap"
+              className="absolute top-2 left-1/2 -translate-x-1/2 z-10 bg-accent text-ink px-6 py-2 rounded-full font-bold text-[10px] md:text-xs uppercase tracking-widest shadow-xl border border-background/20 opacity-0 whitespace-nowrap"
             >
               View All Projects &rarr;
             </div>

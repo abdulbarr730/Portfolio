@@ -9,6 +9,11 @@ const siteSettingsSchema = new mongoose.Schema(
   {
     key: { type: String, default: 'main', unique: true },
 
+    // Hero 60/30/10 look: dark background, white text, brand colour as the accent
+    heroTheme: {
+      dark: { type: Boolean, default: false },
+    },
+
     accentColor: { type: String, default: '#5E6B26' },
 
     availability: {
