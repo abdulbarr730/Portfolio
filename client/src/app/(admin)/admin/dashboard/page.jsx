@@ -261,6 +261,12 @@ export default function DashboardPage() {
                     { key: 'href', label: 'Link' },
                   ]}
                 />
+                <Toggle
+                  label="Show certifications in the hero"
+                  hint="A “Certified” line (desktop) and a certificates count next to the stats (mobile). Clicking scrolls to the Certifications section."
+                  value={get('hero.showCertLine') ?? true}
+                  onChange={(v) => set('hero.showCertLine', v)}
+                />
                 <ImageField label="Hero photo" value={get('hero.photoUrl')} onChange={(v) => set('hero.photoUrl', v)} folder="site" />
               </Card>
 

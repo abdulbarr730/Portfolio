@@ -22,6 +22,7 @@ export const siteDefaults = {
     photoUrl: asset('/profile.png'),
     outlineName: 'Abdul Barr',
     sidebarText: 'Full-Stack & ML Developer',
+    showCertLine: true,
     stats: [
       { value: '3+', label: 'Years of Experience', href: '/experience' },
       { value: '', label: 'Projects Completed', href: '/projects' },
