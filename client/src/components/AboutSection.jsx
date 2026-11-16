@@ -171,7 +171,7 @@ export function Certifications({ index = '06' }) {
   const issuers = new Set(certifications.map((c) => c.issuer).filter(Boolean)).size;
 
   return (
-    <section className="page-container pb-24 md:pb-32">
+    <section id="certifications" className="page-container pb-24 md:pb-32 scroll-mt-24">
       <SectionHeader
         index={index}
         eyebrow="Credentials"

@@ -38,6 +38,7 @@ const siteSettingsSchema = new mongoose.Schema(
       outlineName: { type: String, default: 'Abdul Barr' },
       sidebarText: { type: String, default: 'Full-Stack & ML Developer' },
       stats: [linkStat],
+      showCertLine: { type: Boolean, default: true },
     },
 
     about: {

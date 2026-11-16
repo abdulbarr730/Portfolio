@@ -52,11 +52,36 @@ const StatValue = ({ value }) => {
   );
 };
 
+// Small shield-check icon for the certifications line
+const ShieldCheck = ({ className = '' }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M12 3 4.5 6v5.5c0 4.6 3.2 8.4 7.5 9.5 4.3-1.1 7.5-4.9 7.5-9.5V6L12 3Z" />
+    <path d="m8.8 12.2 2.2 2.2 4.4-4.6" />
+  </svg>
+);
+
+// 'Claude Anthropic' -> 'CA'
+const issuerInitials = (s = '') =>
+  s.replace(/[^A-Za-z0-9 ]/g, ' ').split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0].toUpperCase()).join('') || '•';
+
 const HeroSection = () => {
   const { settings } = useSettings();
   const { projects } = useProjects();
   const hero = settings.hero;
   const heroVars = heroThemeVars(settings.heroTheme, settings.accentColor);
+
+  // Certifications line: shown when enabled and the Certifications section is on the page
+  const certs = settings.about?.certifications || [];
+  const certIssuers = [...new Set(certs.map((c) => c.issuer).filter(Boolean))];
+  const certSectionHidden = (settings.homeSections || []).some((s) => s.key === 'certifications' && s.hidden);
+  const showCerts = hero.showCertLine !== false && certs.length > 0 && !certSectionHidden;
+  const scrollToCerts = (e) => {
+    const el = document.getElementById('certifications');
+    if (!el) return;
+    e.preventDefault();
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    window.history.replaceState(null, '', '#certifications');
+  };
   const availability = settings.availability;
   const stats = hero.stats.map((st) => ({ ...st, value: st.value || `${projects.length}+` }));
   const nameWords = String(hero.outlineName || '').trim().split(/\s+/);
@@ -383,7 +408,7 @@ const HeroSection = () => {
             </div>
 
             {/* Stats */}
-            <div className="flex justify-center space-x-14 mt-3 mb-6 relative z-20">
+            <div className={`flex justify-center ${showCerts ? 'space-x-8' : 'space-x-14'} mt-3 mb-6 relative z-20`}>
               {stats.map((st, i) => {
                 const [l1, l2] = splitLabel(st.label);
                 return (
@@ -400,6 +425,23 @@ const HeroSection = () => {
                   </Link>
                 );
               })}
+              {showCerts && (
+                <a
+                  href="#certifications"
+                  onClick={scrollToCerts}
+                  aria-label={`${certs.length} certifications. View them`}
+                  className="hero-content-layer stat-item text-center cursor-pointer active:scale-95 transition-transform"
+                >
+                  <h3 className="inline-flex items-center gap-1 text-3xl font-bold text-primary">
+                    {certs.length}
+                    <ShieldCheck className="h-6 w-6 text-accent" />
+                  </h3>
+                  <p className="text-secondary text-sm font-medium leading-tight">
+                    Certificates <br />
+                    &amp; Badges
+                  </p>
+                </a>
+              )}
             </div>
 
             {/* Greeting */}
@@ -505,7 +547,37 @@ const HeroSection = () => {
 
               <p className="bio-line mt-2 text-sm text-secondary/80 max-w-md">{hero.tagline}</p>
 
-              <div className="bio-line mt-8">
+              {showCerts && (
+                <a
+                  href="#certifications"
+                  onClick={scrollToCerts}
+                  className="bio-line group mt-5 inline-flex max-w-md items-center gap-3 rounded-full border border-primary/10 bg-surface/70 py-1.5 pl-1.5 pr-4 text-sm backdrop-blur-sm transition-colors hover:border-accent/50"
+                >
+                  <span className="flex -space-x-2" aria-hidden="true">
+                    {certIssuers.slice(0, 3).map((name) => (
+                      <span
+                        key={name}
+                        className="grid h-7 w-7 place-items-center rounded-full bg-muted text-[10px] font-bold text-primary ring-2 ring-background"
+                      >
+                        {issuerInitials(name)}
+                      </span>
+                    ))}
+                  </span>
+                  <span className="inline-flex items-center gap-1 font-semibold text-primary">
+                    <ShieldCheck className="h-4 w-4 text-accent" />
+                    Certified
+                  </span>
+                  <span className="truncate text-secondary">
+                    {certIssuers.slice(0, 2).join(' · ')}
+                    {certIssuers.length > 2 ? ` · +${certIssuers.length - 2}` : ''}
+                  </span>
+                  <svg className="h-3.5 w-3.5 shrink-0 text-secondary transition-transform group-hover:translate-y-0.5 group-hover:text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 5v14m0 0-6-6m6 6 6-6" />
+                  </svg>
+                </a>
+              )}
+
+              <div className={`bio-line ${showCerts ? 'mt-6' : 'mt-8'}`}>
                 <Link
                   href={hero.ctaHref}
                   className={
