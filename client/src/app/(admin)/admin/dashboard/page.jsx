@@ -250,9 +250,16 @@ export default function DashboardPage() {
                   <Text label="Button text (mobile)" value={get('hero.ctaTextMobile')} onChange={(v) => set('hero.ctaTextMobile', v)} />
                   <Text label="Button link" value={get('hero.ctaHref')} onChange={(v) => set('hero.ctaHref', v)} />
                 </div>
+                <Text
+                  label="Career started (YYYY-MM)"
+                  hint="Used for {years}: the full number of years since this month. It goes up by one automatically every year."
+                  value={get('careerStart')}
+                  onChange={(v) => set('careerStart', v)}
+                  placeholder="2023-01"
+                />
                 <RowList
                   label="Stats"
-                  hint="Leave the value empty to show the live project count."
+                  hint="Live numbers: write {years}, {projects} or {certs} (e.g. {years}+) and they update automatically everywhere."
                   value={get('hero.stats')}
                   onChange={(v) => set('hero.stats', v)}
                   fields={[
@@ -318,6 +325,7 @@ export default function DashboardPage() {
                 <StringList label="Paragraphs" multiline value={get('about.paragraphs')} onChange={(v) => set('about.paragraphs', v)} />
                 <RowList
                   label="Highlight cards"
+                  hint="You can use {years}, {projects} and {certs} here too."
                   value={get('about.highlights')}
                   onChange={(v) => set('about.highlights', v)}
                   fields={[

@@ -4,7 +4,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { useSettings, useProjects } from '@/lib/content';
+import { useSettings, useProjects, useLiveNumbers } from '@/lib/content';
 import SectionHeader, { Reveal } from '@/components/SectionHeader';
 
 export const ArrowIcon = ({ className = '' }) => (
@@ -21,7 +21,10 @@ export function AboutIntro({ index = '01' }) {
   const { settings } = useSettings();
   const { projects } = useProjects();
   const about = settings.about;
-  const { paragraphs, highlights, photoUrl } = about;
+  const { fill } = useLiveNumbers();
+  const paragraphs = about.paragraphs.map(fill);
+  const highlights = about.highlights.map((h) => ({ ...h, value: fill(h.value), label: fill(h.label) }));
+  const { photoUrl } = about;
   const [lead, ...rest] = paragraphs;
   const aspect = ASPECTS[about.photoAspect] || ASPECTS.portrait;
   const position = POSITIONS[about.photoPosition] || POSITIONS.center;

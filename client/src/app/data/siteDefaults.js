@@ -4,6 +4,7 @@ import { asset } from '@/lib/asset';
 
 export const siteDefaults = {
   heroTheme: { dark: false },
+  careerStart: '2023-01', // {years} = full years since this date
   accentColor: '#5E6B26',
   availability: { enabled: true, text: 'Built platforms serving 4,000+ clients' },
   hero: {
@@ -24,8 +25,8 @@ export const siteDefaults = {
     sidebarText: 'Full-Stack & ML Developer',
     showCertLine: true,
     stats: [
-      { value: '3+', label: 'Years of Experience', href: '/experience' },
-      { value: '', label: 'Projects Completed', href: '/projects' },
+      { value: '{years}+', label: 'Years of Experience', href: '/experience' },
+      { value: '{projects}+', label: 'Projects Completed', href: '/projects' },
     ],
   },
   about: {
@@ -36,7 +37,7 @@ export const siteDefaults = {
     highlights: [
       { value: '4,000+', label: 'Client records managed (ProSync CRM)' },
       { value: '3+', label: 'Internships completed' },
-      { value: '2+ yrs', label: 'Freelancing experience' },
+      { value: '{years}+ yrs', label: 'Freelancing experience' },
       { value: 'Full Stack + AI', label: 'React, Next.js, Node, MongoDB, RAG, Models' },
     ],
     milestones: [

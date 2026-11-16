@@ -7,7 +7,7 @@ import Image from 'next/image';
 import { TypeAnimation } from 'react-type-animation';
 import Link from 'next/link';
 import RightSidebar from '@/components/RightSidebar';
-import { useSettings, useProjects } from '@/lib/content';
+import { useSettings, useProjects, useLiveNumbers } from '@/lib/content';
 import { heroThemeVars } from '@/lib/heroTheme';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -60,10 +60,6 @@ const ShieldCheck = ({ className = '' }) => (
   </svg>
 );
 
-// 'Claude Anthropic' -> 'CA'
-const issuerInitials = (s = '') =>
-  s.replace(/[^A-Za-z0-9 ]/g, ' ').split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0].toUpperCase()).join('') || '•';
-
 const HeroSection = () => {
   const { settings } = useSettings();
   const { projects } = useProjects();
@@ -72,7 +68,6 @@ const HeroSection = () => {
 
   // Certifications line: shown when enabled and the Certifications section is on the page
   const certs = settings.about?.certifications || [];
-  const certIssuers = [...new Set(certs.map((c) => c.issuer).filter(Boolean))];
   const certSectionHidden = (settings.homeSections || []).some((s) => s.key === 'certifications' && s.hidden);
   const showCerts = hero.showCertLine !== false && certs.length > 0 && !certSectionHidden;
   const scrollToCerts = (e) => {
@@ -83,7 +78,11 @@ const HeroSection = () => {
     window.history.replaceState(null, '', '#certifications');
   };
   const availability = settings.availability;
-  const stats = hero.stats.map((st) => ({ ...st, value: st.value || `${projects.length}+` }));
+  const { fill } = useLiveNumbers();
+  // {years} / {projects} / {certs} tokens are replaced with live numbers
+  const stats = hero.stats.map((st) => ({ ...st, value: fill(st.value) || `${projects.length}+`, label: fill(st.label) }));
+  const badgeText = fill(availability.text);
+  const tagline = fill(hero.tagline);
   const nameWords = String(hero.outlineName || '').trim().split(/\s+/);
   // --- WATERMARK ---
   if (typeof window !== 'undefined' && window.location.hostname !== 'abdulbarr.in') {
@@ -401,7 +400,7 @@ const HeroSection = () => {
               </div>
               {availability.enabled && (
                 <AvailabilityBadge
-                  text={availability.text}
+                  text={badgeText}
                   className="hero-content-layer absolute z-20 left-1/2 -translate-x-1/2 -bottom-3 shadow-sm"
                 />
               )}
@@ -463,7 +462,7 @@ const HeroSection = () => {
               </div>
 
               <p className="hero-content-layer bio-line text-sm text-secondary max-w-[19rem] mx-auto leading-relaxed">
-                {hero.tagline}
+                {tagline}
               </p>
 
               <div className="hero-content-layer mt-6">
@@ -509,12 +508,10 @@ const HeroSection = () => {
 
             {stats.slice(0, 2).map((st, i) => {
               const [l1, l2] = splitLabel(st.label);
-              return (
+              const stat = (
                 <Link
-                  key={i}
                   href={st.href || '#'}
-                  className={`hero-content-layer parallax-layer stat-item absolute top-[20%] ${i === 0 ? 'left-[10%]' : 'right-[10%]'} text-left cursor-pointer hover:scale-105 transition-transform`}
-                  data-speed="1.8"
+                  className="stat-item block text-left cursor-pointer hover:scale-105 transition-transform"
                 >
                   <h3 className="text-6xl font-bold text-primary"><StatValue value={st.value} /></h3>
                   <p className="text-secondary leading-tight">
@@ -523,13 +520,39 @@ const HeroSection = () => {
                   </p>
                 </Link>
               );
+              return (
+                <div
+                  key={i}
+                  className={`hero-content-layer parallax-layer absolute top-[17%] 2xl:top-[20%] z-20 ${i === 0 ? 'left-[10%]' : 'right-[11%] flex items-start gap-8 2xl:gap-12'}`}
+                  data-speed="1.8"
+                >
+                  {stat}
+                  {i === 1 && showCerts && (
+                    <a
+                      href="#certifications"
+                      onClick={scrollToCerts}
+                      aria-label={`${certs.length} certifications. View them`}
+                      className="stat-item group block text-left cursor-pointer hover:scale-105 transition-transform"
+                    >
+                      <h3 className="inline-flex items-center gap-2 text-6xl font-bold text-primary">
+                        {certs.length}
+                        <ShieldCheck className="h-10 w-10 text-accent transition-transform group-hover:-translate-y-0.5" />
+                      </h3>
+                      <p className="text-secondary leading-tight">
+                        Certificates <br />
+                        &amp; Badges
+                      </p>
+                    </a>
+                  )}
+                </div>
+              );
             })}
 
             <div
               className="hero-content-layer parallax-layer absolute top-1/2 right-28 lg:right-40 transform -translate-y-1/2"
               data-speed="2.5"
             >
-              {availability.enabled && <AvailabilityBadge text={availability.text} className="mb-5" />}
+              {availability.enabled && <AvailabilityBadge text={badgeText} className="mb-5" />}
 
               <h1 className="accent-dot text-9xl font-thin tracking-tighter text-primary">{hero.greeting}</h1>
 
@@ -545,39 +568,9 @@ const HeroSection = () => {
                 />
               </div>
 
-              <p className="bio-line mt-2 text-sm text-secondary/80 max-w-md">{hero.tagline}</p>
+              <p className="bio-line mt-2 text-sm text-secondary/80 max-w-md">{tagline}</p>
 
-              {showCerts && (
-                <a
-                  href="#certifications"
-                  onClick={scrollToCerts}
-                  className="bio-line group mt-5 inline-flex max-w-md items-center gap-3 rounded-full border border-primary/10 bg-surface/70 py-1.5 pl-1.5 pr-4 text-sm backdrop-blur-sm transition-colors hover:border-accent/50"
-                >
-                  <span className="flex -space-x-2" aria-hidden="true">
-                    {certIssuers.slice(0, 3).map((name) => (
-                      <span
-                        key={name}
-                        className="grid h-7 w-7 place-items-center rounded-full bg-muted text-[10px] font-bold text-primary ring-2 ring-background"
-                      >
-                        {issuerInitials(name)}
-                      </span>
-                    ))}
-                  </span>
-                  <span className="inline-flex items-center gap-1 font-semibold text-primary">
-                    <ShieldCheck className="h-4 w-4 text-accent" />
-                    Certified
-                  </span>
-                  <span className="truncate text-secondary">
-                    {certIssuers.slice(0, 2).join(' · ')}
-                    {certIssuers.length > 2 ? ` · +${certIssuers.length - 2}` : ''}
-                  </span>
-                  <svg className="h-3.5 w-3.5 shrink-0 text-secondary transition-transform group-hover:translate-y-0.5 group-hover:text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 5v14m0 0-6-6m6 6 6-6" />
-                  </svg>
-                </a>
-              )}
-
-              <div className={`bio-line ${showCerts ? 'mt-6' : 'mt-8'}`}>
+              <div className="bio-line mt-8">
                 <Link
                   href={hero.ctaHref}
                   className={
