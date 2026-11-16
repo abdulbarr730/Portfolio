@@ -60,3 +60,32 @@ export const useServices = () => {
 
 // Colour helper lives in lib/color.js so server code can use it too
 export { hexToRgbTriplet } from './color';
+
+// ---------------------------------------------------------------------------
+// Live numbers, so counts are defined in ONE place and update themselves.
+//   {years}    -> full years since settings.careerStart ("YYYY-MM"), +1 every anniversary
+//   {projects} -> number of projects in the admin panel
+//   {certs}    -> number of certifications in the admin panel
+// Use the tokens in any stat, highlight or text field in the admin panel.
+// ---------------------------------------------------------------------------
+export function yearsSince(careerStart, now = new Date()) {
+  const m = /^(\d{4})(?:-(\d{1,2}))?/.exec(String(careerStart || ''));
+  if (!m) return 0;
+  const start = new Date(Number(m[1]), m[2] ? Number(m[2]) - 1 : 0, 1);
+  let years = now.getFullYear() - start.getFullYear();
+  if (now.getMonth() < start.getMonth()) years -= 1;
+  return Math.max(0, years);
+}
+
+export function useLiveNumbers() {
+  const { settings } = useSettings();
+  const { projects } = useProjects();
+  const numbers = {
+    years: yearsSince(settings.careerStart),
+    projects: projects.length,
+    certs: settings.about?.certifications?.length || 0,
+  };
+  const fill = (text) =>
+    typeof text === 'string' ? text.replace(/\{(years|projects|certs)\}/gi, (_, k) => String(numbers[k.toLowerCase()])) : text;
+  return { numbers, fill };
+}
