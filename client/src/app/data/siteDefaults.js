@@ -3,6 +3,7 @@
 import { asset } from '@/lib/asset';
 
 export const siteDefaults = {
+  heroTheme: { dark: false },
   accentColor: '#5E6B26',
   availability: { enabled: true, text: 'Built platforms serving 4,000+ clients' },
   hero: {
