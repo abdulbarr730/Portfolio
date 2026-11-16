@@ -27,7 +27,7 @@ const RightSidebar = forwardRef((props, ref) => {
   return (
     <div
       ref={ref}
-      className="hidden md:flex flex-col items-center fixed top-10 right-0 w-28 py-8 z-50 h-[calc(100vh-96px)]"
+      className="hidden lg:flex flex-col items-center fixed top-10 right-0 w-28 py-8 z-50 h-[calc(100vh-96px)]"
     >
       {/* Accent dot + vertical label with an orange shimmer running through it */}
       <span className="mt-6 mb-4 h-2 w-2 rounded-full bg-accent shadow-[0_0_12px_rgb(var(--accent-rgb)/0.8)]" />

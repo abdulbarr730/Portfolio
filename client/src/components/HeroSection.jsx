@@ -238,7 +238,7 @@ const HeroSection = () => {
       // =========================
       // NAME SPOTLIGHT
       // =========================
-      const isDesktop = window.innerWidth > 768;
+      const isDesktop = window.innerWidth >= 1024;
       const reveal = gsap.utils
         .toArray('.hero-name-reveal')
         .find((el) => el.offsetParent !== null);
@@ -291,7 +291,7 @@ const HeroSection = () => {
       }
 
       // Parallax
-      if (typeof window !== 'undefined' && window.innerWidth > 768) {
+      if (typeof window !== 'undefined' && window.innerWidth >= 1024) {
         const componentEl = component.current;
         const layers = gsap.utils.toArray('.parallax-layer');
 
@@ -371,9 +371,9 @@ const HeroSection = () => {
         <RightSidebar ref={sidebarRef} />
 
         {/* content area */}
-        <div className="relative z-10 w-full min-h-[100svh] md:pb-20">
+        <div className="relative z-10 w-full min-h-[100svh] lg:pb-20">
           {/* MOBILE */}
-          <div className="md:hidden relative flex flex-col items-center justify-center min-h-[100svh] px-5 pt-16 pb-20">
+          <div className="lg:hidden relative flex flex-col items-center justify-center min-h-[100svh] px-5 pt-16 pb-20">
             {/* Arch portrait with outlined name behind */}
             <div className="relative w-full flex justify-center mb-6">
               <div
@@ -481,7 +481,7 @@ const HeroSection = () => {
           </div>
 
           {/* DESKTOP */}
-          <div className="hidden md:block">
+          <div className="hidden lg:block">
             <div
               aria-hidden="true"
               className="hero-name-reveal pointer-events-none select-none absolute inset-x-0 top-0 h-[88%] flex items-center justify-center"
@@ -504,6 +504,14 @@ const HeroSection = () => {
                 className="w-full h-auto"
                 priority
               />
+              {/* Highlight badge pinned beside the face, so it moves with the photo
+                  and never collides with the stats or the headline */}
+              {availability.enabled && (
+                <AvailabilityBadge
+                  text={badgeText}
+                  className="hero-badge absolute left-[6%] bottom-[14%] z-20 shadow-sm"
+                />
+              )}
             </div>
 
             {stats.slice(0, 2).map((st, i) => {
@@ -513,7 +521,7 @@ const HeroSection = () => {
                   href={st.href || '#'}
                   className="stat-item block text-left cursor-pointer hover:scale-105 transition-transform"
                 >
-                  <h3 className="text-6xl font-bold text-primary"><StatValue value={st.value} /></h3>
+                  <h3 className="text-[clamp(2.75rem,7vh,3.75rem)] leading-tight font-bold text-primary"><StatValue value={st.value} /></h3>
                   <p className="text-secondary leading-tight">
                     {l1} <br />
                     {l2}
@@ -523,7 +531,7 @@ const HeroSection = () => {
               return (
                 <div
                   key={i}
-                  className={`hero-content-layer parallax-layer absolute top-[17%] 2xl:top-[20%] z-20 ${i === 0 ? 'left-[10%]' : 'right-[11%] flex items-start gap-8 2xl:gap-12'}`}
+                  className={`hero-content-layer parallax-layer absolute top-[max(4.25rem,15%)] 2xl:top-[20%] z-20 ${i === 0 ? 'left-[10%]' : 'right-[max(11%,9rem)] flex items-start gap-8 2xl:gap-12'}`}
                   data-speed="1.8"
                 >
                   {stat}
@@ -534,7 +542,7 @@ const HeroSection = () => {
                       aria-label={`${certs.length} certifications. View them`}
                       className="stat-item group block text-left cursor-pointer hover:scale-105 transition-transform"
                     >
-                      <h3 className="inline-flex items-center gap-2 text-6xl font-bold text-primary">
+                      <h3 className="inline-flex items-center gap-2 text-[clamp(2.75rem,7vh,3.75rem)] leading-tight font-bold text-primary">
                         {certs.length}
                         <ShieldCheck className="h-10 w-10 text-accent transition-transform group-hover:-translate-y-0.5" />
                       </h3>
@@ -549,12 +557,11 @@ const HeroSection = () => {
             })}
 
             <div
-              className="hero-content-layer parallax-layer absolute top-1/2 right-28 lg:right-40 transform -translate-y-1/2"
+              className="hero-content-layer parallax-layer absolute top-[56%] right-28 lg:right-40 transform -translate-y-1/2"
               data-speed="2.5"
             >
-              {availability.enabled && <AvailabilityBadge text={badgeText} className="mb-5" />}
 
-              <h1 className="accent-dot text-9xl font-thin tracking-tighter text-primary">{hero.greeting}</h1>
+              <h1 className="accent-dot text-[clamp(4.5rem,16vh,8rem)] leading-none font-thin tracking-tighter text-primary">{hero.greeting}</h1>
 
               <div className="bio-line mt-4 text-lg text-secondary">
                 — I&apos;m a{' '}
