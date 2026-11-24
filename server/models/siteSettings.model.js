@@ -17,7 +17,7 @@ const siteSettingsSchema = new mongoose.Schema(
     // Career start (YYYY-MM): {years} in any text = full years since this date
     careerStart: { type: String, default: '2023-01' },
 
-    accentColor: { type: String, default: '#5E6B26' },
+    accentColor: { type: String, default: '#E5322D' },
 
     availability: {
       enabled: { type: Boolean, default: true },

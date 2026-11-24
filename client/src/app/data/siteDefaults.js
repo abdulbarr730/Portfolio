@@ -5,7 +5,7 @@ import { asset } from '@/lib/asset';
 export const siteDefaults = {
   heroTheme: { dark: false },
   careerStart: '2023-01', // {years} = full years since this date
-  accentColor: '#5E6B26',
+  accentColor: '#E5322D',
   availability: { enabled: true, text: 'Built platforms serving 4,000+ clients' },
   hero: {
     greeting: 'Hello',

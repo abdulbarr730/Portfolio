@@ -54,18 +54,32 @@ export const metadata = {
 
 // Fetch the admin-chosen accent colour on the server so the very first paint
 // already uses it (no flash of the default colour). Cached for 60 seconds.
+// Talks to the backend directly (the browser goes through the /api rewrite in
+// next.config.mjs). The backend can take a few seconds on a cold start, so the
+// timeout is generous and there is one retry; this runs at build/revalidate
+// time, not on every visit.
+const BACKEND_URL = (
+  process.env.API_URL ||
+  process.env.NEXT_PUBLIC_API_URL ||
+  'https://portfolio-backend-omega-khaki.vercel.app'
+).replace(/\/$/, '');
+
 async function getAccentRgb() {
-  try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/settings`, {
-      next: { revalidate: 60 },
-      signal: AbortSignal.timeout(3000),
-    });
-    if (!res.ok) return null;
-    const settings = await res.json();
-    return hexToRgbTriplet(settings?.accentColor);
-  } catch {
-    return null;
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/settings`, {
+        next: { revalidate: 60 },
+        signal: AbortSignal.timeout(10000),
+      });
+      if (!res.ok) continue;
+      const settings = await res.json();
+      const rgb = hexToRgbTriplet(settings?.accentColor);
+      if (rgb) return rgb;
+    } catch {
+      // try again
+    }
   }
+  return null;
 }
 
 // Fallback when the server couldn't reach the API: reuse the colour from the

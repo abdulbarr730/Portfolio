@@ -5,7 +5,7 @@
 
 :root {
   /* Accent colour (overridden at runtime by the admin setting) */
-  --accent-rgb: 94 107 38;
+  --accent-rgb: 229 50 45;
 
   /* Light theme */
   --c-background: 245 243 238; /* #F5F3EE off-white */
